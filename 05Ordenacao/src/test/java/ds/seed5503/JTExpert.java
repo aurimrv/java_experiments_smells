@@ -1,0 +1,62 @@
+package ds.seed5503;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.Rule;
+import ds.Ordenacao;
+import java.util.Arrays;
+/** 
+ * This class was automatically generated to test the ds.Ordenacao class according to all branches coverage criterion
+ExceptionsOriented: false 
+projectPackagesPrefix:ds 
+Covered branches: [1, 2, 3, 4, 5]
+Uncovered branches: []
+Total number of branches: 5
+Total number of covered branches: 5
+Coverage : 100%
+Evaluations : 224
+search time (ms): 285
+total runtime (ms): 1415
+ */
+public class JTExpert {
+  /** 
+ * Chromosome :
+1)----->ds.Ordenacao[]
+2)----->ordena[[981], -494]
+ Covered Branches:[1]
+ */
+  @Test public void TestCase0() throws Throwable {
+    Ordenacao clsUTOrdenacao=null;
+      clsUTOrdenacao=new Ordenacao();
+    int[] clsUTOrdenacaoP2P1=new int[]{981};
+    int clsUTOrdenacaoP2P2=-494;
+      Ordenacao.ordena(clsUTOrdenacaoP2P1,clsUTOrdenacaoP2P2);
+    assertTrue(Arrays.equals(new int[]{981},clsUTOrdenacaoP2P1));
+  }
+  /** 
+ * Chromosome :
+1)----->ds.Ordenacao[]
+2)----->ordena[[-111,118,271,-970], 2]
+ Covered Branches:[1, 2, 3, 5]
+ */
+  @Test public void TestCase1() throws Throwable {
+    Ordenacao clsUTOrdenacao=null;
+      clsUTOrdenacao=new Ordenacao();
+    int[] clsUTOrdenacaoP2P1=new int[]{-111,118,271,-970};
+    int clsUTOrdenacaoP2P2=2;
+      Ordenacao.ordena(clsUTOrdenacaoP2P1,clsUTOrdenacaoP2P2);
+    assertTrue(Arrays.equals(new int[]{-111,118,271,-970},clsUTOrdenacaoP2P1));
+  }
+  /** 
+ * Chromosome :
+1)----->ds.Ordenacao[]
+2)----->ordena[[140,-691,215], 2]
+ Covered Branches:[1, 2, 3, 4]
+ */
+  @Test public void TestCase2() throws Throwable {
+    Ordenacao clsUTOrdenacao=null;
+      clsUTOrdenacao=new Ordenacao();
+    int[] clsUTOrdenacaoP2P1=new int[]{140,-691,215};
+    int clsUTOrdenacaoP2P2=2;
+      Ordenacao.ordena(clsUTOrdenacaoP2P1,clsUTOrdenacaoP2P2);
+  }
+}
