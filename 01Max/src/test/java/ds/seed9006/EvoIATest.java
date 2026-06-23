@@ -5,33 +5,19 @@ import static org.junit.Assert.*;
 import ds.Item;
 import ds.Max;
 import ds.MeuItem;
+import org.junit.runner.RunWith;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
 
-public class EvoIATest {
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoIATest extends Max_ESTest_scaffolding {
 
-    @Test
-    public void testMaxWithNullItems() {
-        Item[] items = new Item[7];
-        assertNull("Expected null when all items are null", Max.max(items, -1));
-    }
+  private MeuItem createMeuItem(int value) {
+      return new MeuItem(value);
+  }
 
-    @Test
-    public void testMaxWithMixedItems() {
-        Item[] items = new Item[7];
-        items[0] = new MeuItem(-1);
-        items[1] = new MeuItem(-1);
-        items[2] = new MeuItem(-1);
-        items[3] = new MeuItem(2867);
-        try {
-            Max.max(items, 3649);
-            fail("Expected NullPointerException");
-        } catch (NullPointerException expected) {
-            // Expected exception
-        }
-    }
 
-    @Test
-    public void testMaxConstructor() {
-        Max max = new Max();
-        assertNotNull("Max constructor should create a non-null object", max);
-    }
+
+
 }

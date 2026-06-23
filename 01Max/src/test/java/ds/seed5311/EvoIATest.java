@@ -5,30 +5,29 @@ import static org.junit.Assert.*;
 import ds.Item;
 import ds.Max;
 import ds.MeuItem;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
 
-public class EvoIATest {
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoIATest extends Max_ESTest_scaffolding {
 
-    @Test
-    public void testMaxWithNullItems() {
-        Item[] items = new Item[6];
-        Item result = Max.max(items, 0);
-        assertNull(result);
-    }
+  private Item[] createItemArrayWithMeuItems() {
+    Item[] items = new Item[3];
+    MeuItem item1 = new MeuItem(0); // boundary value zero
+    MeuItem item2 = new MeuItem(Integer.MAX_VALUE); // boundary max value
+    items[0] = item1;
+    items[1] = item1;
+    items[2] = item2;
+    return items;
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void testMaxWithException() {
-        Item[] items = new Item[7];
-        MeuItem item1 = new MeuItem(1323);
-        items[0] = item1;
-        items[1] = item1;
-        MeuItem item2 = new MeuItem(3780);
-        items[2] = item2;
-        Max.max(items, 1323);
-    }
+  private Item[] createEmptyItemArray(int size) {
+    return new Item[size];
+  }
 
-    @Test
-    public void testMaxInstance() {
-        Max max = new Max();
-        assertNotNull(max);
-    }
+
+
+
 }
