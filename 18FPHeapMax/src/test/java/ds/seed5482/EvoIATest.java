@@ -46,7 +46,13 @@ public class EvoIATest extends FPHeapMax_ESTest_scaffolding {
     @Test(timeout = 4000)
     public void test1() throws Throwable {
         FPHeapMax heap = createHeap(0);
-        expectException(() -> heap.insere((Item) null), Exception.class, "heap cheio");
+        expectException(() -> {
+    try {
+        heap.insere((Item) null);
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+}, Exception.class, "heap cheio");
     }
 
 

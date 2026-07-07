@@ -27,7 +27,6 @@ public class EvoIATest extends Fibonacci_ESTest_scaffolding {
      * Requirement: REQ-FIB-001
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given a valid large input
         int input = 699;
@@ -42,7 +41,6 @@ public class EvoIATest extends Fibonacci_ESTest_scaffolding {
      * Requirement: REQ-FIB-002
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given the Fibonacci class
         // When the constructor is called

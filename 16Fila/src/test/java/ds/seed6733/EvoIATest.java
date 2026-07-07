@@ -2,6 +2,7 @@ package ds.seed6733;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
 import ds.Fila;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;

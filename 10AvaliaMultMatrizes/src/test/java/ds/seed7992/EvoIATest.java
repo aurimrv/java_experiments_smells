@@ -7,7 +7,6 @@
 package ds.seed7992;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.AvaliaMultMatrizes;
 import org.evosuite.runtime.EvoRunner;
@@ -31,7 +30,6 @@ public class EvoIATest extends AvaliaMultMatrizes_ESTest_scaffolding {
      * should not alter the array length and should compute values.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given: an integer array of size 9
         int[] intArray0 = new int[ARRAY_SIZE];
@@ -46,7 +44,6 @@ public class EvoIATest extends AvaliaMultMatrizes_ESTest_scaffolding {
      * Tests REQ-002: AvaliaMultMatrizes default constructor should create a valid non-null instance.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given: no preconditions
         // When: AvaliaMultMatrizes is instantiated

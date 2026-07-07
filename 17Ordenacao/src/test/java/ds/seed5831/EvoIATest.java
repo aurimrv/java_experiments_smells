@@ -2,6 +2,8 @@ package ds.seed5831;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+
 import ds.Item;
 import ds.MeuItem;
 import ds.Ordenacao;

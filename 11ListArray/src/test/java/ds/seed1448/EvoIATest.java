@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
 public class EvoIATest extends Lista_ESTest_scaffolding {
 
-    private Lista createListaWithOneObject() {
+    private Lista createListaWithOneObject() throws Exception {
         Lista lista = new Lista();
         lista.insere(new Object());
         return lista;

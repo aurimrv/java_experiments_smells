@@ -37,7 +37,7 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
         return t;
     }
 
-    private TabelaHash createEmptyTableAfterInsertRemove() {
+    private TabelaHash createEmptyTableAfterInsertRemove() throws Exception {
         TabelaHash t = new TabelaHash();
         t.insere(EMPTY_KEY, EMPTY_VALUE);
         t.retira(EMPTY_KEY);

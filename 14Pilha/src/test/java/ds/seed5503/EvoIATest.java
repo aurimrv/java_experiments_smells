@@ -16,7 +16,7 @@ public class EvoIATest extends Pilha_ESTest_scaffolding {
         return new Pilha();
     }
 
-    private void pushAndPopEmptyString(Pilha pilha) {
+    private void pushAndPopEmptyString(Pilha pilha) throws Exception {
         pilha.empilha("");
         pilha.desempilha();
     }

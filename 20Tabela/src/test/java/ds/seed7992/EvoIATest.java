@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 public class EvoIATest extends Tabela_ESTest_scaffolding {
 
-    private Tabela createTabelaWithItem(int value) {
+    private Tabela createTabelaWithItem(int value) throws Exception {
         Tabela tabela = new Tabela();
         tabela.insere(new MeuItem(value));
         return tabela;

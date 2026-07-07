@@ -6,7 +6,6 @@ package ds.seed6733;
 
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.TabelaHash;
 import org.evosuite.runtime.EvoRunner;
@@ -38,7 +37,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Covers: insert with empty key, then print.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given a hash table with an empty key entry
         TabelaHash tabelaHash0 = createTableWithEmptyEntry();
@@ -54,7 +52,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Covers: insert then remove with same key.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given a hash table with an empty key entry
         TabelaHash tabelaHash0 = createTableWithEmptyEntry();
@@ -70,7 +67,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Covers: duplicate key insert behavior.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2() throws Throwable {
         // Given a hash table with an empty key entry
         TabelaHash tabelaHash0 = createTableWithEmptyEntry();
@@ -87,7 +83,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Covers: search for non-existent key.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3() throws Throwable {
         // Given a hash table with an empty key entry
         TabelaHash tabelaHash0 = createTableWithEmptyEntry();
@@ -102,7 +97,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Covers: remove non-existent key, existing entry unaffected.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4() throws Throwable {
         // Given a hash table with an existing entry
         TabelaHash tabelaHash0 = new TabelaHash();

@@ -63,6 +63,8 @@ public class EvoIATest extends FPHeapMin_ESTest_scaffolding {
             fail("Expecting NullPointerException");
         } catch(NullPointerException e) {
             verifyException("ds.FPHeapMin", e);
+        } catch(Exception ex) {
+            fail("Expecting NullPointerException");
         }
     }
 

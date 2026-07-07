@@ -53,20 +53,20 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
   @Test(timeout = 4000)
   public void test1() throws Throwable {
-    String result = CasamentoExato.bmhs(TEST_STRING_BMHS, 1, TEST_STRING_BMHS, 1);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.bmhs(TEST_STRING_BMHS, 1, TEST_STRING_BMHS, 1);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)
   public void test2() throws Throwable {
-    String result = CasamentoExato.bmh(TEST_STRING_BMH, 1, "Casamento na posicao: ", 1);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.bmh(TEST_STRING_BMH, 1, "Casamento na posicao: ", 1);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)
   public void test3() throws Throwable {
-    String result = CasamentoExato.bmh(TEST_STRING_BMH_ALT, 1, TEST_STRING_BMH_ALT, 1);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.bmh(TEST_STRING_BMH_ALT, 1, TEST_STRING_BMH_ALT, 1);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)
@@ -81,20 +81,20 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
   @Test(timeout = 4000)
   public void test6() throws Throwable {
-    String result = CasamentoExato.shiftAndExato(TEST_STRING_SHIFT, 1, TEST_STRING_SHIFT, 1);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.shiftAndExato(TEST_STRING_SHIFT, 1, TEST_STRING_SHIFT, 1);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)
   public void test7() throws Throwable {
-    String result = CasamentoExato.forcaBruta(TEST_STRING_FORCA1, 1, TEST_STRING_FORCA1, 1);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.forcaBruta(TEST_STRING_FORCA1, 1, TEST_STRING_FORCA1, 1);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)
   public void test8() throws Throwable {
-    String result = CasamentoExato.forcaBruta(TEST_STRING_FORCA2, 1645, TEST_STRING_FORCA3, 1645);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.forcaBruta(TEST_STRING_FORCA2, 1645, TEST_STRING_FORCA3, 1645);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)

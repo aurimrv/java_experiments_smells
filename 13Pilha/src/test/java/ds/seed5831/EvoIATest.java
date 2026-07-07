@@ -23,7 +23,7 @@ public class EvoIATest extends Pilha_ESTest_scaffolding {
         return pilha;
     }
 
-    private Pilha createPilhaWithOneNull() {
+    private Pilha createPilhaWithOneNull() throws Exception {
         Pilha pilha = new Pilha();
         pilha.empilha(null);
         return pilha;

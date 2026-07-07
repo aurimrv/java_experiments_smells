@@ -7,7 +7,6 @@ import ds.MaxMin3;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
-import org.junit.jupiter.api.Tag;
 
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
 public class EvoIATest extends MaxMin3_ESTest_scaffolding {

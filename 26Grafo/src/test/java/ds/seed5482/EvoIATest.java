@@ -2,7 +2,6 @@ package ds.seed5482;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.jupiter.api.Tag;
 import static org.junit.Assert.*;
 import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;

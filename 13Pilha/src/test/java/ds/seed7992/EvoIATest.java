@@ -39,7 +39,14 @@ public class EvoIATest extends Pilha_ESTest_scaffolding {
   @Test(timeout = 4000)
   public void test0() throws Throwable {
     Pilha pilha0 = new Pilha();
-    expectEmptyStackException(() -> pilha0.desempilha());
+    
+    expectEmptyStackException(() -> {
+    try {
+        pilha0.desempilha();
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+});
   }
 
   @Test(timeout = 4000)

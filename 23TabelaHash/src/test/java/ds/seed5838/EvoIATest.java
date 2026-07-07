@@ -7,7 +7,6 @@
 package ds.seed5838;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
 import ds.TabelaHash;
@@ -38,7 +37,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-001
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -55,7 +53,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-002
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -73,7 +70,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-003
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -91,7 +87,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-004
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -110,7 +105,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-005
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -127,7 +121,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-006
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test5() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -151,7 +144,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-007
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test6() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -168,7 +160,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Requirement: REQ-HASH-008
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test7() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();

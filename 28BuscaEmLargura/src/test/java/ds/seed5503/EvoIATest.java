@@ -6,14 +6,11 @@
 package ds.seed5503;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
-
-public interface UnitTest {}
 
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
@@ -30,7 +27,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-01
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);
@@ -47,7 +43,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-02
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_1957);
@@ -67,7 +62,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-03
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);
@@ -87,7 +81,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-04
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_78);
@@ -103,7 +96,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-05
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);
@@ -119,7 +111,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-05
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test5() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);
@@ -139,7 +130,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-02
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test6() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_1957);
@@ -157,7 +147,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-01
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test7() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);
@@ -173,7 +162,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-06
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test8() throws Throwable {
         // Given
         Grafo grafo0 = new Grafo(VERTICES_2450);

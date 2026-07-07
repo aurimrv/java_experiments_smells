@@ -6,14 +6,12 @@ import ds.Fibonacci;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
-import org.junit.jupiter.api.Tag;
 
 /**
  * Improved test class Evo Fibonacci with better naming, assertions, and coverage.
  */
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Tag("unit")
 public class EvoIATest extends Fibonacci_ESTest_scaffolding {
 
     private static final int LARGE_INPUT = 3285;

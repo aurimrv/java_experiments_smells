@@ -42,6 +42,6 @@ public class EvoIATest extends Pilha_ESTest_scaffolding {
         Pilha pilha = new Pilha();
         int size = pilha.tamanho();
         assertEquals("New stack should have size zero", EMPTY_STACK_SIZE, size);
-        assertTrue(pilha.estaVazia());
+        assertTrue(pilha.vazia());
     }
 }

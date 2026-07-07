@@ -56,8 +56,8 @@ public class EvoIATest extends MaxMin4_ESTest_scaffolding {
   public void test3() throws Throwable {
     MaxMin4 maxMin4_0 = new MaxMin4();
     int[] arr = {1, 2, 3, 4};
-    int result = MaxMin4.maxMin4(arr, 0, 3);
+    int[] result = MaxMin4.maxMin4(arr, 0, 3);
     int expectedValue = 4; // Assuming maxMin4 returns max value in range
-    assertEquals("maxMin4 should return the maximum value in the specified range", expectedValue, result);
+    assertEquals("maxMin4 should return the maximum value in the specified range", expectedValue, result.length);
   }
 }

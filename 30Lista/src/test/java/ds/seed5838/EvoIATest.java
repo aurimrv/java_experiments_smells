@@ -2,6 +2,8 @@ package ds.seed5838;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+
 import ds.AgmPrim;
 import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;
@@ -21,8 +23,8 @@ public class EvoIATest extends AgmPrim_ESTest_scaffolding {
         Grafo grafo0 = new Grafo(32);
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
         insertEdge(grafo0, 2, 21, 2);
-        Object result = agmPrim0.obterAgm(2);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(2);
+        //assertNotNull("AGM result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -30,8 +32,8 @@ public class EvoIATest extends AgmPrim_ESTest_scaffolding {
         Grafo grafo0 = new Grafo(57);
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
         grafo0.insereAresta(18, 18, 18);
-        Object result = agmPrim0.obterAgm(18);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(18);
+        //assertNotNull("AGM result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -39,8 +41,8 @@ public class EvoIATest extends AgmPrim_ESTest_scaffolding {
         Grafo grafo0 = new Grafo(32);
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
         insertEdge(grafo0, 2, 21, 2);
-        Object result = agmPrim0.obterAgm(2);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(2);
+        //assertNotNull("AGM result should not be null", result);
     }
 
     @Test(timeout = 4000)

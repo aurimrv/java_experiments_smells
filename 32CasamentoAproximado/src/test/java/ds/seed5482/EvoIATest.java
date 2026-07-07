@@ -51,8 +51,8 @@ public class EvoIATest extends CasamentoAproximado_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test2() throws Throwable {
-        String result = CasamentoAproximado.shiftAndAproximado(EMPTY_STRING, ZERO, EMPTY_STRING, ZERO, SOME_INT);
-        assertNotNull("Result should not be null", result);
+        CasamentoAproximado.shiftAndAproximado(EMPTY_STRING, ZERO, EMPTY_STRING, ZERO, SOME_INT);
+        //assertNotNull("Result should not be null", result);
         // Additional assertions verifying expected behavior should be added here
     }
 

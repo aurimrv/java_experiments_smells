@@ -39,7 +39,7 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test1() throws Throwable {
-        int result = CasamentoExato.bmhs("qoi3I$V", 1, "qoi3I$V", 1);
+       CasamentoExato.bmhs("qoi3I$V", 1, "qoi3I$V", 1);
         // Replace expectedValue with actual expected result
         // assertEquals("Expected result to match", expectedValue, result);
     }
@@ -76,14 +76,14 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test5() throws Throwable {
-        int result = CasamentoExato.shiftAndExato("SX5d", 1, "MK}7bz<", 0);
+        CasamentoExato.shiftAndExato("SX5d", 1, "MK}7bz<", 0);
         // Replace expectedValue with actual expected result
         // assertEquals("Expected result to match", expectedValue, result);
     }
 
     @Test(timeout = 4000)
     public void test6() throws Throwable {
-        int result = CasamentoExato.shiftAndExato("r<sO$C@,U@JL", 1, "r<sO$C@,U@JL", 1);
+        CasamentoExato.shiftAndExato("r<sO$C@,U@JL", 1, "r<sO$C@,U@JL", 1);
         // Replace expectedValue with actual expected result
         // assertEquals("Expected result to match", expectedValue, result);
     }
@@ -100,7 +100,7 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test8() throws Throwable {
-        int result = CasamentoExato.forcaBruta("(I9Z@", 0, "(I9Z@", 0);
+        CasamentoExato.forcaBruta("(I9Z@", 0, "(I9Z@", 0);
         // Replace expectedValue with actual expected result
         // assertEquals("Expected result to match", expectedValue, result);
     }

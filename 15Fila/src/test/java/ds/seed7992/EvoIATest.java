@@ -13,7 +13,7 @@ public class EvoIATest extends Fila_ESTest_scaffolding {
 
     private static final String TEST_STRING = "o)P&]5H9P";
 
-    private Fila createFilaWithOneElement() {
+    private Fila createFilaWithOneElement() throws Exception {
         Fila fila = new Fila();
         fila.enfileira(TEST_STRING);
         return fila;
@@ -46,7 +46,7 @@ public class EvoIATest extends Fila_ESTest_scaffolding {
         fila0.enfileira(TEST_STRING); // typical value
         fila0.imprime();
         assertEquals("Rear index should be 1 after enqueue", 1, fila0.tras);
-        assertEquals(TEST_STRING, fila0.dados[1]); // assuming internal array 'dados' accessible
+        assertEquals(TEST_STRING, fila0.item[1]); // assuming internal array 'dados' accessible
         assertEquals(0, fila0.frente);
     }
 

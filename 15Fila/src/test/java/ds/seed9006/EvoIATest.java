@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
 public class EvoIATest extends Fila_ESTest_scaffolding {
 
-    private Fila createFilaWithOneElement(String element) {
+    private Fila createFilaWithOneElement(String element) throws Exception {
         Fila fila = new Fila();
         fila.enfileira(element);
         return fila;

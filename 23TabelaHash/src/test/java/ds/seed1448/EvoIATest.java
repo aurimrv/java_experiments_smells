@@ -7,7 +7,6 @@
 package ds.seed1448;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.TabelaHash;
 import org.evosuite.runtime.EvoRunner;
@@ -35,7 +34,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-001: inserting and removing an item with an empty key leaves the table empty.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -52,7 +50,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-002: removing an existing item reduces the item count to zero.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -69,7 +66,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-003: inserting an item increases the item count to 1.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -85,7 +81,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-004: removing a non-existing key does not throw an exception.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -101,7 +96,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-005: inserting null value, removing it, then inserting a valid item leaves one item.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -119,7 +113,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-006: inserting with a duplicate key overwrites the existing value.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test5() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -136,7 +129,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-007: multiple inserts with various keys and values work correctly.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test6() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();
@@ -159,7 +151,6 @@ public class EvoIATest extends TabelaHash_ESTest_scaffolding {
      * Tests REQ-HASH-008: imprime works correctly after inserting an item.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test7() throws Throwable {
         // Given
         TabelaHash tabelaHash0 = new TabelaHash();

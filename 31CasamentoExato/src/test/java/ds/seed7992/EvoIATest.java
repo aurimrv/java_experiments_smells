@@ -39,14 +39,14 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test1()  throws Throwable  {
-        String result = CasamentoExato.bmhs("`", 1, "`", 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.bmhs("`", 1, "`", 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test2()  throws Throwable  {
-        String result = CasamentoExato.bmh("C6 {", 4, "C6 {", 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.bmh("C6 {", 4, "C6 {", 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -71,14 +71,14 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test5()  throws Throwable  {
-        String result = CasamentoExato.shiftAndExato("`", 1, "#0Lts%~RZI8t~j`$;", 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.shiftAndExato("`", 1, "#0Lts%~RZI8t~j`$;", 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test6()  throws Throwable  {
-        String result = CasamentoExato.forcaBruta("a", 256, "foqu:$yL6{tu\"9&M", 256);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.forcaBruta("a", 256, "foqu:$yL6{tu\"9&M", 256);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -93,8 +93,8 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test8()  throws Throwable  {
-        String result = CasamentoExato.forcaBruta(null, 0, null, 0);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.forcaBruta(null, 0, null, 0);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)

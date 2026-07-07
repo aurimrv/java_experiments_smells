@@ -8,7 +8,6 @@ package ds.seed6733;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.Identifier;
 import org.evosuite.runtime.EvoRunner;
@@ -41,7 +40,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Tests that valid_s returns false for a special character '}'.
      * Requirement: REQ-IDENTIFIER-003 (character validation)
      */
-    }
 
     /**
      * Tests that validateIdentifier returns true for a single valid letter.

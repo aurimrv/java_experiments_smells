@@ -8,7 +8,6 @@ package ds.seed9006;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.Identifier;
 import org.evosuite.runtime.EvoRunner;
@@ -41,7 +40,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: invalid identifier with special char prefix.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0()  throws Throwable  {
         // Given an identifier starting with a special character
         // When validateIdentifier is called
@@ -55,7 +53,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: character validation with invalid special char.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1()  throws Throwable  {
         // Given a special character '}'
         // When valid_s is called
@@ -69,7 +66,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: happy path with minimal valid identifier.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2()  throws Throwable  {
         // Given a single valid letter identifier
         // When validateIdentifier is called
@@ -83,7 +79,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: invalid identifier with embedded space.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3()  throws Throwable  {
         // Given an identifier with a trailing space
         // When validateIdentifier is called
@@ -97,7 +92,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: invalid identifier with multiple invalid characters.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4()  throws Throwable  {
         // Given an identifier with special characters and spaces
         // When validateIdentifier is called
@@ -111,7 +105,6 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
      * Covers: null boundary case for identifier validation.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test5()  throws Throwable  {
         // Given a null identifier input
         // When validateIdentifier is called

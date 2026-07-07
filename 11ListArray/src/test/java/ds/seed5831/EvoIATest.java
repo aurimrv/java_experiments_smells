@@ -30,7 +30,7 @@ public class EvoIATest extends Lista_ESTest_scaffolding {
         return lista;
     }
 
-    private Lista createListaWithOneItem() {
+    private Lista createListaWithOneItem() throws Exception {
         Lista lista = new Lista();
         lista.insere(lista);
         return lista;

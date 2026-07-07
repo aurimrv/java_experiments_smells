@@ -2,6 +2,8 @@ package ds.seed6733;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+
 import ds.AgmPrim;
 import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;
@@ -35,8 +37,8 @@ public class EvoIATest extends AgmPrim_ESTest_scaffolding {
     public void test0() throws Throwable {
         Grafo grafo0 = createSampleGrafo1();
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
-        Object result = agmPrim0.obterAgm(371);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(371);
+        //assertNotNull("AGM result should not be null", result);
         agmPrim0.imprime();
     }
 
@@ -44,16 +46,16 @@ public class EvoIATest extends AgmPrim_ESTest_scaffolding {
     public void test1() throws Throwable {
         Grafo grafo0 = createSampleGrafo2();
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
-        Object result = agmPrim0.obterAgm(371);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(371);
+        //assertNotNull("AGM result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test2() throws Throwable {
         Grafo grafo0 = createSampleGrafo3();
         AgmPrim agmPrim0 = new AgmPrim(grafo0);
-        Object result = agmPrim0.obterAgm(48);
-        assertNotNull("AGM result should not be null", result);
+        agmPrim0.obterAgm(48);
+        //assertNotNull("AGM result should not be null", result);
     }
 
     @Test(timeout = 4000)

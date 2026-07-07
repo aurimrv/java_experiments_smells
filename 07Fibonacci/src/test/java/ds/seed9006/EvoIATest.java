@@ -26,7 +26,6 @@ public class EvoIATest extends Fibonacci_ESTest_scaffolding {
      * Tests REQ-FIB-001: fibIter should return 1 for input 1.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0()  throws Throwable  {
         // Given
         int input = INPUT_ONE;
@@ -41,7 +40,6 @@ public class EvoIATest extends Fibonacci_ESTest_scaffolding {
      * Tests REQ-FIB-002: Fibonacci class should be instantiable.
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1()  throws Throwable  {
         // Given - no preconditions needed
         // When

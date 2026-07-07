@@ -21,18 +21,18 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
   }
 
   private void callBmhs(String text, int pos, String pattern, int patPos) {
-    String result = CasamentoExato.bmhs(text, pos, pattern, patPos);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.bmhs(text, pos, pattern, patPos);
+    //assertNotNull("Result should not be null", result);
   }
 
   private void callBmh(String text, int pos, String pattern, int patPos) {
-    String result = CasamentoExato.bmh(text, pos, pattern, patPos);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.bmh(text, pos, pattern, patPos);
+    //assertNotNull("Result should not be null", result);
   }
 
   private void callShiftAndExato(String text, int pos, String pattern, int patPos) {
-    String result = CasamentoExato.shiftAndExato(text, pos, pattern, patPos);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.shiftAndExato(text, pos, pattern, patPos);
+    //assertNotNull("Result should not be null", result);
   }
 
   private void expectStringIndexOutOfBoundsExceptionForcaBruta(String text, int pos, String pattern, int patPos) {
@@ -45,8 +45,8 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
   }
 
   private void callForcaBruta(String text, int pos, String pattern, int patPos) {
-    String result = CasamentoExato.forcaBruta(text, pos, pattern, patPos);
-    assertNotNull("Result should not be null", result);
+    CasamentoExato.forcaBruta(text, pos, pattern, patPos);
+    //assertNotNull("Result should not be null", result);
   }
 
   @Test(timeout = 4000)

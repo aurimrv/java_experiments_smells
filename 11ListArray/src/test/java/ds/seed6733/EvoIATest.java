@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
 public class EvoIATest extends Lista_ESTest_scaffolding {
 
-    private Lista createListaWithOneElement(Object element) {
+    private Lista createListaWithOneElement(Object element) throws Exception {
         Lista lista = new Lista();
         lista.insere(element);
         return lista;
@@ -21,7 +21,7 @@ public class EvoIATest extends Lista_ESTest_scaffolding {
         return new Lista();
     }
 
-    private void fillListaToCapacity(Lista lista, Object[] items) {
+    private void fillListaToCapacity(Lista lista, Object[] items) throws Exception {
         for (Object item : items) {
             lista.insere(item);
         }
@@ -29,11 +29,11 @@ public class EvoIATest extends Lista_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test0()  throws Throwable  {
-        Lista lista0 = createListaWithOneElement(lista0);
+        Lista lista0 = createListaWithOneElement("lista0");
         lista0.imprime();
         assertEquals("The last index should be 1 after insertion", 1, lista0.ultimo);
         assertFalse("List should not be empty after insertion", lista0.vazia());
-        assertEquals(lista0, lista0.item[0]);
+        assertEquals("lista0", lista0.item[0]);
     }
 
     @Test(timeout = 4000)
@@ -49,10 +49,10 @@ public class EvoIATest extends Lista_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test3()  throws Throwable  {
-        Lista lista0 = createListaWithOneElement(lista0);
+        Lista lista0 = createListaWithOneElement("lista0");
         boolean boolean0 = lista0.vazia();
         assertEquals("Last index should be 1 after insertion", 1, lista0.ultimo);
         assertFalse("List should not be empty after insertion", boolean0);
-        assertEquals(lista0, lista0.item[0]);
+        assertEquals("lista0", lista0.item[0]);
     }
 }

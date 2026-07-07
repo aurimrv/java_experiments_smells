@@ -26,7 +26,7 @@ public class EvoIATest extends Max_ESTest_scaffolding {
   @Test(timeout = 4000)
   public void test0() throws Throwable {
     Item[] itemArray0 = createMeuItemArray();
-    itemArray0[1].chave = 0;
+    ((MeuItem)itemArray0[1]).chave = 0;
     try {
       Max.max(itemArray0, 0);
       fail("Expecting exception: NullPointerException");

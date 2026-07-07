@@ -13,8 +13,8 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     private static final String TEST_STRING_30PU = "30PU$ ?.0c8mwc<*0u";
     private static final String TEST_PATTERN_GBQ = " gbQGSU%b?_AdovHyLT";
-    private static final String TEST_TEXT_CZ = ""$$_CZ]7w5Q8Rb";
-    private static final String TEST_STRING_OB = "OB  @1;#DiG,`c,D";
+    private static final String TEST_TEXT_CZ = "$$_CZ]7w5Q8Rb";
+    private static final String TEST_STRING_OB = "OB   @1;#DiG,`c,D";
     private static final String TEST_PATTERN_Q = "{q";
     private static final String TEST_STRING_ONC = "OnC0pD99";
     private static final String TEST_PATTERN_DS = "ds.CasamentoExato";
@@ -35,20 +35,20 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test01() throws Throwable {
-        String result = CasamentoExato.bmhs(TEST_STRING_30PU, 1, TEST_STRING_30PU, 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.bmhs(TEST_STRING_30PU, 1, TEST_STRING_30PU, 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test02() throws Throwable {
-        String result = CasamentoExato.bmh(TEST_PATTERN_GBQ, 1, TEST_TEXT_CZ, 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.bmh(TEST_PATTERN_GBQ, 1, TEST_TEXT_CZ, 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test03() throws Throwable {
-        String result = CasamentoExato.bmh(TEST_STRING_OB, 1, TEST_STRING_OB, 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.bmh(TEST_STRING_OB, 1, TEST_STRING_OB, 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -73,14 +73,14 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test06() throws Throwable {
-        String result = CasamentoExato.shiftAndExato(TEST_STRING_ONC, 1, TEST_STRING_ONC, 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.shiftAndExato(TEST_STRING_ONC, 1, TEST_STRING_ONC, 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test07() throws Throwable {
-        String result = CasamentoExato.forcaBruta(TEST_PATTERN_DS, 0, TEST_TEXT_1E, 0);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.forcaBruta(TEST_PATTERN_DS, 0, TEST_TEXT_1E, 0);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
@@ -95,14 +95,14 @@ public class EvoIATest extends CasamentoExato_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test09() throws Throwable {
-        String result = CasamentoExato.forcaBruta(null, 0, TEST_TEXT_QPB, 0);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.forcaBruta(null, 0, TEST_TEXT_QPB, 0);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)
     public void test10() throws Throwable {
-        String result = CasamentoExato.forcaBruta(TEST_PATTERN_TWA, 1, TEST_TEXT_GOV, 1);
-        assertNotNull("Result should not be null", result);
+        CasamentoExato.forcaBruta(TEST_PATTERN_TWA, 1, TEST_TEXT_GOV, 1);
+        //assertNotNull("Result should not be null", result);
     }
 
     @Test(timeout = 4000)

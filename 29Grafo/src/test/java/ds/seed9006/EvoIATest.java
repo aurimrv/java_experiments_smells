@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Category(UnitTest.class)
 public class EvoIATest extends Grafo_ESTest_scaffolding {
 
     private static final int GRAPH_SIZE_SMALL = 240;
@@ -43,7 +42,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-01
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test0() throws Throwable {
         // Given
         Grafo grafo0 = createGrafo(GRAPH_SIZE_SMALL);
@@ -60,7 +58,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-02
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test1() throws Throwable {
         // Given
         Grafo grafo0 = createGrafoWithEdge(GRAPH_SIZE_LARGE, 0, 0, -449);
@@ -79,7 +76,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-03
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test2() throws Throwable {
         // Given
         Grafo grafo0 = createGrafoWithEdge(GRAPH_SIZE_LARGE, 0, 0, -435);
@@ -98,7 +94,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-04
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test3() throws Throwable {
         // Given
         Grafo grafo0 = createGrafo(GRAPH_SIZE_LARGE);
@@ -114,7 +109,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-05
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test4() throws Throwable {
         // Given
         Grafo grafo0 = createGrafo(GRAPH_SIZE_SMALL);
@@ -130,7 +124,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-05
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test5() throws Throwable {
         // Given
         Grafo grafo0 = createGrafo(GRAPH_SIZE_SMALL);
@@ -147,7 +140,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-02
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test6() throws Throwable {
         // Given
         Grafo grafo0 = createGrafoWithEdge(GRAPH_SIZE_LARGE, 0, 0, -449);
@@ -164,7 +156,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-06
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test7() throws Throwable {
         // Given
         Grafo grafo0 = createGrafo(GRAPH_SIZE_MEDIUM);
@@ -180,7 +171,6 @@ public class EvoIATest extends Grafo_ESTest_scaffolding {
      * Requirement: REQ-GRAPH-07
      */
     @Test(timeout = 4000)
-    @Category(UnitTest.class)
     public void test8() throws Throwable {
         // Given
         Grafo grafo0 = createGrafoWithEdge(GRAPH_SIZE_LARGE, 0, 0, -449);

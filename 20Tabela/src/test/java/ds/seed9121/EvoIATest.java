@@ -17,7 +17,7 @@ public class EvoIATest extends Tabela_ESTest_scaffolding {
         return new MeuItem(value);
     }
 
-    private void insertItem(Tabela tabela, MeuItem item) {
+    private void insertItem(Tabela tabela, MeuItem item) throws Exception {
         tabela.insere(item);
     }
 

@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 public class EvoIATest extends Lista_ESTest_scaffolding {
 
-    private Lista createListaWithOneElement(String element) {
+    private Lista createListaWithOneElement(String element) throws Exception {
         Lista lista = new Lista();
         lista.insere(element);
         return lista;
@@ -28,7 +28,7 @@ public class EvoIATest extends Lista_ESTest_scaffolding {
         return lista;
     }
 
-    private Lista createListaWithObject(Object obj) {
+    private Lista createListaWithObject(Object obj) throws Exception {
         Lista lista = new Lista();
         lista.insere(obj);
         return lista;

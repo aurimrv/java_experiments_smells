@@ -8,7 +8,6 @@ package ds.seed5482;
 
 import org.junit.Test;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.Identifier;
 import org.evosuite.runtime.EvoRunner;
@@ -22,7 +21,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Category(UnitTest.class)
 public class EvoIATest extends Identifier_ESTest_scaffolding {
 
     private static final String SPECIAL_CHARS_INPUT = "|}_E`X)";
@@ -129,9 +127,4 @@ public class EvoIATest extends Identifier_ESTest_scaffolding {
         // Then
         assertFalse("validateIdentifier should return false for null input", result);
     }
-
-    /**
-     * Marker interface for unit test categorization.
-     */
-    public interface UnitTest {}
 }
