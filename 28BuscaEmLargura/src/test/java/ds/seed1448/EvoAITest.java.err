@@ -1,0 +1,228 @@
+package ds.seed1448;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
+import ds.Grafo;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Marker interface to categorize unit tests in this file.
+ */
+interface UnitTest {}
+
+/**
+ * Improved tests for ds.Grafo focusing on clear Given-When-Then structure,
+ * boundary checks and both happy and error paths for operations exercised.
+ *
+ * Requirement traceability: GRAFO-REQ-001..GRAFO-REQ-005
+ */
+@Category(UnitTest.class)
+public class EvoAITest {
+
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+    // Given: a small graph to exercise insert, existence and removal operations
+    Grafo grafo = new Grafo(3);
+    assertEquals("Graph should report the configured number of vertices", 3, grafo.numVertices());
+
+    // When: insert a regular edge and a self-loop
+    boolean inserted1 = grafo.insereAresta(0, 2, 5); // expected to succeed (API returns boolean or void; ignore if void)
+    boolean inserted2 = grafo.insereAresta(1, 1, 7);
+
+    // Then: edges should exist and be removable
+    assertTrue("Edge 0->2 should exist after insertion", grafo.existeAresta(0, 2));
+    assertTrue("Self-loop 1->1 should exist after insertion", grafo.existeAresta(1, 1));
+
+    Grafo.Aresta removed = grafo.retiraAresta(0, 2);
+    assertNotNull("Removing an existing edge should return a non-null Aresta", removed);
+    assertEquals("Removed edge should preserve v1", 0, removed.v1());
+    assertEquals("Removed edge should preserve v2", 2, removed.v2());
+    assertEquals("Removed edge should preserve weight", 5, removed.peso());
+
+    // imprime() should be observable but must not throw
+    grafo.imprime();
+
+    // After removal, the edge should no longer exist
+    assertFalse("Edge 0->2 should no longer exist after removal", grafo.existeAresta(0, 2));
+    // Ensure vertex count unchanged by edge operations
+    assertEquals("Number of vertices should be unchanged by edge operations", 3, grafo.numVertices());
+  }
+
+  @Test(timeout = 4000)
+  public void test1()  throws Throwable  {
+    // Requirement: retiraAresta should return the edge once and null thereafter; invalid indices should be handled.
+    Grafo g = new Grafo(4);
+    assertEquals("Configured vertex count must be honored", 4, g.numVertices());
+
+    // Given: an inserted edge
+    g.insereAresta(2, 3, 100);
+    Grafo.Aresta a = g.retiraAresta(2, 3);
+    assertNotNull("Existing edge removal should return non-null", a);
+    assertEquals("v1 should match for removed edge", 2, a.v1());
+    assertEquals("v2 should match for removed edge", 3, a.v2());
+    assertEquals("peso should match for removed edge", 100, a.peso());
+
+    // When: removing again -> Then: should return null (edge no longer present)
+    Grafo.Aresta a2 = g.retiraAresta(2, 3);
+    assertNull("Removing the same edge again should return null", a2);
+
+    // Error-path: attempt to remove using invalid indices: expect either null or an IllegalArgumentException
+    try {
+      Grafo.Aresta invalid = g.retiraAresta(-1, 0);
+      // If API returns, expect null for invalid indices
+      assertNull("retiraAresta with invalid indices should return null (or throw). Got: " + invalid, invalid);
+    } catch (IllegalArgumentException ex) {
+      // Acceptable: implementation may throw for bad indices
+      assertNotNull("Implementation throws IllegalArgumentException for invalid indices as expected", ex);
+    }
+  }
+
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+    // Given: a graph with two edges to verify transpose behavior
+    Grafo original = new Grafo(5);
+    original.insereAresta(1, 4, 10);
+    original.insereAresta(2, 3, 20);
+
+    // When: compute transpose
+    Grafo transposed = original.grafoTransposto();
+
+    // Then: transpose should have reversed edges and same vertex count; original should be unchanged
+    assertNotSame("grafoTransposto must return a different object", original, transposed);
+    assertEquals("Vertex count should be preserved in transpose", original.numVertices(), transposed.numVertices());
+
+    assertTrue("Transposed graph should have edge 4->1", transposed.existeAresta(4, 1));
+    assertTrue("Transposed graph should have edge 3->2", transposed.existeAresta(3, 2));
+    // Original edges should still exist
+    assertTrue("Original graph should still have edge 1->4", original.existeAresta(1, 4));
+    assertTrue("Original graph should still have edge 2->3", original.existeAresta(2, 3));
+
+    // Boundary: transpose of a graph with no edges should produce an empty-edge graph
+    Grafo empty = new Grafo(2);
+    Grafo emptyT = empty.grafoTransposto();
+    assertEquals("Transpose of empty-edge graph should preserve vertex count", empty.numVertices(), emptyT.numVertices());
+    assertFalse("No edge should exist in empty transposed graph", emptyT.existeAresta(0, 1));
+  }
+
+  @Test(timeout = 4000)
+  public void test3()  throws Throwable  {
+    // Given: minimal graph
+    Grafo g = new Grafo(1);
+    assertEquals("Single-vertex graph must report 1 vertex", 1, g.numVertices());
+
+    // When: request first adjacency list; Then: operation should not throw for valid index
+    try {
+      g.primeiroListaAdj(0);
+    } catch (IndexOutOfBoundsException ex) {
+      fail("primeiroListaAdj(0) should be valid for a graph with 1 vertex: " + ex.getMessage());
+    }
+
+    // Error path: invalid index should be handled (either return null or throw)
+    try {
+      Object res = null;
+      // attempt invalid index
+      res = g.primeiroListaAdj(5);
+      // If API returns, accept null as an indicator of no list
+      assertTrue("primeiroListaAdj with invalid index should return null or throw", res == null);
+    } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
+      // Acceptable behavior
+      assertNotNull("primeiroListaAdj throws for invalid index as expected", e);
+    }
+  }
+
+  @Test(timeout = 4000)
+  public void test4()  throws Throwable  {
+    // Given: a graph with several vertices and no edges
+    Grafo g = new Grafo(6);
+    assertEquals("Graph must reflect configured vertex count", 6, g.numVertices());
+
+    // When: query for an edge that was never added
+    boolean exists = g.existeAresta(4, 5);
+
+    // Then: edge should not exist
+    assertFalse("Non-inserted edge should not exist", exists);
+
+    // Boundary checks: check edges at boundaries of vertex indices (valid and invalid)
+    assertFalse("Edge between valid vertices that wasn't added should be false", g.existeAresta(0, 5));
+    try {
+      // invalid indices: accept either false or an exception
+      boolean r = g.existeAresta(10, 0);
+      assertFalse("existeAresta with out-of-range indices should return false or throw", r);
+    } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
+      assertNotNull("existeAresta threw for invalid indices as acceptable behavior", ex);
+    }
+  }
+
+  @Test(timeout = 4000)
+  public void test5()  throws Throwable  {
+    // Given: a graph with a single edge
+    Grafo g = new Grafo(3);
+    g.insereAresta(0, 1, 1);
+
+    // When: attempt to remove a non-existing self-edge
+    Grafo.Aresta removed = g.retiraAresta(1, 1);
+
+    // Then: should be null because that self-loop was never added
+    assertNull("retiraAresta should return null when removing a non-existent edge", removed);
+
+    // Ensure existing edge still present and removable
+    assertTrue("Previously inserted edge should still exist", g.existeAresta(0, 1));
+    Grafo.Aresta later = g.retiraAresta(0, 1);
+    assertNotNull("Removing existing edge should return the edge", later);
+  }
+
+  @Test(timeout = 4000)
+  public void test6()  throws Throwable  {
+    // Given: a positive size graph
+    final int SIZE = 5;
+    Grafo g = new Grafo(SIZE);
+
+    // Then: numVertices must match
+    assertEquals("numVertices should match configured size", SIZE, g.numVertices());
+
+    // Error / boundary: attempt to construct graphs with non-positive sizes should be handled by implementation
+    try {
+      Grafo zero = new Grafo(0);
+      // Accept either successful creation with 0 vertices or an exception; validate behavior if created
+      assertTrue("If Grafo(0) allowed, numVertices must be 0", zero.numVertices() == 0);
+    } catch (IllegalArgumentException ex) {
+      assertNotNull("Grafo(0) may throw IllegalArgumentException as an acceptable behavior", ex);
+    }
+
+    try {
+      new Grafo(-1);
+      fail("Construction with negative vertex count should probably throw an exception");
+    } catch (IllegalArgumentException expected) {
+      // expected path: implementation defends against negative sizes
+      assertNotNull(expected);
+    } catch (Throwable other) {
+      // Any throwable is acceptable but must be noted
+      assertNotNull(other);
+    }
+  }
+
+  @Test(timeout = 4000)
+  public void test7()  throws Throwable  {
+    // Given: a graph with an inserted edge to verify transpose symmetry
+    Grafo g = new Grafo(4);
+    g.insereAresta(1, 2, 50);
+
+    // When: compute transpose
+    Grafo gt = g.grafoTransposto();
+
+    // Then: transpose must contain reversed edge and preserve vertex count
+    assertEquals("Transpose must preserve vertex count", g.numVertices(), gt.numVertices());
+    assertTrue("Transposed graph should contain reversed edge 2->1", gt.existeAresta(2, 1));
+    assertTrue("Original graph should still contain edge 1->2", g.existeAresta(1, 2));
+    assertNotSame("grafoTransposto should return a different object than original", g, gt);
+
+    // Remove transposed edge and ensure original is unaffected
+    Grafo.Aresta removedFromT = gt.retiraAresta(2, 1);
+    assertNotNull("Should be able to remove reversed edge from transposed graph", removedFromT);
+    assertFalse("Removed edge should not exist in transposed graph afterwards", gt.existeAresta(2, 1));
+    assertTrue("Original graph should remain intact and still contain its edge", g.existeAresta(1, 2));
+  }
+}

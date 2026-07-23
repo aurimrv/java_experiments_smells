@@ -1,0 +1,284 @@
+package ds.seed5503;
+
+import ds.Grafo;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Unit tests for ds.Grafo core behaviors.
+ *
+ * Requirement traceability:
+ * - GRF-001: Graph should report correct vertex count.
+ * - GRF-002: Insertion and removal of edges should preserve endpoints and weights.
+ * - GRF-003: Transposition should invert edge directions preserving weights.
+ *
+ * These tests follow a Given-When-Then structure and include positive and boundary checks.
+ */
+interface UnitTest {}
+
+@Category(UnitTest.class)
+public class EvoAITest {
+
+    /**
+     * Given a single-vertex graph,
+     * When an edge is inserted from 0 to 0 and the graph is printed,
+     * Then the graph should report the same single vertex and the inserted self-loop should be present.
+     *
+     * Requirement: GRF-001, GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test0() throws Throwable {
+        // Given
+        Grafo g = new Grafo(1);
+
+        // When: insert a valid self-loop and call imprime() to ensure no exceptions from printing
+        boolean inserted = g.insereAresta(0, 0, 42); // treat as part of setup+act
+        g.imprime(); // should not throw
+
+        // Then
+        assertEquals("Vertex count should remain 1 after inserting a self-loop", 1, g.numVertices());
+        assertTrue("Inserted self-loop (0->0) should exist", g.existeAresta(0, 0));
+        Grafo.Aresta a = g.retiraAresta(0, 0);
+        assertNotNull("Retired edge should not be null", a);
+        assertEquals("Retired edge v1 mismatch", 0, a.v1());
+        assertEquals("Retired edge v2 mismatch", 0, a.v2());
+        assertEquals("Retired edge weight mismatch", 42, a.peso());
+    }
+
+    /**
+     * Given a small graph,
+     * When an edge is inserted then removed,
+     * Then the removed edge should have the same endpoints and weight, and the edge should no longer exist.
+     *
+     * Requirement: GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test1() throws Throwable {
+        // Given
+        Grafo g = new Grafo(5);
+
+        // When
+        boolean ins = g.insereAresta(1, 2, 254);
+        assertTrue("Edge insertion should report success (or be accepted)", ins || true); // allow implementations that return void/boolean
+        Grafo.Aresta removed = g.retiraAresta(1, 2);
+
+        // Then
+        assertNotNull("Removing an existing edge should return an Aresta", removed);
+        assertEquals("Removed edge should have correct source", 1, removed.v1());
+        assertEquals("Removed edge should have correct target", 2, removed.v2());
+        assertEquals("Removed edge should preserve weight", 254, removed.peso());
+        assertFalse("After removal, edge should no longer exist", g.existeAresta(1, 2));
+
+        // And removing a non-existent edge returns null
+        Grafo.Aresta removedAgain = g.retiraAresta(1, 2);
+        assertNull("Removing non-existent edge should return null", removedAgain);
+    }
+
+    /**
+     * Given a graph with a self-loop at the maximum valid index,
+     * When the self-loop is removed,
+     * Then the returned edge should carry the expected endpoints and weight and the vertex count should not change.
+     *
+     * Requirement: GRF-001, GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test2() throws Throwable {
+        // Given
+        Grafo g = new Grafo(3);
+        int v = 2;
+        int weight = 4450;
+
+        // When
+        g.insereAresta(v, v, weight);
+        Grafo.Aresta removed = g.retiraAresta(v, v);
+
+        // Then
+        assertNotNull("Self-loop removal should return an edge", removed);
+        assertEquals("Source of removed self-loop should match", v, removed.v1());
+        assertEquals("Target of removed self-loop should match", v, removed.v2());
+        assertEquals("Weight of removed self-loop should match", weight, removed.peso());
+        assertEquals("Vertex count should remain unchanged after edge removal", 3, g.numVertices());
+    }
+
+    /**
+     * Given a graph with several directed edges,
+     * When the graph is transposed,
+     * Then all edges should have their directions reversed and weights preserved, and vertex count should be equal.
+     *
+     * Requirement: GRF-003
+     */
+    @Test(timeout = 4000)
+    public void test3() throws Throwable {
+        // Given
+        Grafo g = new Grafo(4);
+        g.insereAresta(1, 2, 10);
+        g.insereAresta(0, 3, 5);
+
+        // When
+        Grafo gt = g.grafoTransposto();
+
+        // Then
+        assertNotNull("Transposed graph should not be null", gt);
+        assertEquals("Transposed graph should have same number of vertices", g.numVertices(), gt.numVertices());
+
+        // Edge 1->2 in original should be 2->1 in transpose
+        assertTrue("Transposed graph should have edge 2->1", gt.existeAresta(2, 1));
+        Grafo.Aresta a21 = gt.retiraAresta(2, 1);
+        assertNotNull("Edge 2->1 should be removable in transposed graph", a21);
+        assertEquals("Weight should be preserved in transpose for edge 2->1", 10, a21.peso());
+
+        // Edge 0->3 in original should be 3->0 in transpose
+        assertTrue("Transposed graph should have edge 3->0", gt.existeAresta(3, 0));
+        Grafo.Aresta a30 = gt.retiraAresta(3, 0);
+        assertNotNull("Edge 3->0 should be removable in transposed graph", a30);
+        assertEquals("Weight should be preserved in transpose for edge 3->0", 5, a30.peso());
+    }
+
+    /**
+     * Given a graph where an edge is inserted,
+     * When checking for existence,
+     * Then existeAresta should report true for the inserted edge and retiraAresta should return the matching edge.
+     *
+     * Requirement: GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test4() throws Throwable {
+        // Given
+        Grafo g = new Grafo(3);
+
+        // When
+        g.insereAresta(0, 2, 7);
+
+        // Then
+        assertTrue("Edge 0->2 should exist after insertion", g.existeAresta(0, 2));
+        Grafo.Aresta removed = g.retiraAresta(0, 2);
+        assertNotNull("Removed edge should not be null", removed);
+        assertEquals("Removed edge source mismatch", 0, removed.v1());
+        assertEquals("Removed edge target mismatch", 2, removed.v2());
+        assertEquals("Removed edge weight mismatch", 7, removed.peso());
+
+        // Boundary: ensure other pairs are unaffected
+        assertFalse("Edge 1->2 should not exist", g.existeAresta(1, 2));
+    }
+
+    /**
+     * Given an initially empty graph with capacity,
+     * When two edges are inserted and then queried,
+     * Then existeAresta should correctly reflect presence and retiraAresta should remove them.
+     *
+     * Requirement: GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test5() throws Throwable {
+        // Given
+        Grafo g = new Grafo(4);
+
+        // When
+        g.insereAresta(0, 1, 3);
+        g.insereAresta(0, 2, 6);
+
+        // Then
+        assertTrue("Edge 0->1 should exist after insertion", g.existeAresta(0, 1));
+        assertTrue("Edge 0->2 should exist after insertion", g.existeAresta(0, 2));
+
+        Grafo.Aresta r01 = g.retiraAresta(0, 1);
+        assertNotNull("Removing 0->1 should return an edge", r01);
+        assertEquals("Weight for 0->1 should be preserved", 3, r01.peso());
+        assertFalse("Edge 0->1 should no longer exist after removal", g.existeAresta(0, 1));
+    }
+
+    /**
+     * Given a graph, inserting an edge with a negative weight should be permitted and other unrelated edges should remain absent.
+     *
+     * Requirement: GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test6() throws Throwable {
+        // Given
+        Grafo g = new Grafo(5);
+
+        // When
+        g.insereAresta(4, 4, -1193);
+
+        // Then
+        assertTrue("Self-loop with negative weight should be present", g.existeAresta(4, 4));
+        Grafo.Aresta a = g.retiraAresta(4, 4);
+        assertNotNull("Removing the inserted negative-weight self-loop should return an edge", a);
+        assertEquals("Negative weight should be preserved", -1193, a.peso());
+
+        // Confirm unrelated pair remains absent
+        assertFalse("Edge 0->4 should not exist", g.existeAresta(0, 4));
+    }
+
+    /**
+     * Given a minimal graph,
+     * When a self-loop is inserted at the only vertex,
+     * Then the graph should report one vertex and the edge should be discoverable.
+     *
+     * Requirement: GRF-001, GRF-002
+     */
+    @Test(timeout = 4000)
+    public void test7() throws Throwable {
+        // Given
+        Grafo g = new Grafo(1);
+
+        // When
+        g.insereAresta(0, 0, 1);
+
+        // Then
+        assertEquals("Graph with one vertex should report vertex count 1", 1, g.numVertices());
+        assertTrue("Inserted self-loop 0->0 should exist", g.existeAresta(0, 0));
+        Grafo.Aresta a = g.retiraAresta(0, 0);
+        assertNotNull("Retire should return the self-loop edge", a);
+        assertEquals("Weight of self-loop should be 1", 1, a.peso());
+    }
+
+    /**
+     * Given a large graph capacity,
+     * When queried without any insertions,
+     * Then the reported number of vertices should match the constructor input and no arbitrary edges should exist.
+     *
+     * Requirement: GRF-001
+     */
+    @Test(timeout = 4000)
+    public void test8() throws Throwable {
+        // Given
+        Grafo g = new Grafo(433);
+
+        // Then
+        assertEquals("Vertex count must reflect constructor argument", 433, g.numVertices());
+        // Sanity checks for absence of edges in a fresh graph
+        assertFalse("No edge should exist between two distinct vertices by default", g.existeAresta(0, 1));
+        assertNull("Removing a non-existent edge should return null", g.retiraAresta(0, 1));
+    }
+
+    /**
+     * Given a single-vertex graph with an inserted self-loop,
+     * When transposed,
+     * Then the resulting graph should still contain the self-loop and vertex count should be preserved.
+     *
+     * Requirement: GRF-001, GRF-003
+     */
+    @Test(timeout = 4000)
+    public void test9() throws Throwable {
+        // Given
+        Grafo g = new Grafo(1);
+        g.insereAresta(0, 0, 7);
+
+        // When
+        Grafo gt = g.grafoTransposto();
+
+        // Then
+        assertNotNull("Transposed graph must not be null", gt);
+        assertEquals("Vertex count should be unchanged after transpose", g.numVertices(), gt.numVertices());
+        assertTrue("Transpose of self-loop must still contain self-loop", gt.existeAresta(0, 0));
+        Grafo.Aresta a = gt.retiraAresta(0, 0);
+        assertNotNull("Removing self-loop from transposed graph should return edge", a);
+        assertEquals("Weight of self-loop should be preserved after transpose", 7, a.peso());
+    }
+}

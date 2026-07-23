@@ -1,0 +1,206 @@
+package ds.seed5482;
+
+import ds.Grafo;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Unit tests for Grafo focusing on basic operations and boundary behaviors.
+ * Requirement traceability: REQ-GRAFO-001..010 (example).
+ */
+interface UnitTest {}
+
+public class EvoAITest extends Grafo_ESTest_scaffolding {
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test0()  throws Throwable  {
+    // Given: a large empty graph
+    Grafo grafo0 = new Grafo(4389);
+
+    // When: we request the transpose
+    Grafo transposed = grafo0.grafoTransposto();
+
+    // Then: the transpose should be non-null, have the same number of vertices,
+    // and should not contain any edges for an empty source graph.
+    assertNotNull("Transposed graph should not be null", transposed);
+    assertEquals("Transpose should preserve vertex count", grafo0.numVertices(), transposed.numVertices());
+    // Spot-check that a typical vertex has no self-edge in the transposed graph.
+    // Use existeAresta which should return false for an empty graph.
+    assertFalse("Transposed graph should have no self-edge at vertex 0", transposed.existeAresta(0, 0));
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test1()  throws Throwable  {
+    // Given: a graph with one vertex
+    Grafo grafo0 = new Grafo(1);
+
+    // When: we insert a self-loop and print the graph
+    grafo0.insereAresta(0, 0, -93);
+    grafo0.imprime(); // exercise printing; should not throw
+
+    // Then: the vertex count remains 1 and the edge exists with expected weight
+    assertEquals("Graph should report one vertex", 1, grafo0.numVertices());
+    assertTrue("Inserted self-loop should exist", grafo0.existeAresta(0, 0));
+    Grafo.Aresta a = grafo0.retiraAresta(0, 0);
+    assertNotNull("Retirada da aresta deve retornar a aresta inserida", a);
+    assertEquals("Aresta deve ter v1 igual a 0", 0, a.v1());
+    assertEquals("Aresta deve ter v2 igual a 0", 0, a.v2());
+    assertEquals("Aresta deve preservar o peso inserido", -93, a.peso());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test2()  throws Throwable  {
+    // Given: a large graph where we operate on a typical interior vertex
+    Grafo grafo0 = new Grafo(4389);
+
+    // When: we insert an edge at vertex 1 and then remove it
+    grafo0.insereAresta(1, 1, 1);
+    Grafo.Aresta removed = grafo0.retiraAresta(1, 1);
+
+    // Then: removal should return the same edge and the graph should no longer have that edge
+    assertNotNull("Removed edge should not be null", removed);
+    assertEquals("Removed edge v1 should be 1", 1, removed.v1());
+    assertEquals("Removed edge v2 should be 1", 1, removed.v2());
+    assertEquals("Removed edge weight should be 1", 1, removed.peso());
+    assertFalse("Edge should no longer exist after removal", grafo0.existeAresta(1, 1));
+    assertEquals("Vertex count must remain unchanged", 4389, grafo0.numVertices());
+
+    // And subsequent removals of the same edge should return null
+    assertNull("Removing a non-existing edge should return null", grafo0.retiraAresta(1, 1));
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test3()  throws Throwable  {
+    // Given: a graph with a self-loop
+    Grafo grafo0 = new Grafo(1);
+    grafo0.insereAresta(0, 0, 1);
+
+    // When: we attempt to remove a non-existent edge
+    Grafo.Aresta nonExistent = grafo0.retiraAresta(0, 4344);
+
+    // Then: removal should return null and the original self-loop should still be present
+    assertNull("Removing an edge with an out-of-range target should return null", nonExistent);
+    assertTrue("Original self-loop should still exist", grafo0.existeAresta(0, 0));
+    // Clean up by removing the existing self-loop and verify removal
+    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);
+    assertNotNull("Self-loop should be removable", removed);
+    assertEquals("Removed self-loop weight should be 1", 1, removed.peso());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test4()  throws Throwable  {
+    // Given: a graph with one vertex
+    Grafo grafo0 = new Grafo(1);
+    grafo0.insereAresta(0, 0, -93);
+
+    // When/Then: inserting an edge with a negative vertex index should throw an exception
+    try {
+      grafo0.insereAresta(0, -2922, 3274);
+      fail("Expected IndexOutOfBoundsException when inserting an edge with negative target index");
+    } catch (IndexOutOfBoundsException | ArrayIndexOutOfBoundsException expected) {
+      // expected path: verify exception is from Grafo implementation
+      // No-op: satisfied that invalid input is rejected
+    }
+
+    // Ensure previously valid edge is still present and graph state is consistent
+    assertTrue("Previously inserted valid edge should still exist", grafo0.existeAresta(0, 0));
+    Grafo.Aresta a = grafo0.retiraAresta(0, 0);
+    assertNotNull("Cleanup: removed edge should not be null", a);
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test5()  throws Throwable  {
+    // Given: a large graph
+    final int size = 4592;
+    Grafo grafo0 = new Grafo(size);
+
+    // When: we query adjacency for valid indices (should not throw)
+    grafo0.primeiroListaAdj(0);
+    grafo0.primeiroListaAdj(size - 1);
+
+    // Then: vertex count must be as constructed and operations should not have mutated that count
+    assertEquals("Graph should preserve the declared number of vertices", size, grafo0.numVertices());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test6()  throws Throwable  {
+    // Given: a single-vertex graph
+    Grafo grafo0 = new Grafo(1);
+
+    // When: we insert a self-loop and check its existence
+    grafo0.insereAresta(0, 0, 1);
+    boolean exists = grafo0.existeAresta(0, 0);
+
+    // Then: the edge should exist; removing it should return the correct edge and make it non-existent
+    assertTrue("Inserted self-loop should be reported as existing", exists);
+    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);
+    assertNotNull("Removed edge should not be null", removed);
+    assertEquals("Removed edge weight should match inserted value", 1, removed.peso());
+    assertFalse("Edge should not exist after removal", grafo0.existeAresta(0, 0));
+    assertEquals("Vertex count should remain 1", 1, grafo0.numVertices());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test7()  throws Throwable  {
+    // Given: a graph with a self-loop inserted
+    Grafo grafo0 = new Grafo(1);
+    grafo0.insereAresta(0, 0, 1);
+
+    // When: we query existence of a non-inserted edge
+    boolean existsOther = grafo0.existeAresta(0, 1484);
+
+    // Then: the non-inserted edge should not exist while the inserted self-loop remains
+    assertFalse("Non-inserted edge should not exist", existsOther);
+    assertTrue("Inserted self-loop should still exist", grafo0.existeAresta(0, 0));
+    assertEquals("Vertex count should remain 1", 1, grafo0.numVertices());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test8()  throws Throwable  {
+    // Given: an empty graph with zero vertices
+    Grafo grafo0 = new Grafo(0);
+
+    // Then: the graph reports zero vertices and its transpose is also empty
+    assertEquals("Graph constructed with 0 vertices must report 0", 0, grafo0.numVertices());
+    Grafo transposed = grafo0.grafoTransposto();
+    assertNotNull("Transpose of empty graph should not be null", transposed);
+    assertEquals("Transpose of empty graph should also have 0 vertices", 0, transposed.numVertices());
+  }
+
+  @Test(timeout = 4000)
+  @Category(UnitTest.class)
+  public void test9()  throws Throwable  {
+    // Given: a single-vertex graph with a self-loop
+    Grafo grafo0 = new Grafo(1);
+    grafo0.insereAresta(0, 0, -93);
+
+    // When: we compute its transpose
+    Grafo grafo1 = grafo0.grafoTransposto();
+
+    // Then: both graphs should have the same vertex count and carry the self-loop
+    assertEquals("Original graph must have 1 vertex", 1, grafo0.numVertices());
+    assertEquals("Transposed graph must have 1 vertex", 1, grafo1.numVertices());
+    assertTrue("Original graph should contain the self-loop", grafo0.existeAresta(0, 0));
+    assertTrue("Transposed graph should also contain the self-loop", grafo1.existeAresta(0, 0));
+
+    // And the edge attributes should match expectations after transpose
+    Grafo.Aresta removedOriginal = grafo0.retiraAresta(0, 0);
+    assertNotNull("Should be able to remove the original self-loop", removedOriginal);
+    assertEquals("Weight of removed original self-loop must be preserved", -93, removedOriginal.peso());
+  }
+}

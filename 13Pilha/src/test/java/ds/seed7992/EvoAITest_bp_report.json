@@ -1,0 +1,846 @@
+{
+  "test_class_name": "EvoAITest",
+  "test_methods": [
+    {
+      "test_method_name": "test2",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test performs a loop that repeatedly calls pilha0.empilha(i) until an exception occurs. Decision rules treat multiple 'Act' operations (multiple method calls being tested in one test) as non-compliant. Although these are repeated calls of the same method, the presence of many act operations in a single test violates the single Arrange-Act-Assert atomicity rule.",
+          "original_code": "// When: keep pushing until exception or limit reached\nfor (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    pilha0.empilha(i);\n    pushed++;\n  } catch (Exception e) {",
+          "improved_code": "/* Improved: focus on a single atomic behavior (single push) */\n@Test\npublic void push_singleElement_increasesSizeByOne() throws Throwable {\n  Pilha pilha = new Pilha();\n  int before = pilha.tamanho();\n  pilha.empilha(1);\n  assertEquals(\"Size should increase by 1 after a single push\", before + 1, pilha.tamanho());\n}"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables (pilha0, pushed, threw) and does not use or modify static/instance shared state. No numbered test names or cross-test dependencies are present. Although no @Before/@After methods exist, the absence of shared mutable state means tests are independent.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only an exceptional flow (expecting a full-stack exception) is exercised. There is no separate happy-path test for normal behavior in this class. Decision rules indicate that for each method under test there should be at least one happy-path and one error scenario; with a single test method covering only the error scenario the class is insufficient.",
+          "original_code": "if (!threw) {\n  fail(\"Expected a full-stack exception within \" + MAX_ATTEMPTS + \" pushes (REQ-STACK-003). \" +\n       \"Pushed elements: \" + pushed + \". Current size: \" + pilha0.tamanho());\n}",
+          "improved_code": "@Test\npublic void push_happyPath_increasesSize() throws Throwable {\n  Pilha pilha = new Pilha();\n  // happy path: push few elements and verify size\n  pilha.empilha(1);\n  pilha.empilha(2);\n  assertEquals(\"Size should reflect two pushes\", 2, pilha.tamanho());\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "The test explicitly attempts to push until the stack is full and asserts on the full-stack exception and properties of size after the exception, which targets a boundary condition (stack capacity). The use of MAX_ATTEMPTS as a safety bound and checks on size indicate boundary testing intent.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses a local final constant (MAX_ATTEMPTS) to avoid magic numbers and follows a clear Given-When-Then comment structure. There is no duplicated code within this single-method class. While no helper methods are present, the use of a named constant and clear structure meets modularity expectations for this scope.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "non-compliant",
+          "justification": "The test contains a loop (for) and a try-catch inside it, increasing cyclomatic complexity beyond the recommended simple linear flow. Decision rules mark tests with loops as non-compliant for complexity.",
+          "original_code": "final int MAX_ATTEMPTS = 1024; // safety bound to avoid infinite loops if there is no capacity\nint pushed = 0;\nboolean threw = false;\n\n// When: keep pushing until exception or limit reached\nfor (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    pilha0.empilha(i);",
+          "improved_code": "@Test\npublic void push_smallNumber_noLoop_keepsTestSimple() throws Throwable {\n  Pilha pilha = new Pilha();\n  pilha.empilha(10);\n  assertEquals(\"Size should be 1 after a single push\", 1, pilha.tamanho());\n}"
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "The test contains multiple, specific assertions when the exception is thrown: assertNotNull on the message, assertTrue checking message content for 'cheia'/'full', and assertions on the reported size range. These verify multiple properties and are therefore sufficiently comprehensive.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations and no commented-out test methods. The test is active and runnable (annotated with @Test(timeout = 4000)).",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "Although the fail message contains 'REQ-STACK-003', the decision rules expect annotations or Javadoc referencing requirement IDs for traceability. There is no @Requirement/@Story annotation or Javadoc-tagged requirement ID attached to the test method or class in the shown code, so traceability per the rules is not satisfied.",
+          "original_code": "if (!threw) {\n  // If no exception was thrown within the allowed attempts, fail the test with diagnostic info.\n  fail(\"Expected a full-stack exception within \" + MAX_ATTEMPTS + \" pushes (REQ-STACK-003). \" +\n       \"Pushed elements: \" + pushed + \". Current size: \" + pilha0.tamanho());\n}",
+          "improved_code": "/**\n * Tests REQ-STACK-003: pushing beyond capacity should throw a full-stack exception.\n */\n@Test\npublic void push_untilFull_throwsFullStackException_REQ_STACK_003() throws Throwable {\n  Pilha pilha = new Pilha();\n  // ... test implementation ...\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test uses an execution timeout (@Test(timeout = 4000)), which is an explicit performance-related control. Decision rules mark such presence as compliant for this practice.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test method name is 'test2', which is generic and does not describe the scenario or expected outcome. Decision rules require descriptive naming patterns; the current name fails that criterion.",
+          "original_code": "@Test(timeout = 4000)\npublic void test2() throws Throwable {",
+          "improved_code": "@Test(timeout = 4000)\npublic void push_untilFull_throwsFullStackException() throws Throwable {\n  // Given-When-Then style test name communicates scenario and expected result\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The class contains imports from org.evosuite.runtime and uses EvoAssertions/EvoRunner types, which are strong signals of auto-generated tests. Decision rules identify such generator artifacts as non-compliant because they indicate heavy code-generation patterns.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;",
+          "improved_code": "/* Remove EvoSuite runtime imports and use focused, intention-revealing test code */\nimport static org.junit.Assert.*;\n\n@Test\npublic void push_untilFull_behaviouralTest() throws Throwable {\n  Pilha pilha = new Pilha();\n  // focused behavioral assertions here\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "The test includes Given-When-Then comments at the top of the method and demonstrates a targeted scenario (handling full stack). The presence of this structure indicates thoughtful design and BDD-style intent per the decision rules.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test interacts with Pilha via its public API (empilha, tamanho) and does not use reflection or access private internals. There are no signs of coupling to implementation details.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "Assertions are specific and include descriptive messages (assertNotNull with message, assertTrue with message, assertEquals-style checks). The test prefers specific checks over generic assertTrue without context and supplies messages that aid diagnosis.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The method uses minimal, meaningful Given-When-Then comments and there is no commented-out code. Comments explain intent rather than restating obvious code, aligning with the rule for helpful comments.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use Random, Math.random, System.currentTimeMillis, Thread.sleep, or any external non-deterministic sources. It operates deterministically on a newly created Pilha instance.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "All state created by the test is local (local Pilha instance) and there is no file/database persistence or static state modification. No cleanup is necessary and no side-effects on global state are evident.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful categorization label for selective execution, satisfying the decision rules.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "68.4%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "68.4%"
+    },
+    {
+      "test_method_name": "test0",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "The method tests a single behavior: popping an empty stack. There is one Act (desempilha) guarded by a try/catch and a focused set of assertions (precondition, exception message, and post-state), representing a single Arrange-Act-Assert scenario.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables (Pilha pilha0) and does not rely on shared mutable state or test ordering. No @Before/@After are required given local-only usage.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "The class (single test shown) only exercises the exceptional flow (popping an empty stack). There is no corresponding happy-path test verifying normal push/pop behavior.",
+          "original_code": "try {\n  pilha0.desempilha();\n  fail(\"Expected Exception (REQ-STACK-001): popping an empty stack should throw an exception\");\n} catch (Exception e) {",
+          "improved_code": "@Test(timeout = 4000)\npublic void test0_happyPath() throws Throwable {\n  Pilha p = new Pilha();\n  p.empilha(\"x\");\n  assertEquals(1, p.tamanho());\n  Object o = p.desempilha();\n  assertEquals(\"x\", o);\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "The test explicitly targets the empty-stack boundary (size 0) and verifies behavior when popping at that boundary, which is an important edge case for a stack.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained, with no evident duplicated setup across multiple methods. Given only one method, there is no repetition requiring helper extraction.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "non-compliant",
+          "justification": "The test method is somewhat verbose (multiple assertions and a try/catch) and exceeds the preferred very-small size (<20 lines). It could be simplified (e.g., using expected exception in the @Test annotation) to reduce complexity.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0() throws Throwable {\n  // Given\n  Pilha pilha0 = new Pilha();",
+          "improved_code": "@Test(timeout = 4000, expected = Exception.class)\npublic void test0() throws Throwable {\n  Pilha pilha0 = new Pilha();\n  assertEquals(0, pilha0.tamanho());\n  pilha0.desempilha();\n}"
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "The test contains multiple focused assertions (precondition size, exception message content, and post-state size) rather than a single superficial assert, improving fault detection.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test method is active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "The test includes an explicit requirement identifier in the failure message ('REQ-STACK-001'), providing a traceable link to a requirement.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The @Test annotation includes a timeout (timeout = 4000), which counts as an explicit timing/performance constraint in this unit test, meeting the practice's detection criteria.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test0' is generic and does not describe the scenario or expected behavior, which reduces readability and self-documentation.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0() throws Throwable {",
+          "improved_code": "@Test(timeout = 4000)\npublic void pop_emptyStack_throwsException() throws Throwable {\n  Pilha pilha0 = new Pilha();\n  assertEquals(0, pilha0.tamanho());\n  try {\n    pilha0.desempilha();\n    fail(\"Expected Exception (REQ-STACK-001)\");\n  } catch (Exception e) {\n    assertNotNull(e.getMessage());\n  }\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "There are signs of generated test artifacts (imports from org.evosuite.runtime and the generic test name 'test0'), which indicate heavy use of code generation.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@Test(timeout = 4000)\npublic void test0() throws Throwable {",
+          "improved_code": "@Category(UnitTest.class)\npublic class EvoAITest {\n  @Test\n  public void pop_emptyStack_throwsException() throws Throwable {\n    Pilha pilha0 = new Pilha();\n    assertEquals(0, pilha0.tamanho());\n    try {\n      pilha0.desempilha();\n      fail(\"Expected Exception\");\n    } catch (Exception e) {\n      assertNotNull(e.getMessage());\n    }\n  }\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "The test uses Given/When/Then comments (visible in the method) which indicate a BDD/Given-When-Then design intent and thoughtful test structure.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test exercises public APIs (tamanho, desempilha) without accessing private internals or using reflection; it verifies observable behavior rather than implementation details.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "Assertions are specific and include descriptive failure messages (assertEquals with message, assertNotNull, assertTrue with message), improving diagnosability.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "Comments are minimal and explain structure (Given, Pre-check, When/Then). There is no commented-out code or excessive commentary.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use random values, time-dependent calls, Thread.sleep, or external systems; it should be deterministic given the same environment.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test only uses local variables and does not create persistent resources or modify static/shared state, so it has no observable side effects requiring cleanup.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization for selective execution.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "78.9%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "78.9%"
+    },
+    {
+      "test_method_name": "test1",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test performs two distinct 'Act' operations: pilha0.empilha(value) and pilha0.desempilha(). Decision rule 1: more than one distinct method call being tested -> non-compliant.",
+          "original_code": "Pilha pilha0 = new Pilha();\nString value = \"element-1\";\npilha0.empilha(value);\nassertEquals(\"After pushing one element, size should be 1\", 1, pilha0.tamanho());\nObject popped = pilha0.desempilha();\nassertEquals(value, popped);",
+          "improved_code": "import ds.Pilha;\nimport org.junit.Test;\nimport static org.junit.Assert.*;\npublic class PilhaSplitTests {\n  @Test public void pushIncreasesSize() { Pilha p = new Pilha(); p.empilha(\"element-1\"); assertEquals(1, p.tamanho()); }\n  @Test public void pushThenPopReturnsElement() { Pilha p = new Pilha(); p.empilha(\"element-1\"); assertEquals(\"element-1\", p.desempilha()); }\n}"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "Test uses only local variables and does not rely on shared mutable state or test-order. No @Before/@After required for single-test class; decision rule 4 applies.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path test is present (push then pop). No tests for exceptional flows (no @Test(expected=...) or assertThrows). Decision rule 1: class only tests happy path -> non-compliant.",
+          "original_code": "Pilha pilha0 = new Pilha();\nString value = \"element-1\";\npilha0.empilha(value);\nassertEquals(\"After pushing one element, size should be 1\", 1, pilha0.tamanho());\nObject popped = pilha0.desempilha();\nassertEquals(value, popped);",
+          "improved_code": "import ds.Pilha;\nimport org.junit.Test;\npublic class PilhaExceptionTest {\n  @Test(expected = RuntimeException.class)\n  public void popOnEmptyShouldThrow() {\n    Pilha p = new Pilha();\n    p.desempilha();\n  }\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "The test uses a single typical value (one element). No checks for boundary conditions (empty stack, very large size, empty string, null). Decision rule 3: only typical values used -> non-compliant.",
+          "original_code": "Pilha pilha0 = new Pilha();\nString value = \"element-1\";\npilha0.empilha(value);\nassertEquals(\"After pushing one element, size should be 1\", 1, pilha0.tamanho());",
+          "improved_code": "import ds.Pilha;\nimport org.junit.Test;\nimport static org.junit.Assert.*;\npublic class PilhaBoundaryTests {\n  @Test public void pushEmptyStringIncreasesSize() { Pilha p = new Pilha(); p.empilha(\"\"); assertEquals(1, p.tamanho()); }\n  @Test(expected = RuntimeException.class) public void popFromEmptyThrows() { Pilha p = new Pilha(); p.desempilha(); }\n}"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "non-compliant",
+          "justification": "There are no helper methods or constants to remove duplication. Although there's a single test, the class does not extract reusable setup or constants. Decision rules 1-3: no helper methods or constants -> non-compliant.",
+          "original_code": "Pilha pilha0 = new Pilha();\nString value = \"element-1\";\npilha0.empilha(value);\nObject popped = pilha0.desempilha();\nassertEquals(value, popped);",
+          "improved_code": "import ds.Pilha;\nimport org.junit.Test;\nimport static org.junit.Assert.*;\npublic class PilhaHelperTests {\n  private Pilha createPilhaWith(String v) { Pilha p = new Pilha(); p.empilha(v); return p; }\n  @Test public void testUsingHelper() { Pilha p = createPilhaWith(\"element-1\"); assertEquals(1, p.tamanho()); }\n}"
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is small and linear (no loops or complex conditionals) and under the threshold of 20 lines. Decision rule 3 applies: simple linear flow -> compliant.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "The test contains multiple meaningful assertions: checks size after push, verifies popped value, and checks size after pop (>=2 assertions verifying different properties) -> compliant under decision rule 2.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "No @Ignore/@Disabled annotations or commented-out tests are present. All tests are active and runnable -> compliant under decision rule 3.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "No requirement annotations (@Story, @Requirement) or Javadoc with requirement IDs are present on the test method. Although class-level comments claim traceability, the method lacks explicit traceability metadata -> non-compliant by decision rule 3.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1() throws Throwable {\n    // Given\n    Pilha pilha0 = new Pilha();\n    String value = \"element-1\";\n    ...\n  }",
+          "improved_code": "/** REQ-001: Verify push/pop behavior for a single element */\n@Test(timeout = 4000)\npublic void pushThenPop_returnsElementAndUpdatesSize() throws Throwable {\n  Pilha pilha0 = new Pilha();\n  pilha0.empilha(\"element-1\");\n  assertEquals(1, pilha0.tamanho());\n  assertEquals(\"element-1\", pilha0.desempilha());\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test uses @Test(timeout = 4000), which is an explicit timing-related assertion present in the test class; per decision rule 2 this is compliant.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "Method name 'test1' is generic and does not follow descriptive naming conventions. Decision rule 2: generic name -> non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1() throws Throwable {\n    // Given\n    Pilha pilha0 = new Pilha();\n    String value = \"element-1\";\n    ...\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class PilhaNamedTest {\n  @Test public void pushThenPop_updatesSizeAndReturnsElement() {\n    ds.Pilha p = new ds.Pilha();\n    p.empilha(\"element-1\");\n    assertEquals(1, p.tamanho());\n    assertEquals(\"element-1\", p.desempilha());\n  }\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The class includes EvoSuite-specific imports (org.evosuite.runtime.*) and a generic test name 'test1', which are strong signs of auto-generated tests. Decision rule 1 and 2 indicate heavy generation artifacts -> non-compliant.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n...\n@Test(timeout = 4000)\npublic void test1() throws Throwable { ... }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class PilhaTest {\n  @Test public void pushThenPop_returnsElementAndUpdatesSize() {\n    ds.Pilha p = new ds.Pilha();\n    p.empilha(\"element-1\");\n    assertEquals(1, p.tamanho());\n    assertEquals(\"element-1\", p.desempilha());\n  }\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "The test includes Given-When-Then comments and shows BDD-style structure, indicating thoughtful design. Decision rule 1 applies: Given-When-Then comments -> compliant.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "Test interacts only with the public API of Pilha and does not use reflection or inspect private internals. Decision rule 3 -> compliant.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "Assertions include descriptive messages (e.g., first assertEquals includes a message) and use specific assert methods. Decision rule 1: assertions with messages present -> compliant.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "Given-When-Then comments are present and explain the structure rather than obvious code; there is no commented-out code -> compliant per decision rule 3.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "No use of Random, System.currentTimeMillis, Thread.sleep, or external systems; test uses local state only -> compliant by decision rule 3.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "Test only operates on local Pilha instance and does not persist data or modify static state; no cleanup required -> compliant under decision rule 3.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class) at the class level, indicating categorization per decision rule 1 -> compliant.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "63.2%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "63.2%"
+    },
+    {
+      "test_method_name": "test3",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should focus on a single requirement/behavior. RATIONALE: Single A-A-A block makes root cause clear. EVALUATION CRITERIA: Compliant if exactly one method call/scenario per test. DECISION RULES: 1) Count distinct 'Act' operations: method performs multiple distinct operations (two pushes and two pops) -> >1. 2) Test name not indicating multiple ops. 3) Since there are multiple method calls being exercised in one test, mark non-compliant. VERDICT: non-compliant because the test exercises multiple acts (empilha/desempilha multiple times) rather than isolating a single atomic behavior.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3() throws Throwable {\n    Pilha pilha0 = new Pilha();\n    pilha0.empilha(\"first\");\n    pilha0.empilha(\"second\");\n    pilha0.desempilha();\n    pilha0.desempilha();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void pushIncreasesSize_byOne() {\n    Pilha pilha = new Pilha();\n    pilha.empilha(\"one\");\n    assertEquals(1, pilha.tamanho());\n  }\n\n  @Test(timeout = 4000)\n  public void popReturnsLastPushed_andReducesSize() {\n    Pilha pilha = new Pilha();\n    pilha.empilha(\"first\");\n    pilha.empilha(\"second\");\n    assertEquals(\"second\", pilha.desempilha());\n    assertEquals(1, pilha.tamanho());\n  }"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must be independent. RATIONALE: Allows any-order/parallel execution. EVALUATION CRITERIA: Look for @Before/@After or use of only local variables. DECISION RULES: No @Before/@After present but test uses only local variables and no shared mutable state. VERDICT: compliant because the test uses local variables only and does not rely on shared or static state.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should check both happy path and error scenarios. RATIONALE: Ensures robustness and exception handling. EVALUATION CRITERIA: Compliant if there are at least two test methods covering success and error cases. DECISION RULES: The class has only one test method and it only covers normal flow (push/pop) with no test for exceptions (e.g., pop from empty). Therefore mark non-compliant. VERDICT: non-compliant because no exceptional/error-case test (no assertThrows or expected exceptions).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3() throws Throwable {\n    Pilha pilha0 = new Pilha();\n    // no exception test: only pushes and pops on non-exceptional paths\n    pilha0.empilha(\"first\");\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void popOnEmptyStack_shouldThrowException() {\n    Pilha pilha = new Pilha();\n    try {\n      pilha.desempilha();\n      fail(\"Expected exception when popping from empty stack\");\n    } catch (RuntimeException e) {\n      // expected: adjust exception type to match Pilha implementation\n      assertNotNull(e);\n    }\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test boundary conditions (empty, zero, min/max). RATIONALE: Many bugs at boundaries. EVALUATION CRITERIA: Look for checks of empty state, zero, negative, etc. DECISION RULES: Test asserts initial size is 0 (empty boundary) and also tests behavior after removing all elements. VERDICT: compliant because the test explicitly checks the empty (size 0) boundary and behavior returning to size 0.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be self-contained and avoid duplication. RATIONALE: Improves maintainability. EVALUATION CRITERIA: Look for helper methods/constants or duplicated code across tests. DECISION RULES: There is a single test method and no duplicated code across methods; although no helper methods are present, there is also no repetition to extract. VERDICT: compliant because no duplication exists in this small test class and the test is self-contained.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and low complexity. RATIONALE: Easier to understand and less error-prone. EVALUATION CRITERIA: Look for length >30 lines, loops, nested conditionals. DECISION RULES: The method contains no loops or complex conditionals and is linear in flow; it is not >30 lines. VERDICT: compliant because the test is linear and of modest length with no loops/branches.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Assertions should be comprehensive to detect faults. RATIONALE: Superficial assertions may miss errors. EVALUATION CRITERIA: Count assertions and check whether multiple properties are validated. DECISION RULES: The test contains multiple assertions verifying order (popped values) and size at multiple points. VERDICT: compliant because it asserts multiple properties (LIFO order and size changes) across the scenario.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Avoid ignored/commented-out tests. RATIONALE: Ignored tests hide issues. EVALUATION CRITERIA: Search for @Ignore/@Disabled or commented-out @Test. DECISION RULES: No @Ignore/@Disabled and no commented-out tests are present. VERDICT: compliant as all tests are active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Link tests to requirements. RATIONALE: Easier impact analysis. EVALUATION CRITERIA: Look for requirement IDs in annotations, Javadoc, or comments. DECISION RULES: The assertion message includes 'REQ-STACK-004' and class Javadoc references requirements. VERDICT: compliant because requirement identifier is present in test messages/Javadoc providing traceability.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Performance/security should be explicit. RATIONALE: Non-functional tests must be separate or explicit. EVALUATION CRITERIA: Look for explicit performance constructs like @Test(timeout=...) or security tests. DECISION RULES: The method uses @Test(timeout = 4000), an explicit timing constraint. VERDICT: compliant because a timeout is present indicating a performance constraint test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Test names should describe scenario and expected result. RATIONALE: Descriptive names are self-documenting. EVALUATION CRITERIA: Names matching method_scenario_expected or when_then patterns are compliant. DECISION RULES: The test method name is 'test3', which is generic and does not describe scenario or expectation. VERDICT: non-compliant due to an uninformative method name.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3() throws Throwable {\n    Pilha pilha0 = new Pilha();\n    assertEquals(0, pilha0.tamanho());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void pushTwo_thenPopAll_shouldBehaveAsLIFO_andUpdateSize() {\n    Pilha pilha = new Pilha();\n    assertEquals(0, pilha.tamanho());\n    pilha.empilha(\"first\");\n    pilha.empilha(\"second\");\n    assertEquals(\"second\", pilha.desempilha());\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Generated tests should be minimal. RATIONALE: Verbose generated tests are hard to maintain. EVALUATION CRITERIA: Look for auto-generated comments or repetitive names. DECISION RULES: There are EvoSuite imports present but no explicit auto-generated header comments or repetitive test0/test1 names. Given only a single test and absence of typical generated headers, mark not-applicable. VERDICT: not-applicable because there's no clear evidence of heavy generated boilerplate within the visible test method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should show thoughtful design (Given-When-Then, BDD). RATIONALE: Test-first/design improves coverage. EVALUATION CRITERIA: Look for Given-When-Then comments or BDD naming. DECISION RULES: The method contains explicit Given-When-Then comments. VERDICT: compliant because the test uses a clear Given-When-Then structure indicating designed intent.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should target public behavior, not implementation details. RATIONALE: Behavior-focused tests are less brittle. EVALUATION CRITERIA: Watch for reflection or private field access. DECISION RULES: Test only uses public API (empilha/desempilha/tamanho) and no reflection. VERDICT: compliant because it verifies observable behavior via public methods only.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and informative. RATIONALE: Clear assertions ease debugging. EVALUATION CRITERIA: Prefer assertEquals/assertThat and include messages. DECISION RULES: The test uses assertEquals with descriptive messages in several assertions. VERDICT: compliant because assertions are specific and include descriptive messages.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Comments should explain why, not what. RATIONALE: Avoid excessive or outdated comments. EVALUATION CRITERIA: Look for commented-out code or excessive comments. DECISION RULES: Test uses concise Given-When-Then comments and there is no commented-out code. VERDICT: compliant because comments are minimal and explain the scenario.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: Avoid randomness/time without mocks. EVALUATION CRITERIA: Look for Random(), System.currentTimeMillis(), Thread.sleep(), external deps. DECISION RULES: No random/time/sleep or external dependencies are used; test is deterministic. VERDICT: compliant because it uses fixed inputs and no non-deterministic sources.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should not leave side effects. RATIONALE: Side effects create inter-test coupling. EVALUATION CRITERIA: Look for persisted data or static modifications without cleanup. DECISION RULES: Test uses local stack instance and does not persist or modify global state. VERDICT: compliant because no external resources or shared state are modified.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Use labels/categories for organization. RATIONALE: Enables selective execution. EVALUATION CRITERIA: Look for @Tag/@Category annotations. DECISION RULES: Class is annotated with @Category(UnitTest.class) and UnitTest marker interface exists. VERDICT: compliant because tests are categorized appropriately.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "78.9%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "83.3%"
+    }
+  ],
+  "practices_report": [
+    {
+      "practice_code": "CS-01",
+      "practice_title": "Atomic Specification of Test Cases",
+      "description": "",
+      "compliant_methods": 1,
+      "non_compliant_methods": 3,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "25.0%"
+    },
+    {
+      "practice_code": "CS-02",
+      "practice_title": "Complete Independence of Test Cases",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-03",
+      "practice_title": "Coverage of Normal and Exceptional Flows",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 4,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "0.0%"
+    },
+    {
+      "practice_code": "CS-04",
+      "practice_title": "Boundary Value Analysis",
+      "description": "",
+      "compliant_methods": 3,
+      "non_compliant_methods": 1,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "75.0%"
+    },
+    {
+      "practice_code": "CS-05",
+      "practice_title": "Complete Modularity of Test Cases",
+      "description": "",
+      "compliant_methods": 3,
+      "non_compliant_methods": 1,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "75.0%"
+    },
+    {
+      "practice_code": "CS-06",
+      "practice_title": "Detailed Analysis of Size and Complexity",
+      "description": "",
+      "compliant_methods": 2,
+      "non_compliant_methods": 2,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "50.0%"
+    },
+    {
+      "practice_code": "CS-07",
+      "practice_title": "Complex Design for Fault Detection",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-08",
+      "practice_title": "Complete Maintenance of Test Code",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-09",
+      "practice_title": "Complete Traceability of Test Cases",
+      "description": "",
+      "compliant_methods": 2,
+      "non_compliant_methods": 2,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "50.0%"
+    },
+    {
+      "practice_code": "CS-10",
+      "practice_title": "Rigorous Use of Performance and Security Tests",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-12",
+      "practice_title": "Clear Understanding of Test Cases",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 4,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "0.0%"
+    },
+    {
+      "practice_code": "LS-04",
+      "practice_title": "Small Footprint of Test Code Generation",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
+      "not_applicable_methods": 1,
+      "total_methods": 4,
+      "compliance_score": "0.0%"
+    },
+    {
+      "practice_code": "LS-05",
+      "practice_title": "Complete Prioritization of Test Case Design",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-06",
+      "practice_title": "Responsible Addition of Test Code Maintenance",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-07",
+      "practice_title": "Adequate Use of Test Assertions",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-08",
+      "practice_title": "Responsible Addition of Debugging Comments",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-09",
+      "practice_title": "Deterministic Design of Test Results",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-10",
+      "practice_title": "Complete Avoidance of Test Side Effects",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-11",
+      "practice_title": "Suitable Utilization of Test Labels and Categories",
+      "description": "",
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "100.0%"
+    }
+  ],
+  "overall_compliance_score": "72.4%",
+  "llm_usage": {
+    "model": "openai/gpt-5-mini",
+    "prompt_tokens": 27858,
+    "completion_tokens": 30995,
+    "total_tokens": 58853,
+    "cost": 0.0633673
+  },
+  "normalized_overall_compliance_score": "73.3%"
+}

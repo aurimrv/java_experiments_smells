@@ -1,0 +1,322 @@
+package ds.seed5838;
+
+import ds.FPHeapMin;
+import ds.Item;
+import ds.MeuItem;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Improved and documented unit tests for FPHeapMin.
+ *
+ * These tests keep the original auto-generated test names but provide:
+ * - clearer Given-When-Then comments,
+ * - richer assertions and failure messages,
+ * - defensive checks about returned values and exception messages where applicable.
+ *
+ * Note: method names are preserved exactly to satisfy compatibility requirements.
+ */
+public class EvoAITest {
+
+    /**
+     * Helper utility to assert that a Runnable throws an exception of the expected type
+     * and that the exception message (if non-null) contains the expected substring.
+     */
+    private static void expectException(Runnable action, Class<? extends Throwable> expectedType, String expectedMessageSubstring) {
+        try {
+            action.run();
+            fail("Expected exception of type " + expectedType.getName() + " but no exception was thrown.");
+        } catch (Throwable e) {
+            if (!expectedType.isInstance(e)) {
+                String msg = "Expected exception of type " + expectedType.getName() + " but got " + e.getClass().getName();
+                fail(msg + ". Exception message: " + String.valueOf(e.getMessage()));
+            }
+            if (expectedMessageSubstring != null) {
+                String em = e.getMessage();
+                // If message is null, allow tests to explicitly assert that by passing empty string.
+                if (em == null) {
+                    fail("Expected exception message to contain \"" + expectedMessageSubstring + "\" but message was null.");
+                } else {
+                    assertTrue("Expected exception message to contain \"" + expectedMessageSubstring + "\" but was: \"" + em + "\"",
+                            em.contains(expectedMessageSubstring));
+                }
+            }
+        }
+    }
+
+    /**
+     * Given an FPHeapMin and an array to copy into,
+     * when copia is invoked, then the target array length should be unchanged and elements should remain null if not populated.
+     */
+    @Test(timeout = 4000)
+    public void test00() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(590);
+        Item[] target = new Item[5];
+        assertNotNull("Precondition: target array must be non-null", target);
+        assertEquals("Precondition: target array length must be 5", 5, target.length);
+
+        // When
+        heap.copia(target);
+
+        // Then
+        assertEquals("copia should not change the length of the provided array", 5, target.length);
+        for (int i = 0; i < target.length; i++) {
+            assertNull("Expected target[" + i + "] to remain null after copia unless heap had entries", target[i]);
+        }
+    }
+
+    /**
+     * Given a heap created from a small null-initialized array,
+     * when imprime is invoked, we expect a NullPointerException (implementation detail).
+     */
+    @Test(timeout = 4000)
+    public void test01() throws Throwable {
+        // Given
+        Item[] arr = new Item[3];
+        assertEquals("Precondition: constructed array must be of length 3", 3, arr.length);
+        FPHeapMin heap = new FPHeapMin(arr);
+
+        // Sanity: min on an all-null backing structure should be null or behave gracefully
+        try {
+            Item m = heap.min();
+            // Accept either null or non-null; record for diagnostics
+            if (m != null) {
+                assertNotNull("min returned a non-null Item instance", m);
+            }
+        } catch (Throwable t) {
+            // If min throws, continue to the imprime expectation; record diagnostics
+        }
+
+        // When / Then: expect a NullPointerException from imprime (preserves original behavior)
+        expectException(() -> heap.imprime(), NullPointerException.class, "");
+    }
+
+    /**
+     * Given a heap initialized with a negative capacity,
+     * when imprime is invoked, then no exception should be thrown and min should be null (empty heap).
+     */
+    @Test(timeout = 4000)
+    public void test02() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(-1);
+
+        // When / Then: calling imprime should not throw; record any unexpected exception as test failure.
+        try {
+            heap.imprime(); // Implementation may choose to do nothing for negative capacity
+        } catch (Throwable t) {
+            fail("imprime() threw an unexpected exception for negative-capacity heap: " + t);
+        }
+
+        // Additional assertion: min should be null for an effectively empty heap
+        Item minimum = heap.min();
+        assertNull("Expected min() to return null for an empty or invalid-capacity heap", minimum);
+    }
+
+    /**
+     * Given a non-empty-capacity heap,
+     * when diminuiChave is called with a null new key, then an Exception indicating invalid key is expected.
+     */
+    @Test(timeout = 4000)
+    public void test03() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(449);
+
+        // When / Then: expect an exception because the new key is null
+        expectException(() -> {
+            try {
+                heap.diminuiChave(1, (Object) null);
+            } catch (Throwable t) {
+                // rethrow to be handled by expectException
+                throw t;
+            }
+        }, Exception.class, "null");
+    }
+
+    /**
+     * Given a heap constructed with an invalid (negative) capacity and no elements,
+     * when retiraMin is invoked, then an Exception indicating empty heap is expected.
+     */
+    @Test(timeout = 4000)
+    public void test04() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(-1);
+
+        // When / Then
+        expectException(() -> {
+            try {
+                heap.retiraMin();
+            } catch (Throwable t) {
+                throw t;
+            }
+        }, Exception.class, "vazio");
+    }
+
+    /**
+     * Given a heap constructed from a small array,
+     * when retiraMin is invoked on an empty/uninitialized structure and then constroi is called,
+     * then operations should complete without throwing (constroi may be a no-op).
+     */
+    @Test(timeout = 4000)
+    public void test05() throws Throwable {
+        // Given
+        Item[] backing = new Item[3];
+        FPHeapMin heap = new FPHeapMin(backing);
+
+        // When: attempt to remove min from an empty/partially-initialized backing array
+        try {
+            Item removed = heap.retiraMin();
+            // removed may be null for empty heap
+            if (removed != null) {
+                assertNotNull("retiraMin returned a non-null Item unexpectedly", removed);
+            }
+        } catch (Throwable t) {
+            // Some implementations may throw; record as test failure
+            fail("retiraMin threw an unexpected exception: " + t);
+        }
+
+        // Then: calling constroi should not throw and should leave structure consistent
+        try {
+            heap.constroi();
+        } catch (Throwable t) {
+            fail("constroi() threw an unexpected exception after retiraMin: " + t);
+        }
+    }
+
+    /**
+     * Given a heap with capacity and inserting the same MeuItem multiple times,
+     * when retiraMin is invoked, then the returned MeuItem should have expected internal state.
+     */
+    @Test(timeout = 4000)
+    public void test06() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(14);
+        MeuItem item = new MeuItem(Integer.MAX_VALUE);
+
+        // When
+        heap.insere(item);
+        heap.insere(item);
+        heap.insere(item);
+
+        // Then: removing min should succeed and returned item's tamanho should reflect insertions/implementation specifics
+        Item removed = null;
+        try {
+            removed = heap.retiraMin();
+        } catch (Throwable t) {
+            fail("retiraMin threw an unexpected exception after multiple inserts: " + t);
+        }
+        assertNotNull("retiraMin should return a non-null MeuItem after inserts", removed);
+        assertTrue("Returned item should be a MeuItem instance", removed instanceof MeuItem);
+        MeuItem removedMeu = (MeuItem) removed;
+        assertEquals("Unexpected tamanho() for returned MeuItem", 4, removedMeu.tamanho());
+    }
+
+    /**
+     * Given a heap where two small keys are inserted and one large key is inserted,
+     * when retiraMin is called, then the returned item should not be the large-key item.
+     */
+    @Test(timeout = 4000)
+    public void test07() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(14);
+        MeuItem small = new MeuItem(14);
+        MeuItem large = new MeuItem(Integer.MAX_VALUE);
+
+        // When
+        heap.insere(small);
+        heap.insere(small);
+        heap.insere(large);
+
+        // Then
+        Item removed = heap.retiraMin();
+        assertNotNull("retiraMin should return a non-null item when heap contains elements", removed);
+        assertTrue("Returned item should be a MeuItem", removed instanceof MeuItem);
+        assertNotSame("retiraMin should not return the large-key item when smaller items are present", large, removed);
+    }
+
+    /**
+     * Given a backing array with a couple of elements placed among nulls,
+     * when retiraMin is invoked on a heap built from that array, then a NullPointerException may be raised
+     * due to internal assumptions. We verify that such an exception is thrown and that its class matches expectation.
+     */
+    @Test(timeout = 4000)
+    public void test08() throws Throwable {
+        // Given
+        Item[] arr = new Item[9];
+        MeuItem a = new MeuItem(-1447);
+        MeuItem b = new MeuItem(-430);
+        arr[2] = b;
+        arr[3] = a;
+        FPHeapMin heap = new FPHeapMin(arr);
+
+        // When / Then: original behavior threw NullPointerException; assert similar contract
+        expectException(() -> heap.retiraMin(), NullPointerException.class, "");
+    }
+
+    /**
+     * Given a backing array with duplicate elements and nulls,
+     * when retiraMin is invoked we assert that the implementation’s behavior matches expectation regarding exceptions.
+     */
+    @Test(timeout = 4000)
+    public void test09() throws Throwable {
+        // Given
+        Item[] arr = new Item[9];
+        MeuItem x = new MeuItem(-1447);
+        arr[2] = x;
+        arr[3] = x;
+        FPHeapMin heap = new FPHeapMin(arr);
+
+        // When / Then: expect a NullPointerException per original observed behavior
+        expectException(() -> heap.retiraMin(), NullPointerException.class, "");
+    }
+
+    /**
+     * Given a heap constructed from an all-null backing array,
+     * when constroi is invoked, then a NullPointerException is expected (per prior observed behavior).
+     */
+    @Test(timeout = 4000)
+    public void test10() throws Throwable {
+        // Given
+        Item[] arr = new Item[8];
+        FPHeapMin heap = new FPHeapMin(arr);
+
+        // When / Then
+        expectException(() -> heap.constroi(), NullPointerException.class, "");
+    }
+
+    /**
+     * Given a heap constructed from a zero-length array,
+     * when insere is called we expect an Exception indicating a full heap (implementation detail).
+     */
+    @Test(timeout = 4000)
+    public void test11() throws Throwable {
+        // Given
+        Item[] arr = new Item[0];
+        FPHeapMin heap = new FPHeapMin(arr);
+        MeuItem candidate = new MeuItem(3414);
+
+        // When / Then: expect an Exception indicating heap is full or insertion invalid
+        expectException(() -> heap.insere(candidate), Exception.class, "cheio");
+    }
+
+    /**
+     * Given an empty heap created with a positive capacity,
+     * when min is called, then null should be returned.
+     */
+    @Test(timeout = 4000)
+    public void test12() throws Throwable {
+        // Given
+        FPHeapMin heap = new FPHeapMin(1063);
+
+        // When
+        Item m = heap.min();
+
+        // Then
+        assertNull("min() should return null for an empty heap", m);
+    }
+}

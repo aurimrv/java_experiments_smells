@@ -1,0 +1,169 @@
+package ds.seed7992;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import static org.junit.Assert.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Ordenacao;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Marker interface to allow categorization of tests.
+ */
+interface UnitTest {}
+
+/**
+ * Improved tests for Ordenacao.
+ *
+ * Notes:
+ * - Tests preserve original method names (test0, test1, test2) as required.
+ * - Each test follows a Given-When-Then structure in comments and performs additional
+ *   meaningful assertions (lengths, sorted order, multiset equality, and exception handling).
+ * - Tests are defensive and include descriptive failure messages for easier diagnosis.
+ */
+@Category(UnitTest.class)
+public class EvoAITest {
+
+    private static int[] copyOf(int[] src) {
+        return (src == null) ? null : Arrays.copyOf(src, src.length);
+    }
+
+    private static boolean isNonDecreasing(int[] a) {
+        if (a == null || a.length < 2) return true;
+        for (int i = 1; i < a.length; i++) {
+            if (a[i] < a[i - 1]) return false;
+        }
+        return true;
+    }
+
+    private static boolean sameMultiset(int[] a, int[] b) {
+        if (a == null || b == null) return a == b;
+        if (a.length != b.length) return false;
+        Map<Integer, Integer> counts = new HashMap<>();
+        for (int v : a) counts.put(v, counts.getOrDefault(v, 0) + 1);
+        for (int v : b) {
+            Integer c = counts.get(v);
+            if (c == null || c == 0) return false;
+            counts.put(v, c - 1);
+        }
+        for (Integer c : counts.values()) {
+            if (c != 0) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Given: a small array and an out-of-range index.
+     * When:  Ordenacao.ordena is invoked with an index far beyond the array bounds.
+     * Then:  An ArrayIndexOutOfBoundsException must be thrown. Also verify a valid index path
+     *        for the same array does not throw and results in a non-decreasing array.
+     */
+    @Test(timeout = 4000)
+    public void test0() throws Throwable {
+        // Given
+        int[] intArray0 = new int[2];
+        intArray0[0] = 1348;
+        intArray0[1] = -1;
+
+        // When / Then: calling with a very large index should throw ArrayIndexOutOfBoundsException.
+        try {
+            Ordenacao.ordena(intArray0, 1348);
+            fail("Expected ArrayIndexOutOfBoundsException when calling ordena with index 1348 on array of length 2");
+        } catch (ArrayIndexOutOfBoundsException expected) {
+            // Success: exception thrown as expected; include a lightweight check that exception indeed indicates an index issue.
+            assertTrue("Expected an ArrayIndexOutOfBoundsException for invalid index access", expected.getClass() == ArrayIndexOutOfBoundsException.class);
+        }
+
+        // Additional sanity check: using a valid index should not throw and should produce a non-decreasing array.
+        int[] validArray = new int[] { 5, 2 };
+        int[] before = copyOf(validArray);
+        try {
+            Ordenacao.ordena(validArray, 1); // valid index (last element)
+        } catch (Exception e) {
+            fail("Unexpected exception when calling ordena with a valid index: " + e);
+        }
+        assertEquals("Length should remain unchanged after sorting", before.length, validArray.length);
+        assertTrue("Resulting array must be non-decreasing after sorting", isNonDecreasing(validArray));
+        assertTrue("Resulting array must contain the same elements as before", sameMultiset(before, validArray));
+    }
+
+    /**
+     * Given: typical, zero-filled and mixed arrays.
+     * When:  Ordenacao.ordena is applied using several indices (including boundary indices).
+     * Then:  The arrays should be non-decreasing and maintain the same multiset of elements.
+     */
+    @Test(timeout = 4000)
+    public void test1() throws Throwable {
+        // Given: a zero-filled array (common edge case)
+        final int LEN = 10;
+        int[] zeros = new int[LEN]; // all zeros
+
+        // When
+        Ordenacao.ordena(zeros, 3);
+
+        // Then
+        assertNotNull("Array must not be null after sorting", zeros);
+        assertEquals("Array length should remain unchanged after sorting", LEN, zeros.length);
+        assertTrue("Zero-filled array should remain non-decreasing after sorting", isNonDecreasing(zeros));
+        // Verify multiset equality with expected (which is also all zeros)
+        int[] expectedZeros = new int[LEN];
+        assertTrue("Zero-filled array must contain the same elements after sorting", sameMultiset(expectedZeros, zeros));
+
+        // Given: a mixed array to test typical sorting behavior and boundary indices
+        int[] mixed = new int[] { 5, 3, 8, 1, 4, 9, 0, 2, 7, 6 };
+        int[] originalMixed = copyOf(mixed);
+
+        // Test several representative indices: first, middle, last
+        int[] indicesToTest = new int[] { 0, 3, mixed.length - 1 };
+        for (int idx : indicesToTest) {
+            int[] working = copyOf(originalMixed);
+            // When
+            Ordenacao.ordena(working, idx);
+
+            // Then
+            assertEquals("Length should remain the same after sorting (index " + idx + ")", originalMixed.length, working.length);
+            assertTrue("Array must be non-decreasing after sorting (index " + idx + ")", isNonDecreasing(working));
+
+            // Verify element multiset matches Java's Arrays.sort result to ensure no elements were lost/duplicated.
+            int[] javaSorted = copyOf(originalMixed);
+            Arrays.sort(javaSorted);
+            assertTrue("Multiset of elements must be preserved after sorting (index " + idx + ")", sameMultiset(javaSorted, working));
+            // For stronger validation, also assert final arrays equal expected Java sorted order
+            assertArrayEquals("Sorted result should match Java's Arrays.sort (index " + idx + ")", javaSorted, working);
+        }
+    }
+
+    /**
+     * Given: creation of an Ordenacao instance.
+     * When:  the default constructor is invoked.
+     * Then:  the instance should be non-null and usable; also verify the static sorting method works when invoked
+     *        via the instance reference (static access via instance is permitted in Java).
+     */
+    @Test(timeout = 4000)
+    public void test2() throws Throwable {
+        // Given / When
+        Ordenacao ordenacao0 = new Ordenacao();
+
+        // Then
+        assertNotNull("Constructor should return a non-null instance", ordenacao0);
+
+        // Sanity check: call sorting via the instance reference with a small array and verify outcome.
+        int[] sample = new int[] { 4, 1, 3, 2 };
+        int[] before = copyOf(sample);
+        // Call static method through the instance reference (legal but discouraged) to exercise instance usage.
+        ordenacao0.ordena(sample, 2);
+
+        assertEquals("Length must remain unchanged after sorting", before.length, sample.length);
+        assertTrue("Array must be non-decreasing after sorting", isNonDecreasing(sample));
+        assertTrue("Array must contain the same multiset of elements after sorting", sameMultiset(before, sample));
+        // Compare to Java's Arrays.sort for deterministic expected order
+        int[] javaSorted = copyOf(before);
+        Arrays.sort(javaSorted);
+        assertArrayEquals("Sorted result should match Java's Arrays.sort", javaSorted, sample);
+    }
+}

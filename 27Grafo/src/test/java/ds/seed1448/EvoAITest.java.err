@@ -1,0 +1,265 @@
+package ds.seed1448;
+
+import ds.Grafo;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Unit tests for Grafo class.
+ *
+ * Requirement traceability:
+ * - REQ-DS-001: Graph must report number of vertices correctly.
+ * - REQ-DS-002: Inserted edges must be discoverable via existeAresta and removable via retiraAresta.
+ * - REQ-DS-003: grafoTransposto must produce a graph with reversed edges.
+ *
+ * These tests aim to cover both typical and some boundary/error-related behaviors.
+ */
+interface UnitTest {}
+
+@Category(UnitTest.class)
+public class EvoAITest {
+
+  /**
+   * Given a graph with N vertices, when we insert an edge and print the graph,
+   * then the number of vertices must remain equal to N and the inserted edge must be present
+   * and removable. Also removing the same edge again should yield null.
+   */
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+    // Given
+    final int N = 2581;
+    Grafo grafo0 = new Grafo(N);
+
+    // When: insert an edge and call imprime() to ensure no exceptions during printing
+    final int v1 = 1315;
+    final int v2 = 1960;
+    final int peso = 2581;
+    grafo0.insereAresta(v1, v2, peso);
+    // imprime() should not throw
+    grafo0.imprime();
+
+    // Then: number of vertices unchanged
+    assertEquals("Number of vertices should remain equal to constructor argument", N, grafo0.numVertices());
+
+    // And: the inserted edge must exist
+    assertTrue("Inserted edge should be reported as existing", grafo0.existeAresta(v1, v2));
+
+    // And: retiraAresta should return a non-null Aresta with the same attributes
+    Grafo.Aresta removed = grafo0.retiraAresta(v1, v2);
+    assertNotNull("retiraAresta should return the removed edge for an existing edge", removed);
+    assertEquals("v1 of removed edge must match", v1, removed.v1());
+    assertEquals("v2 of removed edge must match", v2, removed.v2());
+    assertEquals("peso of removed edge must match", peso, removed.peso());
+
+    // And: removing again should return null
+    Grafo.Aresta removedAgain = grafo0.retiraAresta(v1, v2);
+    assertNull("Removing the same edge twice should return null the second time", removedAgain);
+  }
+
+  /**
+   * Given a graph, when inserting an edge then removing it,
+   * then the removed edge should match the inserted values. Also verify behavior when removing a non-existent edge.
+   */
+  @Test(timeout = 4000)
+  public void test1()  throws Throwable  {
+    // Given
+    final int N = 2585;
+    final int a = 1315;
+    final int b = 1960;
+    final int w = 2585;
+    Grafo grafo0 = new Grafo(N);
+
+    // When: insert an edge (a->b) and then remove it
+    grafo0.insereAresta(a, b, w);
+    Grafo.Aresta removed = grafo0.retiraAresta(a, b);
+
+    // Then: removed edge must not be null and its fields must match the inserted values
+    assertNotNull("retiraAresta should return the Aresta object for an existing edge", removed);
+    assertEquals("Removed edge v1 should equal inserted v1", a, removed.v1());
+    assertEquals("Removed edge v2 should equal inserted v2", b, removed.v2());
+    assertEquals("Removed edge peso should equal inserted peso", w, removed.peso());
+    assertEquals("Number of vertices must remain unchanged after insert/remove", N, grafo0.numVertices());
+
+    // And: removing a non-existent edge returns null
+    Grafo.Aresta notExists = grafo0.retiraAresta(a, a); // self-edge not inserted
+    assertNull("retiraAresta should return null for a non-existent edge", notExists);
+  }
+
+  /**
+   * Given a graph with two edges including a self-loop, when obtaining the transpose,
+   * then the transposed graph must be a distinct instance and must contain reversed edges.
+   */
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+    // Given
+    final int N = 2585;
+    final int v = 1315;
+    final int self = 1315;
+    final int other = 1947;
+    final int w1 = 1947;
+    final int w2 = 2585;
+    Grafo grafo0 = new Grafo(N);
+
+    // When: insert a self-loop and another edge, then compute transpose
+    grafo0.insereAresta(v, self, w1); // self-loop
+    grafo0.insereAresta(v, other, w2);
+    Grafo grafoT = grafo0.grafoTransposto();
+
+    // Then: transpose is a different object and has same vertex count
+    assertNotSame("grafoTransposto should return a different Grafo instance", grafoT, grafo0);
+    assertEquals("Transposed graph should preserve number of vertices", grafo0.numVertices(), grafoT.numVertices());
+
+    // And: for each inserted non-self edge, the transposed graph should have reversed edge
+    assertTrue("Original edge should exist", grafo0.existeAresta(v, other));
+    assertTrue("Transposed graph should contain the reversed edge", grafoT.existeAresta(other, v));
+
+    // Self-loop should still exist in transpose (self-loop reversed is itself)
+    assertTrue("Self-loop should exist in original graph", grafo0.existeAresta(self, self));
+    assertTrue("Self-loop should exist in transposed graph", grafoT.existeAresta(self, self));
+  }
+
+  /**
+   * Given a graph with 1 vertex, when querying the first adjacency,
+   * then the method should run without exception and return a sentinel indicating no adjacency (-1).
+   */
+  @Test(timeout = 4000)
+  public void test3()  throws Throwable  {
+    // Given
+    final int N = 1;
+    Grafo grafo0 = new Grafo(N);
+
+    // When: call primeiroListaAdj on the only valid index
+    int first = grafo0.primeiroListaAdj(0);
+
+    // Then: there are no edges, so many implementations return -1; accept and assert that the returned value indicates "no adjacency".
+    // We assert the common sentinel -1. If the implementation chooses another sentinel, this will surface and should be adjusted.
+    assertEquals("Expected no adjacency for isolated vertex", -1, first);
+
+    // Additionally: number of vertices must match constructor
+    assertEquals("Number of vertices must equal constructor parameter", N, grafo0.numVertices());
+  }
+
+  /**
+   * Given a graph, verify existeAresta returns false for edges that were never inserted
+   * and that invalid indices produce a clear exception.
+   */
+  @Test(timeout = 4000)
+  public void test4()  throws Throwable  {
+    // Given
+    final int N = 2585;
+    Grafo grafo0 = new Grafo(N);
+
+    // When/Then: a typical non-inserted edge should not exist
+    assertFalse("Edge that was never inserted should not exist", grafo0.existeAresta(1947, 2006));
+    assertEquals("Number of vertices unchanged", N, grafo0.numVertices());
+
+    // Boundary checks: query with a valid boundary index (0) - should be safe and return false for non-existing edge
+    assertFalse("No edge should exist from 0 to 0 in an empty graph", grafo0.existeAresta(0, 0));
+
+    // Invalid indices: expect either IndexOutOfBoundsException or IllegalArgumentException
+    try {
+      grafo0.existeAresta(-1, 0);
+      fail("Expected an exception when querying existeAresta with negative vertex index");
+    } catch (IndexOutOfBoundsException | IllegalArgumentException expected) {
+      // ok
+    } catch (Throwable t) {
+      fail("Unexpected exception type for negative index: " + t);
+    }
+
+    try {
+      grafo0.existeAresta(N, 0); // out-of-range
+      fail("Expected an exception when querying existeAresta with out-of-range vertex index");
+    } catch (IndexOutOfBoundsException | IllegalArgumentException expected) {
+      // ok
+    } catch (Throwable t) {
+      fail("Unexpected exception type for out-of-range index: " + t);
+    }
+  }
+
+  /**
+   * Given a graph, when removing a non-existent edge, retiraAresta must return null.
+   * Also verify that inserting then removing an edge succeeds.
+   */
+  @Test(timeout = 4000)
+  public void test5()  throws Throwable  {
+    // Given
+    final int N = 2581;
+    Grafo grafo0 = new Grafo(N);
+    final int a = 1315;
+    final int b = 1315;
+    final int w = 2581;
+
+    // When: insert a different edge (so that removing a->a should be non-existent)
+    grafo0.insereAresta(a, 1960, w);
+
+    // Then: removing non-existent edge returns null
+    Grafo.Aresta removedNull = grafo0.retiraAresta(a, b);
+    assertNull("retiraAresta should return null when attempting to remove a non-existent edge", removedNull);
+
+    // And: removing the actually inserted edge returns a valid Aresta
+    Grafo.Aresta removed = grafo0.retiraAresta(a, 1960);
+    assertNotNull("retiraAresta should return the edge that was inserted", removed);
+    assertEquals("Removed edge v1 must match", a, removed.v1());
+    assertEquals("Removed edge v2 must match", 1960, removed.v2());
+    assertEquals("Number of vertices must remain unchanged", N, grafo0.numVertices());
+  }
+
+  /**
+   * Given graphs constructed with various sizes, verify that numVertices returns the correct value.
+   * This test exercises typical and small boundary counts to catch constructor/field issues.
+   */
+  @Test(timeout = 4000)
+  public void test6()  throws Throwable  {
+    // Given/When/Then: mid-range value
+    final int mid = 1745;
+    Grafo gMid = new Grafo(mid);
+    assertEquals("numVertices should reflect constructor argument (mid range)", mid, gMid.numVertices());
+
+    // Boundary: smallest reasonable graph
+    Grafo gOne = new Grafo(1);
+    assertEquals("numVertices should be 1 for a single-vertex graph", 1, gOne.numVertices());
+
+    // Small graph of size 2
+    Grafo gTwo = new Grafo(2);
+    assertEquals("numVertices should be 2 for two-vertex graph", 2, gTwo.numVertices());
+  }
+
+  /**
+   * Given an inserted edge, when computing the transpose,
+   * then the transposed graph must contain the reversed edge.
+   */
+  @Test(timeout = 4000)
+  public void test7()  throws Throwable  {
+    // Given
+    final int N = 2581;
+    final int v1 = 1315;
+    final int v2 = 1960;
+    final int peso = 2581;
+    Grafo grafo0 = new Grafo(N);
+
+    // When: insert edge and compute transpose
+    grafo0.insereAresta(v1, v2, peso);
+    Grafo grafoT = grafo0.grafoTransposto();
+
+    // Then: both graphs should report correct vertex count
+    assertEquals("Original graph vertex count must match", N, grafo0.numVertices());
+    assertEquals("Transposed graph vertex count must match", N, grafoT.numVertices());
+
+    // And: transposed graph must have the reversed edge
+    assertTrue("Transposed graph must contain the reversed edge", grafoT.existeAresta(v2, v1));
+
+    // And: original graph still contains the original edge until removed
+    assertTrue("Original graph should still contain the original edge", grafo0.existeAresta(v1, v2));
+
+    // And: retiraAresta on transposed graph should remove the reversed edge
+    Grafo.Aresta removedFromT = grafoT.retiraAresta(v2, v1);
+    assertNotNull("Should be able to remove the reversed edge from the transposed graph", removedFromT);
+    assertEquals("Removed edge in transposed graph should have matching endpoints", v2, removedFromT.v1());
+    assertEquals("Removed edge in transposed graph should have matching endpoints", v1, removedFromT.v2());
+  }
+}

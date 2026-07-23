@@ -1,0 +1,177 @@
+package ds.seed9006;
+
+import ds.Ordenacao;
+import org.junit.Test;
+import org.junit.Assert;
+import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+
+/**
+ * Marker interface for unit tests in this package.
+ * If categories are used by the build, tests here are classified as Unit tests.
+ */
+interface UnitTest {}
+
+/**
+ * Improved test class for Ordenacao.
+ *
+ * Notes:
+ * - This class replaces the auto-generated scaffolding tests with clearer, deterministic checks.
+ * - Each test keeps the original method name (test0, test1, test2) to satisfy tooling that expects these names.
+ */
+public class EvoAITest {
+
+    /**
+     * test0_exceptionOnInvalidLength
+     *
+     * Verifies that calling Ordenacao.ordena with a length larger than the array
+     * throws ArrayIndexOutOfBoundsException and that the input array remains unchanged.
+     *
+     * Requirement reference: REQ-ORD-002
+     */
+    @Test(timeout = 4000)
+    @Category(UnitTest.class)
+    public void test0() throws Throwable {
+        int[] intArray0 = new int[] {5, 4, 3, 2, 1, 0, -1, 100, 50};
+        int[] backup = Arrays.copyOf(intArray0, intArray0.length);
+
+        try {
+            // Attempt to sort using an invalid length parameter that exceeds array bounds.
+            Ordenacao.ordena(intArray0, 842);
+            Assert.fail("Expected ArrayIndexOutOfBoundsException when length > array.length");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Verify the array was not modified when the exception occurred.
+            Assert.assertArrayEquals("Input array should remain unchanged on exception", backup, intArray0);
+        }
+    }
+
+    /**
+     * test1_variousSortingScenarios
+     *
+     * Exercises a range of typical and boundary input scenarios for Ordenacao.ordena:
+     * - empty array
+     * - single-element array
+     * - already sorted array
+     * - reverse-ordered array
+     * - array with duplicates
+     *
+     * Each scenario verifies that the result is sorted in non-decreasing order and
+     * that the multiset of elements is preserved.
+     *
+     * Requirement reference: REQ-ORD-001
+     */
+    @Test(timeout = 4000)
+    @Category(UnitTest.class)
+    public void test1() throws Throwable {
+        // Helper lambda-like checks implemented with private methods below.
+
+        // Empty array: should remain empty and not throw.
+        int[] empty = new int[0];
+        Ordenacao.ordena(empty, empty.length);
+        Assert.assertEquals("Empty array length should remain zero", 0, empty.length);
+        Assert.assertTrue("Empty array should be considered sorted", isSortedAsc(empty));
+
+        // Single element: should remain unchanged and sorted.
+        int[] single = new int[] {42};
+        int[] singleBackup = Arrays.copyOf(single, single.length);
+        Ordenacao.ordena(single, single.length);
+        Assert.assertArrayEquals("Single-element array content preserved", singleBackup, single);
+        Assert.assertTrue("Single-element array should be sorted", isSortedAsc(single));
+
+        // Already sorted array.
+        int[] sorted = new int[] {1, 2, 3, 4, 5};
+        int[] sortedBackup = Arrays.copyOf(sorted, sorted.length);
+        Ordenacao.ordena(sorted, sorted.length);
+        Assert.assertTrue("Already-sorted array must remain sorted", isSortedAsc(sorted));
+        Assert.assertTrue("Sorted array must preserve all elements", sameMultiset(sortedBackup, sorted));
+
+        // Reverse ordered array.
+        int[] reverse = new int[] {5, 4, 3, 2, 1};
+        int[] reverseBackup = Arrays.copyOf(reverse, reverse.length);
+        Ordenacao.ordena(reverse, reverse.length);
+        Assert.assertTrue("Reverse array must be sorted after ordena", isSortedAsc(reverse));
+        Assert.assertTrue("Reverse array must preserve all elements", sameMultiset(reverseBackup, reverse));
+
+        // Duplicates and negatives.
+        int[] duplicates = new int[] {3, 1, 2, 3, 1, -2, -2, 5};
+        int[] duplicatesBackup = Arrays.copyOf(duplicates, duplicates.length);
+        Ordenacao.ordena(duplicates, duplicates.length);
+        Assert.assertTrue("Array with duplicates must be sorted after ordena", isSortedAsc(duplicates));
+        Assert.assertTrue("Array with duplicates must preserve all elements", sameMultiset(duplicatesBackup, duplicates));
+    }
+
+    /**
+     * test2_constructorAndBasicContract
+     *
+     * Ensures that an Ordenacao instance can be constructed and that basic
+     * class-level expectations hold (non-null, correct runtime class).
+     *
+     * Requirement reference: REQ-ORD-003
+     */
+    @Test(timeout = 4000)
+    @Category(UnitTest.class)
+    public void test2() throws Throwable {
+        Ordenacao ordenacao0 = new Ordenacao();
+        Assert.assertNotNull("Constructor should create a non-null instance", ordenacao0);
+        Assert.assertEquals("Instance should be of type Ordenacao", Ordenacao.class, ordenacao0.getClass());
+
+        // Sanity check: calling a static sort on a small array should not throw.
+        int[] sample = new int[] {2, 1};
+        int[] sampleBackup = Arrays.copyOf(sample, sample.length);
+        Ordenacao.ordena(sample, sample.length);
+        Assert.assertTrue("Sample array should be sorted after ordena", isSortedAsc(sample));
+        Assert.assertTrue("Sample array must preserve all elements", sameMultiset(sampleBackup, sample));
+    }
+
+    // --- Helper methods ---
+
+    /**
+     * Checks whether the given array is sorted in non-decreasing order.
+     */
+    private static boolean isSortedAsc(int[] arr) {
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i - 1] > arr[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether two arrays contain the same multiset of elements (same counts).
+     */
+    private static boolean sameMultiset(int[] a, int[] b) {
+        if (a == null || b == null) {
+            return a == b;
+        }
+        if (a.length != b.length) {
+            return false;
+        }
+        Map<Integer, Integer> counts = new HashMap<>();
+        for (int v : a) {
+            counts.put(v, counts.getOrDefault(v, 0) + 1);
+        }
+        for (int v : b) {
+            Integer c = counts.get(v);
+            if (c == null || c == 0) {
+                return false;
+            }
+            counts.put(v, c - 1);
+        }
+        // All counts should be zero now
+        for (Integer rem : counts.values()) {
+            if (rem != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
