@@ -1,144 +1,107 @@
 package ds.seed5838;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
 import ds.Item;
 import ds.MeuItem;
 import ds.Tabela;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
+import org.junit.experimental.categories.Category;
 
 /**
- * Requirement: DS-TABLE-01
- * Tests for basic behaviors of Tabela: insertion, binary search (binaria) and pesquisa.
+ * Unit tests for Tabela behaviors.
  *
- * Notes:
- * - Tests follow a Given-When-Then structure in comments.
- * - Each test concentrates on a single observable behavior.
- * - This test class is categorized as UnitTest to allow selective execution.
+ * Traceability: REQ-TABELA-001 (basic insert/search behaviors)
+ *
+ * Tests follow a Given-When-Then structure in comments to improve readability and
+ * to aid future maintenance. These tests preserve the original assertions/oracles
+ * while adding explanatory messages and categorization metadata.
  */
 interface UnitTest {}
+interface Req_Tabela_001 {}
 
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Category(UnitTest.class)
+@Category({UnitTest.class, Req_Tabela_001.class})
 public class EvoAITest extends Tabela_ESTest_scaffolding {
 
-    private static final int MAX_FILL_ATTEMPT = 1000;
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+    // Given: an empty table and two items with keys 0 and 1
+    Tabela tabela0 = new Tabela();
+    MeuItem meuItem0 = new MeuItem(0);
+    tabela0.insere(meuItem0); // setup
+    MeuItem meuItem1 = new MeuItem(1);
+    tabela0.insere(meuItem1); // setup
 
-    /**
-     * Given a fresh table, when two items are inserted, then the table size (n) should be 2
-     * and binaria should report the expected index for the second inserted item.
-     */
-    @Test(timeout = 4000)
-    public void test0() throws Throwable {
-        // Given
-        Tabela tabela = new Tabela();
-        MeuItem item0 = new MeuItem(0);
-        MeuItem item1 = new MeuItem(1);
+    // When: performing binary search for item with key 1
+    int int0 = tabela0.binaria(meuItem1);
 
-        // When
-        tabela.insere(item0);
-        tabela.insere(item1);
-        int result = tabela.binaria(item1);
+    // Then: the table should contain two entries and binaria should return 2
+    assertEquals("After inserting two items, expected tabela.n == 2", 2, tabela0.n);
+    assertEquals("Binary search should return insertion/search position 2 for key 1", 2, int0);
+  }
 
-        // Then
-        assertEquals("After inserting two items, tabela.n should be 2", 2, tabela.n);
-        assertEquals("binaria should return the insertion/search index for the second item", 2, result);
+  @Test(timeout = 4000)
+  public void test1()  throws Throwable  {
+    // Given: a table with one inserted item (key 0)
+    Tabela tabela0 = new Tabela();
+    MeuItem meuItem0 = new MeuItem(0);
+    tabela0.insere(meuItem0); // setup
+
+    // When: performing binary search for a different key (key 1)
+    MeuItem meuItem1 = new MeuItem(1);
+    int int0 = tabela0.binaria(meuItem1);
+
+    // Then: table size remains 1 and binary search returns position 0 (no match / position)
+    assertEquals("Table should have a single entry after one insert", 1, tabela0.n);
+    assertEquals("Binary search for non-existing key should return 0 in this scenario", 0, int0);
+  }
+
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+      Tabela tabela0 = new Tabela();
+      MeuItem meuItem0 = new MeuItem(0);
+      int int0 = tabela0.binaria(meuItem0);
+      assertEquals(0, int0);
+  }
+
+  @Test(timeout = 4000)
+  public void test3()  throws Throwable  {
+    // Given: a table manipulated to contain a null record and its internal array set directly
+    Tabela tabela0 = new Tabela();
+    Item[] itemArray0 = new Item[2];
+    MeuItem meuItem0 = new MeuItem((-1767));
+    tabela0.insere(itemArray0[1]); // inserting null reference as part of setup
+    tabela0.registros = itemArray0; // direct internal state manipulation to build the scenario
+
+    // When/Then: inserting another item should raise an Exception indicating the table is full
+    try {
+      tabela0.insere(meuItem0);
+      fail("Expecting exception: Exception"); // preserved original oracle behavior
+    } catch (Exception e) {
+      // Preserve original verification while adding contextual comment
+      // Expected: Erro: A tabela esta cheia
+      verifyException("ds.Tabela", e);
     }
+  }
 
-    /**
-     * Given a table with one item, when binaria is invoked for a non-present item,
-     * then binaria should return 0 (indicating not found / insertion point per implementation).
-     */
-    @Test(timeout = 4000)
-    public void test1() throws Throwable {
-        // Given
-        Tabela tabela = new Tabela();
-        MeuItem existing = new MeuItem(0);
-        tabela.insere(existing);
-        MeuItem missing = new MeuItem(1);
+  @Test(timeout = 4000)
+  public void test4()  throws Throwable  {
+    // Given: a table with one item (key 1) inserted
+    Tabela tabela0 = new Tabela();
+    MeuItem meuItem0 = new MeuItem(0);
+    MeuItem meuItem1 = new MeuItem(1);
+    tabela0.insere(meuItem1); // setup
 
-        // When
-        int result = tabela.binaria(missing);
+    // When: searching (pesquisa) for an item with key 0 that was not inserted
+    int int0 = tabela0.pesquisa(meuItem0);
 
-        // Then
-        assertEquals("Tabela should contain one item after insertion", 1, tabela.n);
-        assertEquals("binaria for a non-present item should return 0 as per current implementation", 0, result);
-    }
-
-    /**
-     * Given an empty table, when binaria is invoked with any item, then it should return 0.
-     */
-    @Test(timeout = 4000)
-    public void test2() throws Throwable {
-        // Given
-        Tabela tabela = new Tabela();
-        MeuItem probe = new MeuItem(0);
-
-        // When
-        int result = tabela.binaria(probe);
-
-        // Then
-        assertEquals("binaria on an empty table should return 0", 0, result);
-    }
-
-    /**
-     * Given a table, when inserting items until the table is full, then an exception should be thrown
-     * indicating the table is full. This test attempts to insert up to MAX_FILL_ATTEMPT items and expects
-     * to observe the "cheia" (full) condition at some point for reasonable table implementations.
-     */
-    @Test(timeout = 4000)
-    public void test3() throws Throwable {
-        // Given
-        Tabela tabela = new Tabela();
-
-        // When
-        boolean sawException = false;
-        int successfulInserts = 0;
-        for (int i = 0; i < MAX_FILL_ATTEMPT; i++) {
-            try {
-                tabela.insere(new MeuItem(i));
-                successfulInserts++;
-            } catch (Exception e) {
-                // Then
-                sawException = true;
-                String msg = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
-                // Expect the implementation to provide a message indicating the table is full (in Portuguese or English).
-                boolean indicatesFull = msg.contains("cheia") || msg.contains("tabela") || msg.contains("full");
-                assertTrue("Expected exception message to indicate a full table, got: " + e.getMessage(), indicatesFull);
-                break;
-            }
-        }
-
-        // If no exception occurred within reasonable attempts, fail to highlight missing full-table behavior.
-        if (!sawException) {
-            fail("Did not observe a table-full exception after " + successfulInserts + " inserts; check table capacity behavior.");
-        }
-        assertTrue("There should be at least one successful insert before the table became full", successfulInserts > 0);
-    }
-
-    /**
-     * Given a table with one inserted item (id = 1), when searching for a different item (id = 0)
-     * using pesquisa, then pesquisa should return 0 and the table size should remain 1.
-     */
-    @Test(timeout = 4000)
-    public void test4() throws Throwable {
-        // Given
-        Tabela tabela = new Tabela();
-        MeuItem present = new MeuItem(1);
-        MeuItem absent = new MeuItem(0);
-
-        // When
-        tabela.insere(present);
-        int result = tabela.pesquisa(absent);
-
-        // Then
-        assertEquals("After inserting one item, tabela.n should be 1", 1, tabela.n);
-        assertEquals("Pesquisa for a missing item should return 0 per current implementation", 0, result);
-    }
+    // Then: table size should be 1 and pesquisa should indicate not found / position 0
+    assertEquals("After inserting one item, expected tabela.n == 1", 1, tabela0.n);
+    assertEquals("Pesquisa for non-existing key should return 0 in this scenario", 0, int0);
+  }
 }

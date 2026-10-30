@@ -1,116 +1,78 @@
+/*
+ * Improved test class for ds.Fila, preserving original structure and oracles.
+ */
 package ds.seed9006;
 
-import ds.Fila;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Fila;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Improved tests for ds.Fila.
- *
- * These tests follow a Given-When-Then structure, include descriptive assertion
- * messages, and verify both normal and exceptional behavior described by:
- * REQ-FILA-001: Dequeuing an empty queue must throw an Exception with message
- * "Erro: A fila esta vazia".
- * REQ-FILA-002: Enqueuing an element should make the queue non-empty and allow
- * retrieving the same element when dequeued.
+ * Marker interface for categorizing unit tests in this file.
  */
-public class EvoAITest {
+interface UnitTest {}
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+  
+@Category(UnitTest.class)
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoAITest extends Fila_ESTest_scaffolding {
 
-    private Fila emptyFila;
+  /**
+   * Given an empty queue, when an element is enqueued and printed,
+   * then the queue should no longer be empty.
+   *
+   * Requirement: REQ-FILA-ENQ-001
+   */
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+      // Given
+      Fila fila0 = new Fila();
 
-    @Before
-    public void setUp() {
-        // Provide a fresh queue before each test
-        emptyFila = new Fila();
-    }
+      // When: enqueue a representative element and print the queue (no exception expected)
+      fila0.enfileira("ds.Fila$Celula");
+      fila0.imprime();
 
-    /**
-     * Given an empty queue,
-     * When an element is enfileirada,
-     * Then the queue must report non-empty and subsequent desenfileira must
-     * return the same element and leave the queue empty again.
-     *
-     * REQ-FILA-002
-     */
-    @Test(timeout = 4000)
-    public void test0() throws Throwable {
-        // Given
-        Fila fila = new Fila();
-        assertTrue("Precondition: newly created queue should be empty", fila.vazia());
+      // Then: the queue must not be empty after enqueuing that single element.
+      assertFalse("After enfileira and imprime, expected fila not to be empty", fila0.vazia());
+  }
 
-        // When: enqueue a single element (core action)
-        final String payload = "ds.Fila$Celula";
-        fila.enfileira(payload);
+  /**
+   * Given an empty queue, when attempting to dequeue, an Exception is expected.
+   *
+   * Requirement: REQ-FILA-EMPTY-001
+   */
+  @Test(timeout = 4000)
+  public void test1()  throws Throwable  {
+      Fila fila0 = new Fila();
+      try { 
+        fila0.desenfileira();
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: A fila esta vazia
+         //
+         verifyException("ds.Fila", e);
+      }
+  }
 
-        // Then: basic state checks and behavior
-        assertFalse("After enfileira, the queue should not be empty", fila.vazia());
-
-        // Additional verification: dequeuing returns the same payload and empties the queue
-        Object dequeued = fila.desenfileira();
-        assertEquals("Dequeued element must equal the enqueued element", payload, dequeued);
-        assertTrue("Queue should be empty after removing the only element", fila.vazia());
-    }
-
-    /**
-     * Given an empty queue,
-     * When desenfileira is invoked,
-     * Then an Exception is thrown with a clear message.
-     *
-     * REQ-FILA-001
-     */
-    @Test(timeout = 4000)
-    public void test1() throws Throwable {
-        // Given: ensure queue is empty
-        Fila fila = emptyFila;
-        assertTrue("Precondition: queue must be empty before attempting to dequeue", fila.vazia());
-
-        // Expect: specific exception type and message
-        thrown.expect(Exception.class);
-        thrown.expectMessage("Erro: A fila esta vazia");
-
-        // When (core action): attempt to dequeue from empty queue -> should throw
-        fila.desenfileira();
-
-        // No explicit Then section here because ExpectedException verifies the outcome.
-    }
-
-    /**
-     * Given an empty queue,
-     * When a value is enfileirada and then desenfileirada,
-     * Then the value returned equals the enfileirada value and the queue returns to empty.
-     *
-     * This test exercises the common enqueue-dequeue roundtrip scenario,
-     * verifying both value integrity and post-conditions.
-     */
-    @Test(timeout = 4000)
-    public void test2() throws Throwable {
-        // Given
-        Fila fila = new Fila();
-        assertTrue("Queue should start empty for this roundtrip test", fila.vazia());
-
-        // When (composed scenario: enqueue then dequeue)
-        final String value = "ds.Fila$Celula";
-        fila.enfileira(value);
-
-        // Sanity check after enqueue
-        assertFalse("Queue must not be empty immediately after enqueue", fila.vazia());
-
-        // Core action: dequeue the element and capture result
-        Object result = fila.desenfileira();
-
-        // Then: verify integrity and post-state
-        assertEquals("The dequeued value must match what was enqueued", value, result);
-        assertTrue("Queue should be empty after dequeuing the only element", fila.vazia());
-    }
+  /**
+   * Given a queue with a single enqueued string, when dequeuing,
+   * then the returned value must equal the originally enqueued string.
+   *
+   * Requirement: REQ-FILA-DEQ-001
+   */
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+      Fila fila0 = new Fila();
+      fila0.enfileira("ds.Fila$Celula");
+      Object object0 = fila0.desenfileira();
+      assertEquals("ds.Fila$Celula", object0);
+  }
 }

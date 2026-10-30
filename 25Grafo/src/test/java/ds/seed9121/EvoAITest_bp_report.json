@@ -2,21 +2,21 @@
   "test_class_name": "EvoAITest",
   "test_methods": [
     {
-      "test_method_name": "test3",
+      "test_method_name": "test1",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple verifications (existence check, proxAdj retrieval, peso check, numVertices check) after inserting the edge. Although insertion is the main action, multiple distinct behaviors are asserted in one method rather than split into single-focus tests.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test3()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();\n    // When: insert a zero-weight self-loop and check existence\n    grafo0.insereAresta(0, 0, 0);\n    boolean exists = grafo0.existeAresta(0, 0);",
-          "improved_code": "  @Test\n  public void insertSelfLoop_shouldCreateEdge() throws Throwable {\n    Grafo grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n    assertTrue(\"Edge should exist after insertion\", grafo.existeAresta(0, 0));\n  }\n\n  @Test\n  public void proxAdj_afterInsertingSelfLoop_shouldReturnInsertedAdjacency() throws Throwable {\n    Grafo grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n    Grafo.Aresta a = grafo.proxAdj(0);\n    assertNotNull(\"proxAdj should return the inserted adjacency.\", a);\n    assertEquals(\"Inserted adjacency should have peso 0.\", 0, a.peso());\n  }"
+          "justification": "The test method calls multiple operations (insereAresta and proxAdj) within the same test method; per decision rules multiple distinct 'Act' operations lead to non-compliance. The test does multiple assertions tied to those operations rather than a single focused Arrange-Act-Assert block.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertEquals(0, grafo_Aresta0.peso());\nassertEquals(0, grafo_Aresta0.v2());",
+          "improved_code": "private Grafo grafo;\n\n@org.junit.Before\npublic void setUp() {\n    grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n}\n\n@org.junit.Test\npublic void testProxAdj_returnsInsertedEdge() {\n    Grafo.Aresta aresta = grafo.proxAdj(0);\n    org.junit.Assert.assertEquals(0, aresta.peso());\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and doesn't rely on shared mutable state or test ordering. No @Before/@After are required for this single, self-contained test.",
+          "justification": "The test uses only local variables and does not share mutable static or instance state. There are no numbered test names or indications of inter-test dependencies, satisfying the independence criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,15 +24,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a happy-path scenario is present. There are no tests for error conditions, invalid inputs, or exception cases for Grafo methods.",
-          "original_code": "    // When: insert a zero-weight self-loop and check existence\n    grafo0.insereAresta(0, 0, 0);\n    boolean exists = grafo0.existeAresta(0, 0);\n    assertTrue(\"existeAresta should return true after inserting the self-loop.\", exists);",
-          "improved_code": "  @Test\n  public void insereAresta_withInvalidVertex_shouldThrow() throws Throwable {\n    Grafo grafo = new Grafo();\n    try {\n      grafo.insereAresta(-1, 0, 1);\n      fail(\"Expected IllegalArgumentException for invalid vertex index\");\n    } catch (IllegalArgumentException expected) {\n      // expected\n    }\n  }"
+          "justification": "Only a single happy-path test is present with no tests for error or exceptional flows (no assertThrows/@Test(expected=...) and only valid inputs). Per the decision rules this class lacks separate tests for error conditions.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertEquals(0, grafo_Aresta0.peso());\nassertNotNull(grafo_Aresta0);",
+          "improved_code": "@org.junit.Test\npublic void proxAdj_withInvalidVertex_throwsException() {\n    Grafo grafo = new Grafo();\n    try {\n        grafo.proxAdj(-1);\n        org.junit.Assert.fail(\"Expected exception for invalid vertex\");\n    } catch (RuntimeException e) {\n        // expected - verify type or message if necessary\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "compliant",
-          "justification": "The test uses boundary-like values: vertex index 0 and a zero weight (peso 0), which are relevant edge/boundary cases rather than only typical/middle-range values.",
+          "justification": "The test uses boundary value 0 for vertex indices and weight; presence of zero in inputs satisfies the boundary-value detection criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -40,7 +40,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained; there are no repeated blocks to extract and no magic constants repeated across multiple tests in this class.",
+          "justification": "The test is short and self-contained (< 10 lines) and there is no visible duplicated code across multiple methods in this single-method class; per the decision rules short tests that don't repeat code are considered compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -48,7 +48,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (well under 20-30 lines) and linear with no loops or nested conditionals, keeping cyclomatic complexity low.",
+          "justification": "The test method is short (well under 20 lines), linear and contains no loops or complex conditionals, meeting the low-complexity criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -56,7 +56,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple meaningful assertions (existence, non-null adjacency, peso, and number of vertices), verifying several properties of the result.",
+          "justification": "The test contains multiple specific assertions verifying several properties of the returned Aresta (peso, v1, v2, not-null) and also checks graph vertex count — multiple properties are asserted, which increases fault-detection capability.",
           "original_code": null,
           "improved_code": null
         },
@@ -64,7 +64,7 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out tests; the test is active and runnable.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; tests appear active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -72,7 +72,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The class Javadoc includes a requirement reference 'REQ-GRAFO-001', providing explicit traceability to a requirement.",
+          "justification": "The class Javadoc includes a requirement identifier 'REQ-GRAFO-CORE-100', providing traceability to a requirement per the evaluation criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -80,7 +80,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "A timeout is specified on the @Test annotation (timeout = 4000), which is an explicit performance-related guard; thus the test includes a performance-related constraint.",
+          "justification": "The test method declares a timeout (@Test(timeout = 4000)), which is an explicit performance-related constraint per the decision rules, qualifying as a performance test indicator (thus compliant rather than not-applicable).",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test3' is generic and does not follow descriptive naming conventions that indicate scenario and expected outcome.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test3()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  @Test\n  public void insertingSelfLoop_shouldCreateEdgeAndReturnAdjacencyWithPesoZero() throws Throwable {\n    Grafo grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n    assertTrue(\"existeAresta should return true after inserting the self-loop.\", grafo.existeAresta(0, 0));\n  }"
+          "justification": "The test method name 'test1' is generic and does not describe scenario or expected behavior; per decision rules generic names are non-compliant.",
+          "original_code": "public void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, 0);\n    Grafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\n}",
+          "improved_code": "@org.junit.Test(timeout = 4000)\npublic void insereAresta_withZeroWeight_returnsEdgeWithZeroWeight() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, 0);\n    Grafo.Aresta a = grafo0.proxAdj(0);\n    org.junit.Assert.assertEquals(\"peso should be zero\", 0, a.peso());\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "There are signs of test generation: the class name 'EvoAITest', imports from org.evosuite.runtime, and a generic test method name 'test3' indicate generated/automated test artifacts rather than minimal, intention-revealing tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test3()  throws Throwable  {",
-          "improved_code": "  // Remove generated runner imports and rename tests to intention-revealing names\n  @Test\n  @Category(UnitTest.class)\n  public void insertingSelfLoop_whenInserted_thenEdgeExists() throws Throwable {\n    Grafo grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n    assertTrue(\"Edge should exist after insertion\", grafo.existeAresta(0,0));\n  }"
+          "justification": "The class uses EvoSuite runtime types (EvoRunner, EvoRunnerParameters) and a test named 'test1', suggesting autogenerated origins and heavy code-generation artifacts; this matches the non-compliant indicators.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(...)\npublic class EvoAITest extends Grafo_ESTest_scaffolding {",
+          "improved_code": "public class GrafoUnitTest {\n\n    @org.junit.Test\n    public void insertEdge_returnsExpectedEdge() {\n        Grafo g = new Grafo();\n        g.insereAresta(0,0,0);\n        org.junit.Assert.assertEquals(0, g.proxAdj(0).peso());\n    }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments and descriptive assertion messages that align with thoughtful design and BDD-style structure.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears minimal and focused on a single happy path without Given-When-Then comments or multiple scenario coverage; per decision rules this suggests after-the-fact tests and not thoughtful prioritized design.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertEquals(0, grafo_Aresta0.peso());",
+          "improved_code": "@org.junit.Test\npublic void givenGraphWithInsertedEdge_whenProxAdj_thenReturnCorrectEdge() {\n    // Given\n    Grafo grafo = new Grafo();\n    grafo.insereAresta(0, 0, 0);\n    // When\n    Grafo.Aresta result = grafo.proxAdj(0);\n    // Then\n    org.junit.Assert.assertEquals(\"Expected weight 0\", 0, result.peso());\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with public API methods of Grafo and does not access private fields or use reflection; it verifies observable behavior.",
+          "justification": "The test exercises public Grafo APIs and does not use reflection or inspect private fields; it verifies observable behavior through public methods, satisfying the maintenance criteria.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertEquals/assertNotNull/assertTrue) and include descriptive failure messages, improving diagnosability.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use default assertEquals/assertNotNull without messages; per rules assertions should include messages and be specific. The absence of descriptive messages triggers non-compliance.",
+          "original_code": "assertEquals(0, grafo_Aresta0.peso());\nassertEquals(0, grafo_Aresta0.v2());\nassertEquals(0, grafo_Aresta0.v1());\nassertNotNull(grafo_Aresta0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "org.junit.Assert.assertNotNull(\"Expected non-null edge\", grafo_Aresta0);\norg.junit.Assert.assertEquals(\"peso should be 0\", 0, grafo_Aresta0.peso());\norg.junit.Assert.assertEquals(\"v1 should be 0\", 0, grafo_Aresta0.v1());\norg.junit.Assert.assertEquals(\"v2 should be 0\", 0, grafo_Aresta0.v2());\norg.junit.Assert.assertEquals(\"Graph should have 100 vertices by default\", 100, grafo0.numVertices());"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test uses concise Given-When-Then inline comments and class-level Javadoc explaining purpose and traceability; no excessive or misleading comments are present.",
+          "justification": "The class includes concise Javadoc explaining purpose and requirement traceability; no excessive inline comments or commented-out code are present, matching compliant criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use random values, time-based calls, Thread.sleep, or external dependencies: it is deterministic given the same environment.",
+          "justification": "The test does not use Random, current time, Thread.sleep, or external dependencies; operations are deterministic given the same inputs so the design is deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "All modifications are made on a local Grafo instance; no shared/static state is modified and no external resources are persisted, so no side effects are introduced.",
+          "justification": "The test uses only local Grafo instance and does not modify global/static state or external resources; no cleanup is required, satisfying the side-effect avoidance criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -152,14 +152,334 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class and method are annotated with @Category(UnitTest.class), providing meaningful categorization for selective test execution.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization for selective execution per the evaluation criteria.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "78.9%",
+      "method_compliance_score": "68.4%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "78.9%"
+      "normalized_method_compliance_score": "68.4%"
+    },
+    {
+      "test_method_name": "test3",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test invokes multiple methods that are being asserted (insereAresta, existeAresta, numVertices) resulting in multiple Act operations and multiple behaviors validated in one method rather than a single focused Arrange-Act-Assert scenario.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);\n      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testExisteAresta_afterInsert_returnsTrue() throws Throwable {\n      // Given\n      Grafo grafo = new Grafo();\n      grafo.insereAresta(0, 0, 0); // setup\n      // When\n      boolean exists = grafo.existeAresta(0, 0);\n      // Then\n      assertTrue(\"Edge should exist after insertion\", exists);\n  }"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and no shared mutable state is visible in the snippet; there are no numbered test names indicating ordering and no visible missing setup/teardown.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path test is present; there is no test for an error/exceptional scenario (no assertThrows/@Test(expected=...) or tests with invalid/null inputs).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);\n      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);\n  }",
+          "improved_code": "  @Test(expected = IllegalArgumentException.class)\n  public void testInsereAresta_invalidIndex_throws() throws Throwable {\n      Grafo grafo = new Grafo();\n      // invalid negative index should cause an exception\n      grafo.insereAresta(-1, 0, 0);\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "Test uses only value 0 and a check for numVertices() == 100; there are no explicit boundary-value checks (e.g., negative indices, zero as special case, max/min indices).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);\n      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);\n  }",
+          "improved_code": "  @Test\n  public void testInsereAresta_boundaryValues() throws Throwable {\n      Grafo grafo = new Grafo();\n      // boundary: zero index should be allowed\n      grafo.insereAresta(0, 0, 0);\n      assertTrue(\"Edge at zero index should exist\", grafo.existeAresta(0, 0));\n      // boundary: negative index should be rejected (expect exception)\n      try {\n          grafo.insereAresta(-1, 0, 0);\n          fail(\"Expected IllegalArgumentException for negative index\");\n      } catch (IllegalArgumentException e) {\n          // expected\n      }\n  }"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (< 10 lines) and does not show duplicated setup; no helper extraction is required for this single short method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is short (well under 20 lines), linear, with no loops or complex conditionals, following a simple flow.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "The test performs multiple assertions (numVertices and existence), verifying more than one property of the Grafo's state and increasing fault detection capability.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the visible class; tests appear active.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "Class-level Javadoc explicitly includes 'Requirement traceability: REQ-GRAFO-CORE-100', providing direct linkage to a requirement.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test uses an explicit timeout via @Test(timeout = 4000), which is an explicit timing constraint available in the unit test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test3' is generic and provides no indication of the scenario or expected outcome; it does not follow descriptive naming conventions.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);\n      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void existsEdge_afterInsert_shouldReturnTrueAndVertexCountUnchanged() throws Throwable {\n      // Given\n      Grafo grafo = new Grafo();\n      // When\n      grafo.insereAresta(0, 0, 0);\n      // Then\n      assertEquals(\"Vertex count should be 100 after insertion\", 100, grafo.numVertices());\n      assertTrue(\"Edge should exist after insertion\", grafo.existeAresta(0, 0));\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "Evidence of test generation is present: use of EvoRunner, EvoRunnerParameters, and a generic test name 'test3' indicate autogenerated scaffolding rather than small hand-written tests.",
+          "original_code": "  @RunWith(EvoRunner.class)\n  @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\n  public class EvoAITest extends Grafo_ESTest_scaffolding {\n      @Test(timeout = 4000)\n      public void test3() throws Throwable { ... }\n  }",
+          "improved_code": "  // Remove generated runner for a small, focused unit test class\n  public class GrafoUnitTest {\n      @Test\n      public void existsEdge_afterInsert_returnsTrue() {\n          Grafo grafo = new Grafo();\n          grafo.insereAresta(0, 0, 0);\n          assertTrue(\"Edge should exist after insertion\", grafo.existeAresta(0, 0));\n      }\n  }"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "The test lacks explicit Given-When-Then structure or BDD-style naming and appears to represent a single basic happy-path check without evidence of prioritized design or multiple scenarios.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test3()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);\n      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);\n  }",
+          "improved_code": "  @Test\n  public void givenGraph_whenInsertEdge_thenEdgeExists_andVertexCountIsExpected() {\n      // Given\n      Grafo grafo = new Grafo();\n      // When\n      grafo.insereAresta(0, 0, 0);\n      // Then\n      assertEquals(\"Vertex count should be 100 after insertion\", 100, grafo.numVertices());\n      assertTrue(\"Inserted edge should exist\", grafo.existeAresta(0, 0));\n  }"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test interacts only with public Grafo methods and does not access private fields or reflection; it verifies observable behavior rather than internal implementation.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use a generic assertTrue for an important boolean check; no descriptive messages are provided which would ease diagnosis of failures.",
+          "original_code": "      boolean boolean0 = grafo0.existeAresta(0, 0);\n      assertEquals(100, grafo0.numVertices());\n      assertTrue(boolean0);",
+          "improved_code": "      boolean exists = grafo.existeAresta(0, 0);\n      assertEquals(\"Vertex count should be 100 after insertion\", 100, grafo.numVertices());\n      assertTrue(\"Expected the inserted edge to exist\", exists);"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The class contains concise Javadoc describing purpose and requirement traceability; there are no commented-out tests or excessive inline comments in the test method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test contains no sources of non-determinism (no Random, no current time usage, no Thread.sleep); it uses local objects only and should be deterministic.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test operates on a local Grafo instance and does not modify external/shared state or persist data; no cleanup is required for local in-memory state.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization metadata for selective execution.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "63.2%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "63.2%"
+    },
+    {
+      "test_method_name": "test0",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test performs multiple actions (insereAresta and imprime) and has a single assertion. There are multiple 'Act' operations which violates the single-focus rule.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testInsertEdgeUpdatesVertexCount() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      assertEquals(100, grafo0.numVertices());\n  }"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The method uses only local variables and does not rely on shared mutable state or ordering. No @Before/@After are required for this single short test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "The test class contains only one test and exercises the happy path. There are no tests for error conditions or exceptions.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(expected = IllegalArgumentException.class)\n  public void testInsertEdgeWithInvalidVertexThrows() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      // invalid vertex index should trigger an exception\n      grafo0.insereAresta(-1, 0, 1);\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "The test uses boundary-like values (vertex index 0 and a negative weight -6204). Presence of 0 and a negative value indicates some boundary consideration.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short, self-contained and does not duplicate code across multiple tests (only one test present). No helper methods are necessary given its size.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test is small (< 20 lines) and contains no loops or complex conditionals; it follows a simple linear Arrange-Act-Assert flow.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test uses a single superficial assertion (only assertEquals on numVertices). It does not verify multiple properties of the result to increase fault detection.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_withAdditionalAssertions() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, -6204);\n      grafo0.imprime();\n      assertEquals(\"Vertex count should be 100 after insertion\", 100, grafo0.numVertices());\n      assertTrue(\"Vertex count should be positive\", grafo0.numVertices() > 0);\n  }"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out tests in the provided code; tests appear active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "Class-level Javadoc includes 'Requirement traceability: REQ-GRAFO-CORE-100', providing requirement linkage.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test uses a timeout (@Test(timeout = 4000)), which is an explicit performance-related annotation; therefore the practice is addressed.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test method name 'test0' is generic and does not describe the scenario or expected outcome; it fails the descriptive naming convention.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertSelfLoop_updatesVertexCount() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, -6204);\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The test name 'test0' and use of EvoSuite/EvoRunner indicates it originated from test generation; auto-generated-like naming is present.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertSelfLoop_updatesVertexCount_generatedRefactor() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, -6204);\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "No Given-When-Then structure or BDD-style naming is present; the class contains only a minimal happy-path test, indicating limited upfront design.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void givenEmptyGraph_whenInsertSelfLoop_thenVertexCountIs100() throws Throwable {\n      // Given\n      Grafo grafo0 = new Grafo();\n      // When\n      grafo0.insereAresta(0, 0, -6204);\n      // Then\n      assertEquals(\"Vertex count should be 100\", 100, grafo0.numVertices());\n  }"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test exercises only public APIs (insereAresta, imprime, numVertices) and does not access private fields or use reflection; it focuses on observable behavior.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages. While assertEquals is used, there is no message to aid diagnosis; also only a single assertion is present.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, (-6204));\n      grafo0.imprime();\n      assertEquals(100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_withMessages() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, -6204);\n      grafo0.imprime();\n      assertEquals(\"Expected 100 vertices after insertion\", 100, grafo0.numVertices());\n  }"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "Class-level Javadoc documents requirement traceability and intent; there is no excessive inline commenting or commented-out code.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "No sources of non-determinism (Random, current time, Thread.sleep) appear in the method; the test uses local variables and deterministic API calls.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not create files, modify static state, or persist data; there is no cleanup required.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "63.2%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "63.2%"
     },
     {
       "test_method_name": "test4",
@@ -168,15 +488,15 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple distinct 'Act' operations: it calls grafo0.existeAresta(0,0), grafo0.proxAdj(0) and grafo0.numVertices(), representing multiple behaviors in one test rather than focusing on a single behavior.",
-          "original_code": "Grafo grafo0 = new Grafo();\n\n// When: query for a non-existing edge\nboolean exists = grafo0.existeAresta(0, 0);\n\n// Then: existence check should be false and proxAdj returns null\nassertFalse(\"No edge should exist in a fresh graph between 0 and 0.\", exists);\nGrafo.Aresta a = grafo0.proxAdj(0);\nassertNull(\"proxAdj should return null when no adjacency exists for vertex 0.\", a);",
-          "improved_code": "@Test(timeout = 4000)\npublic void testExisteAresta_graphEmpty_returnsFalse() {\n  Grafo grafo0 = new Grafo();\n  boolean exists = grafo0.existeAresta(0, 0);\n  assertFalse(\"No edge should exist in a fresh graph between 0 and 0.\", exists);\n}"
+          "justification": "The test invokes two distinct 'Act' operations: grafo0.existeAresta(0,0) and grafo0.numVertices(). Decision rule 1: more than one distinct Act => non-compliant. The method therefore tests multiple behaviors in one test.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testExisteAresta_sameVertex_returnsFalse() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean exists = grafo0.existeAresta(0, 0);\n    assertFalse(\"No self-loop expected\", exists);\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on or modify shared static/instance state. There are no numbered test names or indications of ordering dependence.",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or test ordering. No static/instance fields are modified in the method; therefore it is independent per decision rule 4.",
           "original_code": null,
           "improved_code": null
         },
@@ -184,15 +504,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path scenario is tested (empty graph behavior). No error/exceptional cases (invalid indices, nulls, or expected exceptions) are present and the class contains only one test method, so no separate error-case coverage is provided.",
-          "original_code": "Grafo grafo0 = new Grafo();\nboolean exists = grafo0.existeAresta(0, 0);\nassertFalse(\"No edge should exist in a fresh graph between 0 and 0.\", exists);",
-          "improved_code": "@Test(timeout = 4000)\npublic void testExisteAresta_invalidVertex_throws() {\n  Grafo grafo0 = new Grafo();\n  assertThrows(IndexOutOfBoundsException.class, () -> grafo0.existeAresta(-1, 0));\n}"
+          "justification": "Only one test method exists and it covers a single happy-path assertion. Decision rules: class has <2 test methods and no exception tests (@Test(expected=...) or assertThrows), so error scenarios are not covered.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(expected = IndexOutOfBoundsException.class)\npublic void testExisteAresta_invalidIndex_throwsException() {\n    Grafo grafo0 = new Grafo();\n    // exercise an error case: negative index should raise\n    grafo0.existeAresta(-1, 0);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "compliant",
-          "justification": "The test exercises vertex index 0 (a boundary-like value) and checks behavior when graph is empty. It explicitly uses 0 which is an important boundary case for indices.",
+          "justification": "The test explicitly uses 0 as input indices (a boundary-like value). Decision rule 1: presence of 0 as test data counts as boundary checking for this method.",
           "original_code": null,
           "improved_code": null
         },
@@ -200,7 +520,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained, there are no helper methods but also no duplicated setup across multiple tests (only one test exists). The test follows a clear Arrange-Act-Assert structure.",
+          "justification": "The test is short (<10 lines) and self-contained, with no duplicated code in this single-method snippet. Per decision rule 4, short tests without repetition are acceptable.",
           "original_code": null,
           "improved_code": null
         },
@@ -208,7 +528,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The method is small (well under 20 lines of core logic), linear, and contains no loops or complex conditionals, satisfying low cyclomatic complexity expectations.",
+          "justification": "Method is short and linear with no loops or conditionals (low cyclomatic complexity). Decision rules: all checks satisfied for a compliant verdict.",
           "original_code": null,
           "improved_code": null
         },
@@ -216,7 +536,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple meaningful assertions that verify different properties (edge existence, proxAdj null, and number of vertices), not just superficial assertNotNull, thereby checking multiple facets of behavior.",
+          "justification": "The test contains two assertions that verify two different properties (edge existence and number of vertices). Decision rule: >=2 relevant assertions verifying multiple properties -> compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -224,23 +544,23 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out test methods are present; the test is active and runnable.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out tests are present in the method. The test is active and runnable, satisfying the decision rules for compliance.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes a requirement traceability line: 'Requirement traceability: REQ-GRAFO-001', providing direct linkage to a requirement.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method itself contains no annotations or Javadoc linking it to a requirement ID. Decision rules require method/class annotations or Javadoc; based solely on the method body there is no traceability information.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "/** REQ-GRAFO-CORE-100: verify no self-loop on new graph */\n@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertFalse(\"REQ-GRAFO-CORE-100: no self-loop expected\", grafo0.existeAresta(0, 0));\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a small unit test focused on functional behavior; there are no explicit performance or security tests and none are expected in this context.",
+          "status": "compliant",
+          "justification": "The method uses @Test(timeout = 4000), which is an explicit performance-related assertion (timeout). Decision rules mark as compliant when such timeout-based tests are present.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +568,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test4' is generic and does not describe the scenario or expected outcome; it does not follow descriptive naming conventions like methodName_condition_expectedResult.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test4()  throws Throwable  {\n    // Given: a fresh graph with no edges",
-          "improved_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void existeAresta_graphEmpty_returnsFalse_and_proxAdjIsNull() throws Throwable {\n    // Given: a fresh graph with no edges\n    Grafo grafo0 = new Grafo();\n    boolean exists = grafo0.existeAresta(0, 0);\n    assertFalse(\"No edge should exist in a fresh graph between 0 and 0.\", exists);\n  }"
+          "justification": "The test method name 'test4' is generic and does not describe the scenario or expected outcome. Decision rule 2: generic name -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void existeAresta_sameVertex_returnsFalse() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertFalse(\"Self-loop should not exist\", grafo0.existeAresta(0, 0));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "The class name 'EvoAITest' and the method name 'test4' plus unused EvoSuite-related imports indicate the test is likely generated. The naming pattern and artifacts suggest heavy code-generation traces rather than minimal, intention-revealing tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n...\npublic class EvoAITest {\n  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test4()  throws Throwable  {",
-          "improved_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void existeAresta_emptyGraph_shouldReturnFalse() throws Throwable {\n    // Focused, intention-revealing name and minimal test body\n    Grafo grafo0 = new Grafo();\n    assertFalse(\"No edge should exist in a fresh graph between 0 and 0.\", grafo0.existeAresta(0, 0));\n  }"
+          "status": "not-applicable",
+          "justification": "No clear signs of heavy auto-generated code are present within the method body (no auto-generated comments or repetitive naming pattern solely based on this method). Based only on the method, this practice is not-applicable.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test uses Given-When-Then structure in comments and descriptive assertion messages, indicating a designed scenario and intent consistent with BDD/Given-When-Then style.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method has no Given-When-Then structure or BDD-style naming and appears to be a simple, minimal happy-path test. Decision rule 3: minimal tests without scenario design -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testExisteAresta_givenNewGraph_whenCheckSelfLoop_thenReturnFalse() throws Throwable {\n    // Given\n    Grafo grafo0 = new Grafo();\n    // When\n    boolean exists = grafo0.existeAresta(0, 0);\n    // Then\n    assertFalse(\"No self-loop expected\", exists);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with public API methods of Grafo and does not use reflection or access internal/private state, reducing brittleness and coupling to implementation details.",
+          "justification": "The test calls public APIs only (Grafo constructor and public methods) and does not use reflection or access internal state. Decision rule 3 indicates compliance.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertFalse, assertNull, assertEquals) and include descriptive failure messages, avoiding generic assertTrue usage and improving diagnosability.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use generic forms without messages. Decision rules: <50% of assertions have messages (none do) -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test4_withMessages() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertFalse(\"Expected no self-loop on a fresh graph\", grafo0.existeAresta(0, 0));\n    assertEquals(\"Initial number of vertices should be 100\", 100, grafo0.numVertices());\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test contains concise Given-When-Then comments that explain the scenario and there is useful class-level Javadoc; no commented-out code or excessive commentary is present.",
+          "justification": "There are no commented-out code blocks and the method is concise; no excessive or missing comments that harm readability are present. Decision rules indicate compliance.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +616,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test uses no random values, time-based calls, Thread.sleep, or external resources; results should be deterministic given the same environment.",
+          "justification": "The test uses no sources of non-determinism (no Random, System.currentTimeMillis, Thread.sleep, or external dependencies). The test constructs a new Grafo and calls pure methods; thus deterministic per decision rules.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,22 +624,22 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses only local variables, does not persist data or modify static/shared state, and thus does not introduce side effects that could affect other tests.",
+          "justification": "The test only uses local variables and does not persist data or modify global/static state. No cleanup is required; per decision rules this is compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The test class and method use @Category(UnitTest.class), providing categorization that enables selective execution.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method itself does not declare any labeling/category annotation (e.g., @Category or @Tag). Decision rules: absence of method-level or visible class-level labeling within the method body leads to non-compliance when judging solely from the method.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    boolean boolean0 = grafo0.existeAresta(0, 0);\n    assertFalse(boolean0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Category(UnitTest.class)\n@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertFalse(grafo0.existeAresta(0, 0));\n    assertEquals(100, grafo0.numVertices());\n}"
         }
       ],
-      "method_compliance_score": "73.7%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "77.8%"
+      "normalized_method_compliance_score": "61.1%"
     },
     {
       "test_method_name": "test2",
@@ -327,328 +647,8 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test invokes two distinct public operations on Grafo (primeiroListaAdj(0) and proxAdj(0)). Decision rule 1: more than one distinct 'Act' style method call is present, so it's not a single atomic specification.",
-          "original_code": "Grafo grafo0 = new Grafo();\n// When: request the first adjacency for a vertex that has no edges\ngrafo0.primeiroListaAdj(0);\nGrafo.Aresta a = grafo0.proxAdj(0);\nassertNull(\"Expected no adjacency for vertex 0 in an empty graph.\", a);",
-          "improved_code": "@org.junit.Before\npublic void setUp() {\n  grafo0 = new Grafo();\n  grafo0.primeiroListaAdj(0); // moved to setup (Arrange)\n}\n\n@org.junit.Test(timeout = 4000)\npublic void testPrimeiroListaAdj_emptyGraph_returnsNoAdjacency() {\n  Grafo.Aresta a = grafo0.proxAdj(0); // single Act\n  org.junit.Assert.assertNull(\"Expected no adjacency for vertex 0 in an empty graph.\", a);\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on any static or shared mutable state. No numbered test names or cross-test dependencies are present.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single happy-path test is present in the class and no exception or error scenario is exercised. Decision rule: the class has <2 tests and no use of assertThrows/@Test(expected=...) or error-focused test names.",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.primeiroListaAdj(0);\nGrafo.Aresta a = grafo0.proxAdj(0);\nassertNull(\"Expected no adjacency for vertex 0 in an empty graph.\", a);",
-          "improved_code": "@org.junit.Test(expected = IndexOutOfBoundsException.class)\npublic void testPrimeiroListaAdj_invalidVertex_throws() {\n  Grafo grafo = new Grafo();\n  grafo.primeiroListaAdj(-1); // expect an exception for invalid vertex index\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test exercises vertex index 0 on an empty graph (zero and empty-case), which is a boundary/edge scenario (empty graph, vertex 0). The use of empty state and index 0 signals boundary testing.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "compliant",
-          "justification": "No duplicated code is evident in this single short test; test is short and self-contained. There are no helper methods but the method is small (<10 lines) and not repetitive, which complies with the provided decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test method is short (<20 lines) with a simple linear flow, no loops or conditionals, satisfying the low complexity requirement.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test performs multiple meaningful assertions (checks for no adjacency and verifies number of vertices), verifying multiple properties of the object's state rather than a superficial single assertion.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out tests are present; the test is active and runnable.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class Javadoc includes a requirement traceability comment 'REQ-GRAFO-001', satisfying traceability at the class level.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses @Test(timeout = 4000) which is an explicit timing-based constraint; per decision rules this counts as an explicit performance-related annotation and is marked compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name 'test2' is generic and does not describe scenario or expected outcome. Decision rules mark generic names as non-compliant.",
-          "original_code": "@Test(timeout = 4000)\n@Category(UnitTest.class)\npublic void test2()  throws Throwable  {\n  // ...\n}",
-          "improved_code": "@Test(timeout = 4000)\n@Category(UnitTest.class)\npublic void primeiroListaAdj_emptyGraph_returnsNoAdjacency() throws Throwable {\n  Grafo grafo0 = new Grafo();\n  grafo0.primeiroListaAdj(0);\n  Grafo.Aresta a = grafo0.proxAdj(0);\n  org.junit.Assert.assertNull(\"Expected no adjacency for vertex 0 in an empty graph.\", a);\n  org.junit.Assert.assertEquals(\"Number of vertices should remain the default of 100.\", 100, grafo0.numVertices());\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Signs of automated test generation are present (class name EvoAITest and imports from org.evosuite.runtime; generic test method name 'test2'), indicating auto-generated verbose patterns per the decision rules.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@Test(timeout = 4000)\npublic void test2() throws Throwable { ... }",
-          "improved_code": "import org.junit.Test;\nimport org.junit.Before;\n@org.junit.Category(UnitTest.class)\npublic class EvoAITest {\n  private Grafo grafo0;\n  @Before\n  public void setUp() { grafo0 = new Grafo(); }\n  @Test\n  public void primeiroListaAdj_emptyGraph_returnsNoAdjacency() {\n    grafo0.primeiroListaAdj(0);\n    org.junit.Assert.assertNull(grafo0.proxAdj(0));\n  }\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test contains Given-When-Then comments (class Javadoc also mentions Given-When-Then) indicating intentional design and BDD-style structure, satisfying the decision rules for thoughtful design.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "The test interacts only with the public Grafo API and does not use reflection or inspect private state; it verifies observable behavior through public methods.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertNull, assertEquals) and include descriptive messages; at least 50% of assertions contain messages, satisfying the decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test contains concise Given-When-Then comments that explain intent ('why') rather than redundant 'what' comments; there is no excessive or commented-out code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "Test avoids random values, time-dependent calls, Thread.sleep, and external dependencies; it uses only deterministic operations on a fresh Grafo instance.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test uses only local objects and does not persist data or modify static/global state; no cleanup is required for this transient local state.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The test and class use @Category(UnitTest.class), providing meaningful categorization to support selective test execution.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "78.9%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "78.9%"
-    },
-    {
-      "test_method_name": "test1",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test exercises multiple operations (insereAresta, proxAdj, existeAresta, numVertices) and verifies multiple behaviors in a single method rather than focusing on a single requirement/behavior. There are multiple 'Act' operations (insert edge and then proxAdj/read other properties), so it is not atomic.",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertNotNull(\"proxAdj(0) should not be null after inserting an edge.\", grafo_Aresta0);\nassertEquals(\"Number of vertices should remain the default of 100.\", 100, grafo0.numVertices());",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestSplit {\n  @Test public void insertEdge_shouldCreateAdjacency() {\n    Grafo g = new Grafo();\n    g.insereAresta(0,0,0);\n    assertNotNull(g.proxAdj(0));\n  }\n  @Test public void defaultNumVertices_shouldBe100() { assertEquals(100, new Grafo().numVertices()); }\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared or static mutable state. There are no test-order hints or shared fields, and no need for setup/teardown in the visible code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single happy-path test is present; there are no tests covering error scenarios or exceptional inputs (no assertThrows/@Test(expected=...) or names indicating invalid/null/exception cases).",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertNotNull(\"proxAdj(0) should not be null after inserting an edge.\", grafo_Aresta0);\nassertTrue(\"existeAresta should report true for the inserted edge.\", grafo0.existeAresta(0, 0));",
-          "improved_code": "import org.junit.Test;\npublic class EvoAITestExceptions {\n  @Test(expected = Exception.class)\n  public void proxAdj_invalidVertex_shouldThrow() {\n    Grafo g = new Grafo();\n    g.proxAdj(-1); // expect exception for invalid index\n  }\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test uses boundary-like values: vertex index 0 and a zero weight (peso = 0), which are common boundary cases (zero and self-loop). This demonstrates attention to at least one boundary condition.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "There are no helper methods or constants to eliminate duplication or clarify intent; setup (graph creation and edge insertion) is inlined. While only one test exists, the class lacks modular helper routines or named constants.",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, 0);\nGrafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);\nassertEquals(\"Inserted edge should have peso = 0.\", 0, grafo_Aresta0.peso());",
-          "improved_code": "private Grafo createGraphWithSelfLoop() {\n  Grafo g = new Grafo();\n  g.insereAresta(0,0,0);\n  return g;\n}\n@Test public void usesHelper_createAndCheck() {\n  Grafo g = createGraphWithSelfLoop();\n  assertNotNull(g.proxAdj(0));\n}"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test method is short (well under 20-30 lines) and has a simple linear flow without loops or nested conditionals, consistent with low cyclomatic complexity and a single Arrange-Act-Assert structure.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test asserts multiple properties of the inserted edge (v1, v2, peso) and additional behavior (existeAresta and numVertices). Multiple specific assertions increase fault detection capability.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods. The test appears active and includes descriptive assertion messages, and class Javadoc documents intent.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc explicitly includes 'Requirement traceability: REQ-GRAFO-001', providing direct traceability to a requirement.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit timeout annotation (@Test(timeout = 4000)), which is an explicit performance-related constraint; per rules this counts as an explicit performance test presence.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name 'test1' is generic and does not describe the scenario or expected outcome; it violates descriptive naming conventions such as methodName_condition_expectedResult.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test1()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void insertEdge_withZeroWeight_createsAdjacencyAndProperties() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0,0,0);\n    assertNotNull(grafo0.proxAdj(0));\n  }"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Signs of test generation are present: the test class name 'EvoAITest' and imports from org.evosuite.runtime and a generic method name 'test1' indicate heavy code generation artifacts rather than minimal, intention-revealing tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@Category(UnitTest.class)\npublic class EvoAITest {\n  @Test(timeout = 4000)\n  public void test1() throws Throwable { ... }",
-          "improved_code": "import org.junit.Test;\nimport org.junit.experimental.categories.Category;\n@Category(UnitTest.class)\npublic class GrafoUnitTests {\n  @Test public void insertEdge_withZeroWeight_createsAdjacency() {\n    Grafo g = new Grafo();\n    g.insereAresta(0,0,0);\n    assertNotNull(g.proxAdj(0));\n  }\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes explicit Given-When-Then inline comments in the method and class-level Javadoc states Given-When-Then structure, indicating deliberate design intent and prioritization of scenario structure.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "The test interacts only with public Grafo API methods and does not use reflection or access internals; it verifies observable behavior through public methods, reducing coupling to implementation details.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertEquals, assertTrue, assertNotNull) and include descriptive failure messages, improving diagnosability and preferring specific assertions over generic ones.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test includes minimal, useful Given-When-Then comments that explain the intent without excessive or redundant comments. There is no commented-out code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "No sources of non-determinism (Random, current time, sleeps or external dependencies) are present; the test uses deterministic API calls and local state only.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test only uses local variables and does not persist external state or modify static globals. Although there is no explicit @After cleanup, no external resources or persistent side effects are visible.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class and the test method are annotated with @Category(UnitTest.class), demonstrating meaningful categorization for selective execution.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "73.7%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "73.7%"
-    },
-    {
-      "test_method_name": "test0",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The test focuses on a single behavior: inserting a self-loop and verifying its properties. There is one primary Arrange-Act-Assert flow (insert then verify); other calls (imprime, proxAdj) support this single behavior.",
+          "justification": "The test contains a single clear Arrange-Act-Assert flow: construct Grafo, invoke primeiroListaAdj(0) (Act), then assert numVertices. Only one distinct method invocation under test is exercised, so it focuses on a single behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -656,7 +656,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The method uses only local variables and does not rely on shared mutable state or ordered execution. No @Before/@After usage is required given the isolated local state.",
+          "justification": "The test uses only local variables (grafo0) and does not rely on shared static or instance state. No @Before/@After are required given local setup; nothing indicates shared mutable state between tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -664,63 +664,63 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path test is present; there are no tests exercising error conditions or exceptions. The class contains a single test method so no complementary error-case test exists.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -6204);\n  }",
-          "improved_code": "  @Test(expected = IllegalArgumentException.class)\n  public void insertInvalidVertex_throwsIllegalArgument() {\n    Grafo grafo = new Grafo();\n    // invalid vertex index should raise an exception\n    grafo.insereAresta(-1, 0, 10);\n  }"
+          "justification": "Only a single happy-path scenario is present. There are no tests exercising error/exceptional flows (no assertThrows/@Test(expected=...) or try-catch verifying exceptions). The class contains only one test method, so exceptional flows are not covered.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test\n  public void test2_invalidIndex_throws() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      try {\n          grafo0.primeiroListaAdj(-1);\n          fail(\"Expected exception for invalid vertex index\");\n      } catch (RuntimeException e) {\n          // expected exceptional flow\n      }\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test uses boundary-relevant values: vertex 0 (edge-case index) and a negative weight (-6204), covering an edge scenario rather than only middle-range values.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test only exercises index 0 and a default count assertion; it does not check boundary cases such as upper bound (last index), just-outside bounds, negative indices, empty/zero values, or other edge inputs.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test\n  public void test2_boundaryValues() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      // valid lower bound\n      grafo0.primeiroListaAdj(0);\n      // valid upper bound (last index = 99)\n      grafo0.primeiroListaAdj(99);\n      try {\n          grafo0.primeiroListaAdj(100);\n          fail(\"Expected exception for out-of-bounds index\");\n      } catch (RuntimeException e) { /* expected */ }\n      assertEquals(100, grafo0.numVertices());\n  }"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used to encapsulate repeated setup; test uses hard-coded literal values directly. Although only one test exists, the test lacks modular extraction for setup or assertions.",
-          "original_code": "    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();\n\n    // When: insert a self-loop with a negative weight\n    grafo0.insereAresta(0, 0, -6204);\n\n    assertTrue(\"Expected the self-loop (0->0) to exist after insertion.\", grafo0.existeAresta(0, 0));",
-          "improved_code": "  private Grafo createGraphWithSelfLoop() {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, -6204);\n    return g;\n  }\n\n  @Test(timeout = 4000)\n  public void testInsertSelfLoop() throws Throwable {\n    Grafo grafo0 = createGraphWithSelfLoop();\n    assertTrue(\"Expected the self-loop (0->0) to exist after insertion.\", grafo0.existeAresta(0, 0));\n  }"
+          "status": "compliant",
+          "justification": "The test is short and self-contained (no duplicated setup across methods visible). Given-When-Then comments reduce cognitive load. There are no repeated blocks to refactor within this single short test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small and linear (no loops or complex conditionals) and under typical line thresholds (<30). Cyclomatic complexity is low with a single flow of setup, action, and assertions.",
+          "justification": "The method is small (< 20 lines) and linear: no loops or complex conditionals. Cyclomatic complexity is low and follows one Arrange-Act-Assert sequence.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test verifies multiple properties of the inserted edge (existence, v1, v2, peso) and also checks graph vertex count, providing multiple assertions to detect faults.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains only one assertion (assertEquals on numVertices). It does not verify multiple properties or include comprehensive assertions that would increase fault-detection capability.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test\n  public void test2_multipleAssertions() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      int initial = grafo0.numVertices();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should remain unchanged after primeiroListaAdj\", initial, grafo0.numVertices());\n      assertEquals(\"Expected default vertex count\", 100, initial);\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore or @Disabled annotations or commented-out @Test methods are present in the method. The test is active and includes descriptive assertion messages suggesting maintenance attention.",
+          "justification": "There are no @Ignore/@Disabled annotations, no commented-out @Test methods, and no TODOs visible. The test appears active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No traceability annotations or method-level Javadoc linking this specific test to a requirement are present in the test method. (Class-level Javadoc exists but method-level evidence is absent and evaluation is limited to the method.)",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test0()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  /**\n   * Tests REQ-GRAFO-001: insert and read a self-loop edge\n   */\n  @Test(timeout = 4000)\n  public void insertSelfLoop_withNegativeWeight_reportsEdgePresent() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0,0,-6204);\n    assertTrue(grafo0.existeAresta(0,0));\n  }"
+          "status": "compliant",
+          "justification": "Class Javadoc contains 'Requirement traceability: REQ-GRAFO-CORE-100', providing a direct link between the tests and the requirement, satisfying traceability criteria.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The method includes an explicit timeout via @Test(timeout = 4000), which is an explicit performance-related constraint; therefore the practice is addressed at the method level.",
+          "justification": "A @Test(timeout = 4000) annotation is present, which is an explicit timing constraint. Per decision rules, explicit timeout usage is considered evidence of performance-related testing, so this practice is marked compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -728,23 +728,23 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' is generic and does not follow descriptive naming conventions (method_scenario_expectedResult). It fails the naming criteria for clarity.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test0()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  @Test(timeout = 4000)\n  public void insertSelfLoop_withNegativeWeight_edgePresentAndPropertiesMatch() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -6204);\n    assertTrue(grafo0.existeAresta(0,0));\n  }"
+          "justification": "The test method is named 'test2', which is generic and does not describe scenario or expected outcome. This fails descriptive naming conventions (methodName_scenario_expectedResult).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test\n  public void primeiroListaAdj_onNewGraph_doesNotChangeVertexCount() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' resembles an auto-generated name (common in generated suites). This is a sign of heavy code-generation naming conventions rather than concise intention-revealing names.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test0()  throws Throwable  {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  @Test(timeout = 4000)\n  public void insertSelfLoop_withNegativeWeight_preservesEdge() throws Throwable {\n    // Given: a fresh graph\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -6204);\n    assertTrue(grafo0.existeAresta(0,0));\n  }"
+          "justification": "The test class contains clear signs of code-generation scaffolding (EvoRunner, EvoRunnerParameters, numeric test name 'test2', extends Grafo_ESTest_scaffolding), indicating it originated from a generator and retains autogenerated naming patterns.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      grafo0.primeiroListaAdj(0);\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }",
+          "improved_code": "  @Test\n  public void primeiroListaAdj_onNewGraph_doesNotChangeVertexCount() throws Throwable {\n      // Given: a fresh graph\n      Grafo grafo0 = new Grafo();\n      // When: request the first element of adjacency list for vertex 0\n      grafo0.primeiroListaAdj(0);\n      // Then: verify the graph still reports the default number of vertices\n      assertEquals(\"Vertex count should be 100 for a newly created graph.\", 100, grafo0.numVertices());\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The method includes a Given-When-Then comment and descriptive assertion messages, demonstrating a BDD/structured design intent for the scenario under test.",
+          "justification": "The test uses Given-When-Then comments and a clear structure, indicating some design intent. The presence of descriptive assertion messages and the structured comments suggests the test was thoughtfully refactored/designed.",
           "original_code": null,
           "improved_code": null
         },
@@ -752,7 +752,7 @@
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with public APIs of Grafo (no reflection or private state access). It verifies observable behavior through public methods, not internal implementation details.",
+          "justification": "The test interacts only with public API (new Grafo(), primeiroListaAdj, numVertices). There is no reflection or checks of private/internal state visible, so it focuses on observable behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -760,7 +760,7 @@
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions use specific methods (assertTrue, assertNotNull, assertEquals) and include descriptive failure messages, satisfying the requirement for clear, specific assertions.",
+          "justification": "The test uses assertEquals with a descriptive failure message, and uses a specific assertion (assertEquals) rather than generic assertTrue, satisfying the assertion clarity criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -768,7 +768,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The method contains minimal Given-When-Then comments that explain intent ('why') and no commented-out code; comments are appropriate and concise.",
+          "justification": "The method contains concise Given-When-Then comments explaining intent; no excessive or commented-out code is present. Comments explain 'why' / scenario rather than restating code.",
           "original_code": null,
           "improved_code": null
         },
@@ -776,7 +776,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "Test contains no random sources, time-based calls, Thread.sleep, or external dependencies; it uses deterministic operations on an in-memory Grafo instance.",
+          "justification": "The test does not use Random, current time, Thread.sleep, or external services; it constructs a Grafo locally and calls deterministic methods, so it should be deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -784,7 +784,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "All state is local to the test (local Grafo instance); no files, databases, or static globals are modified, so there are no persistent side effects across tests.",
+          "justification": "The test uses only local state and does not create files, write to databases, or modify static variables. No cleanup is required for local-only operations, so side effects are avoided.",
           "original_code": null,
           "improved_code": null
         },
@@ -792,7 +792,7 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The method is annotated with @Category(UnitTest.class), providing categorization metadata to enable selective execution.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution. Labels are meaningful at the class level.",
           "original_code": null,
           "improved_code": null
         }
@@ -807,16 +807,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The test focuses on a single behavior: removing an edge (retiraAresta). The insertion is used as setup; only one main act (retiraAresta) is asserted with a single Arrange-Act-Assert flow.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method performs two distinct API operations: insereAresta(...) and retiraAresta(...). While the insertion can be seen as setup, it is invoked inline in the test, and there are multiple method calls leading to multiple behaviors being exercised in one method. Decision rule: >1 distinct 'Act' operations -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, (-621));\n    Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(0, 0);\n    assertNotNull(\"retiraAresta should return the removed edge for (0,0).\", grafo_Aresta0);\n}",
+          "improved_code": "import org.junit.Before;\nimport org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  private Grafo grafo0;\n  @Before public void setUp() { grafo0 = new Grafo(); grafo0.insereAresta(0,0,-621); }\n  @Test public void removeSelfLoop_returnsRemovedEdge() { assertNotNull(grafo0.retiraAresta(0,0)); }\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The method uses only local variables and does not rely on shared mutable state or naming-order conventions; no setup/teardown is needed for this single, self-contained test.",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or other tests. There are no setup/teardown annotations needed for this single method, satisfying independence criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -824,175 +824,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path test exists in the class; there is no test for error/exceptional behavior (no assertThrows/@Test(expected=...) or invalid/null input test), and the class contains only one test method.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test5()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);\n    assertNotNull(\"retiraAresta should return the removed edge for an existing edge.\", removed);",
-          "improved_code": "  @Test\n  public void retiraAresta_nonexistentEdge_returnsNull() {\n    Grafo grafo = new Grafo();\n    // attempt to remove an edge that was never inserted\n    Grafo.Aresta removed = grafo.retiraAresta(1, 2);\n    assertNull(\"retiraAresta should return null for non-existing edges.\", removed);\n  }"
+          "justification": "Only a single happy-path scenario is tested (insert then remove). There is no test for an error case (e.g., removing a non-existent edge or invalid inputs). Decision rule: class only covers a happy path -> non-compliant.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(0, 0);\nassertNotNull(\"retiraAresta should return the removed edge for (0,0).\", grafo_Aresta0);",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  @Test\n  public void removeNonExistingEdge_returnsNull() {\n    Grafo grafo = new Grafo();\n    Grafo.Aresta removed = grafo.retiraAresta(1, 2);\n    assertNull(\"retiraAresta should return null for non-existing edge (1,2).\", removed);\n  }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "compliant",
-          "justification": "The test uses vertex index 0 and a negative weight (-621), covering at least lower-bound and negative-value boundary conditions rather than only typical/middle-range values.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used; magic numbers are hardcoded (0, -621). The test class does not extract repeated setup into helpers, reducing modularity.",
-          "original_code": "    // Given: a fresh graph and an inserted edge with a negative weight\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    // When: remove that edge\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);",
-          "improved_code": "  private static final int V_SRC = 0;\n  private static final int V_DST = 0;\n  private static final int NEG_WEIGHT = -621;\n\n  @Test\n  public void retiraAresta_existingEdge_returnsRemovedEdge() {\n    Grafo grafo = createGraphWithEdge(V_SRC, V_DST, NEG_WEIGHT);\n    Grafo.Aresta removed = grafo.retiraAresta(V_SRC, V_DST);\n    assertNotNull(removed);\n  }\n\n  private Grafo createGraphWithEdge(int v1, int v2, int peso) {\n    Grafo g = new Grafo();\n    g.insereAresta(v1, v2, peso);\n    return g;\n  }"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test is short (<20 lines of code), linear, with no loops or conditionals, following a simple Arrange-Act-Assert structure.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test performs multiple substantive assertions on the returned Aresta (v1, v2, peso) and additional checks (existeAresta, numVertices), verifying multiple properties and reducing risk of superficial checks.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test is active and contains descriptive assertion messages and a Given-When-Then comment.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes requirement traceability: 'Requirement traceability: REQ-GRAFO-001', directly linking tests to a requirement ID.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related control; therefore the class contains an explicit timing-related test annotation.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name is generic ('test5') and does not follow a descriptive naming convention (method_scenario_expectedResult), making the test purpose unclear from the name despite inline Given-When-Then comments.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test5()  throws Throwable  {\n    // Given: a fresh graph and an inserted edge with a negative weight\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void retiraAresta_existingEdge_returnsRemovedEdge() throws Throwable {\n    // Given: a fresh graph and an inserted edge with a negative weight\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);\n    assertNotNull(\"retiraAresta should return the removed edge for an existing edge.\", removed);\n  }"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Signs of test-generation tooling are present (class name 'EvoAITest', imports from org.evosuite.runtime, a generic method name 'test5'), indicating generated-style artifacts rather than minimal, intention-revealing tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test5()  throws Throwable  {",
-          "improved_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void retiraAresta_existingEdge_returnsRemovedEdge() throws Throwable {\n    // Given: a fresh graph and an inserted edge with a negative weight\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);\n    assertNotNull(\"retiraAresta should return the removed edge for an existing edge.\", removed);\n  }"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The method includes Given-When-Then comments inlined and descriptive assertion messages, indicating a designed test structure (Given-When-Then) rather than ad-hoc one-liners.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "The test exercises only public API methods (insereAresta, retiraAresta, existeAresta, numVertices) and does not use reflection or access private implementation details.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use specific methods (assertEquals, assertFalse, assertNotNull) and include descriptive failure messages for easier diagnosis, meeting effective assertion usage criteria.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test and class include concise Given-When-Then comments and a class-level Javadoc; there is no excessive or commented-out code and comments explain intent rather than restating obvious code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, system time, sleeps, or external dependencies) and uses local state, making results deterministic.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "Operations affect only a local Grafo instance created inside the test; no global/static state is modified and no persistent resources are created without cleanup.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class and method use @Category(UnitTest.class), providing clear categorization for selective execution.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "78.9%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "78.9%"
-    },
-    {
-      "test_method_name": "test7",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs two distinct 'Act' operations: it queries numVertices() and then proxAdj(0). That represents multiple behaviors being verified in the same test rather than a single Arrange-Act-Assert, so it is not atomic.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test7()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    int n = grafo0.numVertices();\n    assertEquals(\"numVertices should return the default configured vertex count (100).\", 100, n);\n    assertNull(\"proxAdj(0) should be null in a fresh graph.\", grafo0.proxAdj(0));\n  }",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestFixed {\n  @Test public void numVertices_defaultsTo100() { Grafo g = new Grafo(); assertEquals(100, g.numVertices()); }\n  @Test public void proxAdj_onFreshGraphIsNull() { Grafo g = new Grafo(); assertNull(g.proxAdj(0)); }\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on or modify shared/static state; there are no dependencies on other tests or test-order. There is no need for setup/teardown for this single self-contained test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a happy-path assertion is present (checking default numVertices and proxAdj null). There is no test for an error or exceptional condition for the behavior under test and the class has < 2 tests, so it lacks coverage of exceptional flows.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test7()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    int n = grafo0.numVertices();\n    assertEquals(\"numVertices should return the default configured vertex count (100).\", 100, n);\n  }",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestExceptions {\n  @Test(expected = IndexOutOfBoundsException.class)\n  public void proxAdj_withNegativeIndex_throws() { new Grafo().proxAdj(-1); }\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test exercises proxAdj(0) which is a boundary-like value (zero) for vertex indices; presence of zero qualifies as boundary testing per criteria.",
+          "justification": "The test exercises vertex index 0 and a negative weight (-621). It includes boundary-like values (zero vertex index and negative weight) rather than only middle-range values, satisfying boundary-check evidence.",
           "original_code": null,
           "improved_code": null
         },
@@ -1000,7 +840,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is self-contained, short, follows a clear Given-When-Then/Arrange-Act-Assert structure and does not duplicate shared logic across multiple tests (only one test present), so modularity is acceptable.",
+          "justification": "The test is short and self-contained with no duplicated helper logic evident in the single method. There are no magic constants reused across multiple methods in this class, so modularity is acceptable.",
           "original_code": null,
           "improved_code": null
         },
@@ -1008,7 +848,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (straight-line code, no loops or complex conditionals) and follows a single Arrange-Act-Assert flow, so complexity is low.",
+          "justification": "The method is concise (well under 20 lines), linear without loops or nested conditionals, following a single Arrange-Act-Assert flow, meeting the low-complexity criterion.",
           "original_code": null,
           "improved_code": null
         },
@@ -1016,7 +856,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test asserts two properties (numVertices value and proxAdj null) using specific assertions, verifying multiple aspects of the object's state rather than a single superficial check.",
+          "justification": "The test contains multiple specific assertions (not-null plus multiple equals) verifying multiple properties of the removed edge and graph state, providing comprehensive checks rather than superficial assertions.",
           "original_code": null,
           "improved_code": null
         },
@@ -1024,7 +864,7 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out tests; the test is active and includes descriptive messages, indicating maintained/active test code.",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods. The test appears active and runnable, and comments show intentional structure rather than reminders/TODOs.",
           "original_code": null,
           "improved_code": null
         },
@@ -1032,15 +872,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The class Javadoc contains a requirement reference 'REQ-GRAFO-001', providing traceability between the test and a requirement.",
+          "justification": "The class-level Javadoc includes 'Requirement traceability: REQ-GRAFO-CORE-100', providing explicit linkage to a requirement as required by the practice.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit timeout annotation (@Test(timeout = 4000)), showing an explicit performance-related constraint in the test, which satisfies the practice's detection criteria.",
+          "status": "not-applicable",
+          "justification": "This is a unit test focused on functional behavior; there are no performance/security test indicators and such tests are usually out-of-scope for small unit tests. Decision rule: mark as not-applicable for unit tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -1048,23 +888,23 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test7' is generic and does not describe the scenario or expected outcome; it fails the descriptive naming convention requirement.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test7()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    int n = grafo0.numVertices();\n    assertEquals(\"numVertices should return the default configured vertex count (100).\", 100, n);\n  }",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestRenamed {\n  @Test\n  public void numVertices_onFreshGraph_returnsDefault100() { Grafo g = new Grafo(); assertEquals(100, g.numVertices()); }\n}"
+          "justification": "The method name 'test5' is generic and does not describe scenario or expected outcome. Decision rule: generic test name -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, (-621));\n    Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(0, 0);\n}",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  @Test(timeout = 4000)\n  public void removeSelfLoop_withNegativeWeight_returnsRemovedEdgeAndKeepsVertexCount() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 0);\n    assertNotNull(\"retiraAresta should return the removed edge for (0,0).\", removed);\n  }\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test class contains EvoSuite-specific imports and naming (org.evosuite.runtime.*, EvoRunner, class name EvoAITest and generic test name 'test7'), which are strong indicators of auto-generated verbose tests rather than minimal hand-written tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class)\npublic class EvoAITest {\n  @Test(timeout = 4000)\n  public void test7() throws Throwable { Grafo grafo0 = new Grafo(); /* ... */ }\n}",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class GrafoUnitTest {\n  @Test public void numVertices_onFreshGraph_returnsDefault100() { Grafo g = new Grafo(); assertEquals(100, g.numVertices()); }\n}"
+          "justification": "There are clear signs of autogenerated scaffolding: the class uses EvoSuite runner annotations and the method name 'test5' plus the comment referencing 'autogenerated scaffolding'. These are signals of heavy code generation artifacts -> non-compliant.",
+          "original_code": "@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Grafo_ESTest_scaffolding {\n  @Test(timeout = 4000)\n  public void test5() throws Throwable {",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  @Test\n  public void removeSelfLoop_withNegativeWeight_returnsRemovedEdge() {\n    Grafo g = new Grafo(); g.insereAresta(0,0,-621);\n    assertNotNull(g.retiraAresta(0,0));\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The test contains Given-When-Then comments and a clear structure, indicating deliberate design intent and BDD-style organization as per the decision rules.",
+          "justification": "The method uses an explicit Given-When-Then comment structure inside the test, indicating deliberate design intent and BDD-like structure which satisfies the practice.",
           "original_code": null,
           "improved_code": null
         },
@@ -1072,7 +912,7 @@
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test calls public API methods only and does not access private state or use reflection; it verifies observable behavior via public methods, which supports maintainability.",
+          "justification": "The test interacts only with public API methods of Grafo and does not access private fields or use reflection; it verifies observable behavior, aligning with maintainable test design.",
           "original_code": null,
           "improved_code": null
         },
@@ -1080,7 +920,7 @@
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "The assertions are specific (assertEquals and assertNull) and include descriptive failure messages, meeting the criteria for effective and clear assertions.",
+          "justification": "Assertions use specific assertEquals and assertNotNull with descriptive failure messages for clarity; multiple specific assertions are used rather than generic assertTrue only.",
           "original_code": null,
           "improved_code": null
         },
@@ -1088,7 +928,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test contains concise Given-When-Then inline comments that explain intent ('why'), with no commented-out code, so comments add value without clutter.",
+          "justification": "The test contains concise Given-When-Then comments that explain the 'why' and a helpful class-level Javadoc. There is no excessive or commented-out code, so comments are appropriate.",
           "original_code": null,
           "improved_code": null
         },
@@ -1096,7 +936,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test uses no random values, no System.currentTimeMillis(), no Thread.sleep(), and depends only on a freshly created object, so it is deterministic under the same environment.",
+          "justification": "The test uses deterministic calls (no Random, no current time, no Thread.sleep) and local state, so results should be repeatable and deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -1104,7 +944,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only creates a local Grafo instance and does not modify global/static state or external resources; there is no persisting or file/database operations, so side-effects are avoided.",
+          "justification": "The test creates a local Grafo instance and does not modify static/global state or persist external resources and no cleanup is required; thus it avoids side effects.",
           "original_code": null,
           "improved_code": null
         },
@@ -1112,14 +952,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The test class and method are annotated with @Category(UnitTest.class), providing categorization that supports selective execution and organization.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution, fulfilling the practice.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "78.9%",
+      "method_compliance_score": "73.7%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "78.9%"
+      "normalized_method_compliance_score": "77.8%"
     },
     {
       "test_method_name": "test6",
@@ -1127,16 +967,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The method focuses on a single behavior: attempting to remove a non-existent edge and verifying the graph state. There is one clear Arrange-Act-Assert flow (setup with insereAresta, single retiraAresta action, and a small set of assertions).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test executes multiple distinct 'Act' operations (insereAresta and retiraAresta). Decision rule 1 marks this non-compliant because there is more than one distinct operation being performed in the test.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test6()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestFixed {\n  @Test public void retiraAresta_withInvalidIndex_returnsNull() {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, 0);\n    Grafo.Aresta a = g.retiraAresta(0, 100);\n    assertNull(a);\n  }\n  @Test public void numVertices_afterInsert_isExpected() {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, 0);\n    assertEquals(100, g.numVertices());\n  }\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on any shared mutable state or ordering. There is no @Before/@After needed for this single test; no static or instance state is modified.",
+          "justification": "The test uses only local variables, no shared mutable state or numbered test names, and there are no setup/teardown dependencies visible in the snippet.",
           "original_code": null,
           "improved_code": null
         },
@@ -1144,23 +984,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only one test method is present in the class. Although this test covers an error scenario (removing a non-existent edge), there is no corresponding happy-path test for the same operation (e.g., removing an existing edge). The class lacks at least two tests covering both normal and error flows for the behavior being tested.",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test6()  throws Throwable  {\n    // Given: a graph with one inserted self-loop\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, 0);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 100);\n  }",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest {\n  @Test\n  public void test6() throws Throwable { /* existing negative-case test */ }\n  @Test\n  public void removeExistingEdge_returnsRemovedEdge() throws Throwable {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 1, 0);\n    Grafo.Aresta removed = g.retiraAresta(0, 1);\n    assertNotNull(\"retiraAresta should return the removed edge for an existing edge\", removed);\n  }\n}"
+          "justification": "The class has only one test method. Decision rule 4: with a single test method the class likely only covers a single scenario; there is no separate happy-path and error-path test pair.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test6()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestExtended {\n  @Test public void retiraAresta_existingEdge_returnsEdge() {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, 0);\n    Grafo.Aresta removed = g.retiraAresta(0, 0);\n    assertNotNull(removed);\n  }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test uses vertex indices 0 and 100 but does not systematically test boundary cases (e.g., just outside valid range such as -1, numVertices()-1, Integer.MAX_VALUE). It lacks explicit boundary-value checks (min/max/just-outside) beyond the single non-existent index used.",
-          "original_code": "    // Given: a graph with one inserted self-loop\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, 0);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 100);",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest {\n  @Test\n  public void retiraAresta_boundaryValues() throws Throwable {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, 0);\n    assertNull(g.retiraAresta(0, -1));\n    assertNull(g.retiraAresta(0, g.numVertices()));\n    assertNull(g.retiraAresta(0, Integer.MAX_VALUE));\n  }\n}"
+          "status": "compliant",
+          "justification": "The test uses boundary-like input values including 0, which matches evaluation criteria (presence of 0 counts towards boundary testing).",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained, with no duplicated setup across multiple tests in this class. There is no obvious repeated logic that needs refactoring into helpers for this single test.",
+          "justification": "The test is short and self-contained (<10 lines) and does not repeat code across multiple methods within the visible snippet; no helper extraction is necessary here.",
           "original_code": null,
           "improved_code": null
         },
@@ -1168,7 +1008,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (well under 20 lines) and contains no loops or complex conditionals; it follows a straightforward linear Arrange-Act-Assert flow.",
+          "justification": "The method is short (well under 20 lines) and contains no loops or complex conditionals, matching the low complexity criteria.",
           "original_code": null,
           "improved_code": null
         },
@@ -1176,7 +1016,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple specific assertions (assertNull, assertTrue, assertEquals) validating different aspects of the result and graph state rather than a single superficial assertion.",
+          "justification": "The test contains multiple assertions that verify different properties (nullity of returned edge and vertex count), satisfying the requirement for multiple property checks.",
           "original_code": null,
           "improved_code": null
         },
@@ -1184,7 +1024,7 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. The test is active and includes descriptive messages and comments indicating intended behavior.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -1192,15 +1032,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The class Javadoc explicitly contains a requirement traceability line: 'Requirement traceability: REQ-GRAFO-001', providing traceability to the requirement under test.",
+          "justification": "Class-level Javadoc contains a requirement reference 'REQ-GRAFO-CORE-100', providing traceability to a requirement.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "Although this is a unit test, it has an explicit @Test(timeout = 4000) annotation, indicating a timing constraint. Per the decision rules, the presence of a timeout qualifies as an explicit performance-related assertion, so it is marked compliant.",
+          "status": "not-applicable",
+          "justification": "This is a unit test with no explicit performance or security testing. Per decision rules, performance/security testing is usually not-applicable for such unit tests unless explicitly present.",
           "original_code": null,
           "improved_code": null
         },
@@ -1208,23 +1048,23 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test6' is generic and does not describe the scenario or expected outcome. This violates the recommended descriptive naming conventions (methodName_scenario_expectedResult).",
-          "original_code": "  @Test(timeout = 4000)\n  @Category(UnitTest.class)\n  public void test6()  throws Throwable  {\n    // Given: a graph with one inserted self-loop\n    Grafo grafo0 = new Grafo();",
-          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest {\n  @Test(timeout = 4000)\n  public void removeNonExistentEdge_shouldReturnNullAndKeepOriginalEdge() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, 0);\n    Grafo.Aresta removed = grafo0.retiraAresta(0, 100);\n    assertNull(\"retiraAresta should return null when attempting to remove a non-existent edge.\", removed);\n  }\n}"
+          "justification": "The test method name 'test6' is generic and does not describe the scenario or expected outcome, violating naming conventions for clarity.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test6()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      grafo0.insereAresta(0, 0, 0);",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITestRenamed {\n  @Test public void retiraAresta_withInvalidIndex_returnsNull() throws Throwable {\n    Grafo g = new Grafo();\n    g.insereAresta(0, 0, 0);\n    Grafo.Aresta a = g.retiraAresta(0, 100);\n    assertNull(a);\n  }\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "There are no explicit auto-generated markers or verbose generated patterns (no 'Auto-generated by...' comments or repetitive test names). Although some EvoSuite imports appear in the file header, there are no strong signs of heavy code generation inside the single visible test method, so this practice is considered not-applicable based on available evidence.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The class includes EvoSuite artifacts (@RunWith(EvoRunner.class), EvoRunnerParameters, scaffolding class extension) and an auto-test style, indicating heavy code-generation traces. Decision rules flag generated scaffolding and runner usage as non-compliant.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)",
+          "improved_code": "import org.junit.Test;\nimport org.junit.runner.RunWith;\nimport org.junit.runners.JUnit4;\n@RunWith(JUnit4.class)\npublic class EvoAITest_Clean {\n  @Test public void retiraAresta_withInvalidIndex_returnsNull() {\n    Grafo g = new Grafo();\n    g.insereAresta(0,0,0);\n    assertNull(g.retiraAresta(0,100));\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The test method includes Given-When-Then comments and the class Javadoc states Given-When-Then structure, indicating thoughtful design and intention in the test structure.",
+          "justification": "Class header comments claim a Given-When-Then refactor and the test shows a simple scenario; there is evidence of deliberate design rather than purely auto-generated trivial tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -1232,7 +1072,7 @@
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with public Grafo API methods and does not use reflection or access private internals. No evidence of coupling to internal implementation details is present.",
+          "justification": "The test exercises public Grafo methods only and does not access private fields or use reflection; it focuses on observable behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -1240,7 +1080,7 @@
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions are specific (assertNull, assertTrue, assertEquals) and include descriptive failure messages, satisfying the requirement for clear and specific assertions.",
+          "justification": "Assertions are specific (assertNull and assertEquals) rather than generic assertTrue; although they lack descriptive messages, they are specific enough per the decision rules.",
           "original_code": null,
           "improved_code": null
         },
@@ -1248,7 +1088,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test uses concise Given-When-Then inline comments and the class has useful Javadoc. Comments explain the scenario rather than restating obvious code, aiding readability without clutter.",
+          "justification": "Class-level Javadoc provides useful context and there is no commented-out code or excessive inline comments; comments explain intent rather than obvious code.",
           "original_code": null,
           "improved_code": null
         },
@@ -1256,7 +1096,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "No sources of non-determinism are used (no Random, no System.currentTimeMillis, no Thread.sleep). The test uses only local state and deterministic Grafo operations.",
+          "justification": "No sources of non-determinism (Random, current time, Thread.sleep) are used in the test method; the test uses local operations only.",
           "original_code": null,
           "improved_code": null
         },
@@ -1264,7 +1104,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only uses local objects and does not persist data or modify global/static state; there is no need for cleanup in @After. No side-effecting resources are left open.",
+          "justification": "The test only uses local in-memory objects and does not persist files/databases or modify static/global state; no cleanup is required.",
           "original_code": null,
           "improved_code": null
         },
@@ -1272,14 +1112,174 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class and the test method use @Category(UnitTest.class), providing categorization suitable for selective execution and organization of tests.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization for selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "78.9%",
+      "method_compliance_score": "73.7%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "83.3%"
+      "normalized_method_compliance_score": "77.8%"
+    },
+    {
+      "test_method_name": "test7",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "The test performs a single primary operation under test (grafo.numVertices()) and contains one Arrange-Act-Assert flow: construct Grafo, call numVertices(), assert the result. No multiple unrelated operations are present.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not rely on or modify shared state. There are no ordered test names and no visible shared mutable state requiring setup/teardown in the snippet.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path test exists in the class (this method) and there is no test for error/exceptional behavior (no assertThrows/@Test(expected=...) or equivalent). The class contains only one test method so it lacks coverage of exceptional flows.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      // Given & When: default graph construction\n      Grafo grafo0 = new Grafo();\n      int int0 = grafo0.numVertices();\n\n      // Then: check default number of vertices and sanity\n      assertEquals(\"Default graph should report 100 vertices.\", 100, int0);\n  }",
+          "improved_code": "  @Test(expected = NullPointerException.class)\n  public void testNumVertices_nullGraph_throwsNPE() throws Throwable {\n      Grafo grafo = null;\n      // act - calling method on null should throw\n      grafo.numVertices();\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "The test only asserts a single typical value (100). It does not exercise any boundary values (e.g., zero, negative, max) for the vertex count. No edge-case inputs are tested in this method.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      // Given & When: default graph construction\n      Grafo grafo0 = new Grafo();\n      int int0 = grafo0.numVertices();\n\n      // Then: check default number of vertices and sanity\n      assertEquals(\"Default graph should report 100 vertices.\", 100, int0);\n  }",
+          "improved_code": "  @Test\n  public void testNumVertices_withinBounds() {\n      Grafo grafo = new Grafo();\n      int count = grafo.numVertices();\n      // boundary checks: non-negative and below Integer.MAX_VALUE\n      assertTrue(\"Vertex count should be non-negative\", count >= 0);\n      assertTrue(\"Vertex count should be less than Integer.MAX_VALUE\", count < Integer.MAX_VALUE);\n  }"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (few lines) and does not duplicate setup across multiple test methods (only one method present). There's no evidence of repeated blocks requiring helper extraction in this single-method class.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The method is short (<20 lines), linear, and contains no loops or complex conditionals, yielding low cyclomatic complexity.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test uses only a single assertion (assertEquals). It does not verify multiple properties of the result or object under test (e.g., object not null plus multiple fields), which reduces ability to detect deeper faults.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      // Given & When: default graph construction\n      Grafo grafo0 = new Grafo();\n      int int0 = grafo0.numVertices();\n\n      // Then: check default number of vertices and sanity\n      assertEquals(\"Default graph should report 100 vertices.\", 100, int0);\n  }",
+          "improved_code": "  @Test\n  public void testDefaultGraph_properties() {\n      Grafo grafo = new Grafo();\n      assertNotNull(\"Graph instance should not be null\", grafo);\n      int count = grafo.numVertices();\n      assertEquals(\"Default graph should report 100 vertices.\", 100, count);\n  }"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods in the snippet. The test is active and has descriptive comments added during refactoring.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "The class-level Javadoc includes a requirement reference 'REQ-GRAFO-CORE-100', providing traceability from test to requirement.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test method declares a timeout (@Test(timeout = 4000)), indicating an explicit performance-related constraint in the test. Per decision rules, presence of a timeout qualifies as an explicit performance check.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test method name 'test7' is generic and does not describe the scenario or expected outcome. It does not follow descriptive naming conventions such as methodName_scenario_expectedResult.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      // Given & When: default graph construction\n      Grafo grafo0 = new Grafo();\n      int int0 = grafo0.numVertices();\n\n      // Then: check default number of vertices and sanity\n      assertEquals(\"Default graph should report 100 vertices.\", 100, int0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testDefaultGraph_reports100Vertices() throws Throwable {\n      Grafo grafo = new Grafo();\n      int count = grafo.numVertices();\n      assertEquals(\"Default graph should report 100 vertices.\", 100, count);\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The class shows clear signs of auto-generated scaffolding (EvoSuite imports, EvoRunner, scaffolding superclass, and a generic test name 'test7'). The header even notes refactoring from autogenerated scaffolding; the presence of test7 and EvoSuite infrastructure suggests generated patterns.",
+          "original_code": "package ds.seed9121;\n\nimport org.junit.Test;\nimport static org.junit.Assert.*;\nimport ds.Grafo;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\nimport org.junit.runner.RunWith;\nimport org.junit.experimental.categories.Category;\n...\n  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      // Given & When: default graph construction\n      Grafo grafo0 = new Grafo();\n      int int0 = grafo0.numVertices();\n      assertEquals(\"Default graph should report 100 vertices.\", 100, int0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testDefaultGraph_reports100Vertices() throws Throwable {\n      // Given: a default graph\n      Grafo grafo = new Grafo();\n      // When: asking for the number of vertices\n      int count = grafo.numVertices();\n      // Then: the default should be 100\n      assertEquals(\"Default graph should report 100 vertices.\", 100, count);\n  }"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "The test contains explicit Given-When-Then comments, indicating some design intent and refactoring effort to make the test more descriptive. This aligns with BDD-style structure requested by the practice.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test interacts only with public APIs (new Grafo(), numVertices()) and does not access private fields or use reflection. There is no sign of coupling to internal implementation details.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "The single assertion uses assertEquals with a descriptive failure message. Although only one assertion exists, it is specific and contains a message; per rules, assertions with messages count positively.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The test includes concise Given-When-Then style inline comments and the class has useful Javadoc explaining the requirement traceability. There are no excessive or commented-out code blocks.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use random values, clocks, Thread.sleep, or external dependencies. It uses only a concrete constructor and deterministic method call, so results should be repeatable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not persist data or modify static/shared state in the visible snippet. No cleanup is necessary.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution, satisfying the practice.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "73.7%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "73.7%"
     },
     {
       "test_method_name": "test8",
@@ -1287,16 +1287,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The test performs a single primary 'Act' operation (grafoTransposto). The insereAresta call is setup; assertions verify related properties of that single behavior, indicating one Arrange-Act-Assert flow.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method performs multiple distinct method calls (insereAresta and grafoTransposto) and asserts two different outcomes (object identity and numVertices), indicating multiple behaviors are being validated in one test rather than a single, focused Arrange-Act-Assert scenario.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo grafo1 = grafo0.grafoTransposto();\nassertNotSame(grafo1, grafo0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "@Test(timeout = 4000)\npublic void graphTranspose_returnsDistinctGraph_and_preservesVertexCount() throws Throwable {\n    // Given\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    // When\n    Grafo grafo1 = grafo0.grafoTransposto();\n    // Then (single Arrange-Act-Assert block focusing on transpose)\n    assertNotSame(\"Transpose should return a different instance\", grafo1, grafo0);\n    assertEquals(\"Vertex count should be preserved after transpose\", grafo0.numVertices(), grafo1.numVertices());\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and no shared/static mutable state; no setup/teardown is required for this single test, so it is independent.",
+          "justification": "The test uses only local variables and does not reference or modify any shared mutable state in the visible code; no setup/teardown is required for this single test.",
           "original_code": null,
           "improved_code": null
         },
@@ -1304,47 +1304,47 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The test class contains only this single happy-path test and does not exercise any error/exception scenarios (no assertThrows/@Test(expected) or try-catch for failure cases).",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, -621);\nGrafo grafo1 = grafo0.grafoTransposto();\nassertTrue(\"Transposed graph should contain the self-loop (0->0).\", grafo1.existeAresta(0, 0));",
-          "improved_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, -621);\nGrafo grafo1 = grafo0.grafoTransposto();\nassertTrue(\"Transposed graph should contain the self-loop (0->0).\", grafo1.existeAresta(0, 0));\n// Additional negative-case check: invalid vertex index should throw\ntry {\n  grafo0.insereAresta(-1, 0, 1);\n  fail(\"Expected IllegalArgumentException for invalid vertex index\");\n} catch (IllegalArgumentException expected) {\n  // expected behavior\n}"
+          "justification": "Only a single happy-path test is present; there are no tests for error or exceptional flows (no @Test(expected=...) or assertThrows), and the class contains only one test method.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo grafo1 = grafo0.grafoTransposto();\nassertNotSame(grafo1, grafo0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "@Test(expected = IllegalArgumentException.class)\npublic void insereAresta_withInvalidVertex_throwsException() {\n    // Given\n    Grafo g = new Grafo();\n    // When: insert an invalid vertex index, Expect: IllegalArgumentException\n    g.insereAresta(-1, 0, 10);\n}\n\n@Test\npublic void graphTranspose_happyPath_preservesVertexCount() {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo grafo1 = grafo0.grafoTransposto();\n    assertNotSame(grafo1, grafo0);\n    assertEquals(grafo0.numVertices(), grafo1.numVertices());\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test uses boundary-relevant values: vertex index 0 and a negative edge weight (-621), which covers zero and negative cases.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test uses typical values (vertex 0 and weight -621) but does not exercise boundary conditions such as negative/zero indices beyond this, maximum indices, or off-by-one cases.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo grafo1 = grafo0.grafoTransposto();",
+          "improved_code": "@Test\npublic void insereAresta_boundaryValues_handledCorrectly() {\n    Grafo g = new Grafo();\n    // boundary: zero index\n    g.insereAresta(0, 0, 1);\n    // boundary: negative index should throw\n    try {\n        g.insereAresta(-1, 0, 1);\n        fail(\"Expected exception for negative vertex index\");\n    } catch (IllegalArgumentException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used to encapsulate repeated setup; setup is inlined in the test method. There are no private helpers to promote reuse or remove duplication.",
-          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, -621);\nGrafo grafo1 = grafo0.grafoTransposto();\nassertNotSame(\"grafoTransposto should produce a distinct Grafo instance.\", grafo1, grafo0);",
-          "improved_code": "private Grafo createGraphWithSelfLoop() {\n  Grafo g = new Grafo();\n  g.insereAresta(0, 0, -621);\n  return g;\n}\n\n@Test(timeout = 4000)\npublic void test8() throws Throwable {\n  Grafo grafo0 = createGraphWithSelfLoop();\n  Grafo grafo1 = grafo0.grafoTransposto();\n  assertNotSame(\"grafoTransposto should produce a distinct Grafo instance.\", grafo1, grafo0);\n}"
+          "status": "compliant",
+          "justification": "The test is short and self-contained (< 10 lines) with no visible duplicated logic across multiple tests; modularization is acceptable for the single short test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (well under 15-20 lines) and contains no loops or complex conditionals; it follows a simple linear Arrange-Act-Assert flow.",
+          "justification": "The method is short (< 20 lines), linear, and contains no loops or complex conditionals, indicating low cyclomatic complexity.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test includes multiple specific assertions that verify several properties (distinct instance, vertex count, existence of edge in both original and transpose), increasing fault-detection capability.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions are superficial: the returned grafo is only checked for identity (not same) and the original grafo's vertex count is asserted; the test does not verify multiple properties of the returned object (e.g., vertex counts of both graphs or structural properties).",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo grafo1 = grafo0.grafoTransposto();\nassertNotSame(grafo1, grafo0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "@Test\npublic void graphTranspose_validGraph_returnsGraphWithSameVertexCountAndDifferentInstance() {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo grafo1 = grafo0.grafoTransposto();\n    // verify multiple properties: distinct instance and preserved vertex count\n    assertNotSame(\"Transpose should return a distinct instance\", grafo1, grafo0);\n    assertEquals(\"Vertex count should be equal between graph and its transpose\", grafo0.numVertices(), grafo1.numVertices());\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test is active and runnable (uses @Test timeout).",
+          "justification": "No @Ignore or @Disabled annotations or commented-out test methods are present in the visible code; test method is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -1352,7 +1352,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "Class-level Javadoc includes 'Requirement traceability: REQ-GRAFO-001', providing direct linkage to a requirement.",
+          "justification": "Class-level Javadoc includes an explicit requirement traceability note: 'Requirement traceability: REQ-GRAFO-CORE-100', linking the tests to a requirement.",
           "original_code": null,
           "improved_code": null
         },
@@ -1360,7 +1360,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The test uses an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related assertion, satisfying the practice when present in unit tests.",
+          "justification": "The test uses an explicit timeout annotation (@Test(timeout = 4000)), which is an explicit performance-related assertion; therefore a performance concern is present and handled.",
           "original_code": null,
           "improved_code": null
         },
@@ -1368,47 +1368,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test8' is generic and does not describe the scenario or expected outcome; it fails to follow descriptive naming conventions like method_condition_expectedResult.",
-          "original_code": "public void test8()  throws Throwable  {\n  // Given: a graph with a self-loop\n  Grafo grafo0 = new Grafo();",
-          "improved_code": "@Test(timeout = 4000)\npublic void grafoTransposto_selfLoop_preservesEdge() throws Throwable {\n  // Given: a graph with a self-loop\n  Grafo grafo0 = new Grafo();\n  grafo0.insereAresta(0, 0, -621);\n  Grafo grafo1 = grafo0.grafoTransposto();\n  assertTrue(\"Transposed graph should contain the self-loop (0->0).\", grafo1.existeAresta(0, 0));\n}"
+          "justification": "The method name 'test8' is generic and does not convey the scenario or expected result; it does not follow descriptive naming patterns like method_condition_expectedResult.",
+          "original_code": "@Test(timeout = 4000)\npublic void test8()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, (-621));\n    Grafo grafo1 = grafo0.grafoTransposto();\n    assertNotSame(grafo1, grafo0);\n    assertEquals(100, grafo0.numVertices());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void graphTranspose_withSelfLoop_preservesVertexCount_and_returnsDistinctInstance() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    Grafo grafo1 = grafo0.grafoTransposto();\n    assertNotSame(grafo1, grafo0);\n    assertEquals(100, grafo0.numVertices());\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "No clear signs of heavy code generation are present within the method body (no autogenerated comments or repetitive test naming pattern inside the method).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Signs of test-generation tooling are present: class uses EvoRunner/EvoRunnerParameters and the test method has an autogenerated-style name 'test8', indicating heavy code generation artifacts rather than minimal hand-written tests.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Grafo_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test8() throws Throwable { ... }\n}",
+          "improved_code": "import org.junit.runner.RunWith;\n@RunWith(org.junit.runners.JUnit4.class)\npublic class EvoAITest {\n    @Test\n    public void graphTranspose_preservesVertexCount_and_returnsDistinctInstance() {\n        Grafo grafo0 = new Grafo();\n        grafo0.insereAresta(0, 0, -621);\n        Grafo grafo1 = grafo0.grafoTransposto();\n        assertNotSame(grafo1, grafo0);\n        assertEquals(grafo0.numVertices(), grafo1.numVertices());\n    }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The method contains explicit Given-When-Then comments, indicating BDD-style structure and thoughtful test design intent.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears to be a single quick check with no Given-When-Then comments, BDD-style naming, or coverage of multiple scenarios, suggesting it was written post-implementation rather than following a prioritized design approach.",
+          "original_code": "Grafo grafo0 = new Grafo();\ngrafo0.insereAresta(0, 0, (-621));\nGrafo grafo1 = grafo0.grafoTransposto();\nassertNotSame(grafo1, grafo0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "@Test\npublic void givenGraphWithSelfLoop_whenTranspose_thenVertexCountPreserved_andDistinctInstanceReturned() {\n    // Given\n    Grafo grafo0 = new Grafo();\n    grafo0.insereAresta(0, 0, -621);\n    // When\n    Grafo grafo1 = grafo0.grafoTransposto();\n    // Then\n    assertNotSame(\"Transpose should produce a different instance\", grafo1, grafo0);\n    assertEquals(\"Vertex count should be preserved\", grafo0.numVertices(), grafo1.numVertices());\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts via public Grafo methods only; there is no reflection or inspection of private internals, so it focuses on observable behavior.",
+          "justification": "The test interacts only with public API methods (Grafo constructor, insereAresta, grafoTransposto, numVertices) and does not rely on reflection or private/internal state, indicating behavior-focused testing.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertEquals, assertTrue, assertNotSame) and include descriptive failure messages, meeting the guidance for clear assertions.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages; they use assertNotSame and assertEquals without messages, and only a small set of properties are asserted—improving messages and specificity would aid diagnosability.",
+          "original_code": "assertNotSame(grafo1, grafo0);\nassertEquals(100, grafo0.numVertices());",
+          "improved_code": "assertNotSame(\"Transpose must return a different Grafo instance\", grafo1, grafo0);\nassertEquals(\"Original graph should have 100 vertices\", 100, grafo0.numVertices());"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The method uses concise Given-When-Then comments that explain the scenario and add value; there is no excessive or commented-out code.",
+          "justification": "Class-level Javadoc documents requirement traceability and notes; the test itself is concise and does not contain excessive or misleading comments.",
           "original_code": null,
           "improved_code": null
         },
@@ -1416,7 +1416,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test uses deterministic operations only (no random, time-based operations, or Thread.sleep), so results should be deterministic.",
+          "justification": "The test uses deterministic operations (no Random, no current time, and no Thread.sleep) and relies solely on local state; no non-deterministic constructs are present in the method.",
           "original_code": null,
           "improved_code": null
         },
@@ -1424,7 +1424,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only uses local objects and does not persist data or modify static/shared state; no cleanup is required.",
+          "justification": "The test uses only local Grafo instances and does not persist data, modify static variables, or leave open resources; no cleanup is required for visible actions.",
           "original_code": null,
           "improved_code": null
         },
@@ -1432,14 +1432,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The method is annotated with @Category(UnitTest.class), providing meaningful categorization.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "78.9%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "83.3%"
+      "normalized_method_compliance_score": "57.9%"
     }
   ],
   "practices_report": [
@@ -1447,11 +1447,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 4,
-      "non_compliant_methods": 5,
+      "compliant_methods": 2,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
       "total_methods": 9,
-      "compliance_score": "44.4%"
+      "compliance_score": "22.2%"
     },
     {
       "practice_code": "CS-02",
@@ -1477,21 +1477,21 @@
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
       "description": "",
-      "compliant_methods": 8,
-      "non_compliant_methods": 1,
-      "not_applicable_methods": 0,
-      "total_methods": 9,
-      "compliance_score": "88.9%"
-    },
-    {
-      "practice_code": "CS-05",
-      "practice_title": "Complete Modularity of Test Cases",
-      "description": "",
       "compliant_methods": 5,
       "non_compliant_methods": 4,
       "not_applicable_methods": 0,
       "total_methods": 9,
       "compliance_score": "55.6%"
+    },
+    {
+      "practice_code": "CS-05",
+      "practice_title": "Complete Modularity of Test Cases",
+      "description": "",
+      "compliant_methods": 9,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 9,
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-06",
@@ -1507,11 +1507,11 @@
       "practice_code": "CS-07",
       "practice_title": "Complex Design for Fault Detection",
       "description": "",
-      "compliant_methods": 9,
-      "non_compliant_methods": 0,
+      "compliant_methods": 5,
+      "non_compliant_methods": 4,
       "not_applicable_methods": 0,
       "total_methods": 9,
-      "compliance_score": "100.0%"
+      "compliance_score": "55.6%"
     },
     {
       "practice_code": "CS-08",
@@ -1537,9 +1537,9 @@
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 8,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 1,
+      "not_applicable_methods": 2,
       "total_methods": 9,
       "compliance_score": "100.0%"
     },
@@ -1558,8 +1558,8 @@
       "practice_title": "Small Footprint of Test Code Generation",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 7,
-      "not_applicable_methods": 2,
+      "non_compliant_methods": 8,
+      "not_applicable_methods": 1,
       "total_methods": 9,
       "compliance_score": "0.0%"
     },
@@ -1567,11 +1567,11 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 9,
-      "non_compliant_methods": 0,
+      "compliant_methods": 4,
+      "non_compliant_methods": 5,
       "not_applicable_methods": 0,
       "total_methods": 9,
-      "compliance_score": "100.0%"
+      "compliance_score": "44.4%"
     },
     {
       "practice_code": "LS-06",
@@ -1587,11 +1587,11 @@
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 9,
-      "non_compliant_methods": 0,
+      "compliant_methods": 4,
+      "non_compliant_methods": 5,
       "not_applicable_methods": 0,
       "total_methods": 9,
-      "compliance_score": "100.0%"
+      "compliance_score": "44.4%"
     },
     {
       "practice_code": "LS-08",
@@ -1627,20 +1627,20 @@
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
       "description": "",
-      "compliant_methods": 9,
-      "non_compliant_methods": 0,
+      "compliant_methods": 8,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 9,
-      "compliance_score": "100.0%"
+      "compliance_score": "88.9%"
     }
   ],
-  "overall_compliance_score": "77.2%",
+  "overall_compliance_score": "67.3%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 61909,
-    "completion_tokens": 64953,
-    "total_tokens": 126862,
-    "cost": 0.13317205
+    "prompt_tokens": 61514,
+    "completion_tokens": 74848,
+    "total_tokens": 136362,
+    "cost": 0.1539001
   },
-  "normalized_overall_compliance_score": "78.6%"
+  "normalized_overall_compliance_score": "68.5%"
 }

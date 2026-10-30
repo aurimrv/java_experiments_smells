@@ -1,11 +1,6 @@
 # Test Set Divergency Report
 
 - **Test class:** Evo
-- **Generated at:** 2026-07-21T13:59:48.329128
+- **Generated at:** 2026-10-27T16:13:26.104899
 
-## Compilation Failures
-
-| Model | Attempt | Error Summary |
-|-------|---------|---------------|
-| openai/gpt-5-mini | gen #1 | Compilation failed after all fix attempts |
-
+No divergences detected.

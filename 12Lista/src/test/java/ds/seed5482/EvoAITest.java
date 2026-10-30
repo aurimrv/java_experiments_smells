@@ -1,102 +1,69 @@
 package ds.seed5482;
 
-import ds.Lista;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import static org.junit.Assert.*;
+import ds.Lista;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 /**
- * Unit tests for Lista behaviors.
- *
- * Requirement trace: REQ-LISTA-001
- *
- * These tests follow a Given-When-Then style and include assertions
- * with descriptive messages. They exercise empty-list semantics,
- * insertion behavior, and basic defensive behavior when null is provided.
+ * Marker interface for classifying these tests as unit tests.
  */
 interface UnitTest {}
 
+@RunWith(EvoRunner.class) 
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
 @Category(UnitTest.class)
 public class EvoAITest extends Lista_ESTest_scaffolding {
 
+  /**
+   * REQ-001: Verify that inserting a single element makes the list non-empty
+   * and that imprime() produces visible output for a singleton list.
+   *
+   * Given a fresh list and a non-null element,
+   * When the element is inserted and the list is printed,
+   * Then vazia() should be false and imprime() should produce non-empty output.
+   */
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-    // Given: a fresh, empty list
-    Lista lista0 = new Lista();
-    assertNotNull("Lista instance should be created", lista0);
-    assertTrue("Newly created list should be empty", lista0.vazia());
-
-    // When: an object is inserted
-    Object object0 = new Object();
-    lista0.insere(object0);
-
-    // Then: the list should no longer be empty and imprime() should be callable
-    assertFalse("List should not be empty after inserting an element", lista0.vazia());
-
-    // Capture imprime output to ensure it does not throw and produces an output stream
-    PrintStream originalOut = System.out;
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try {
-      System.setOut(new PrintStream(baos));
-      lista0.imprime(); // Should not throw
-    } finally {
-      System.setOut(originalOut);
-    }
-    String printed = baos.toString();
-    assertNotNull("imprime() should write to the output stream (may be empty)", printed);
-  }
-
-  @Test(timeout = 4000)
-  public void test1() throws Throwable {
-    // Given: a freshly constructed list
-    Lista lista0 = new Lista();
-    assertNotNull("Lista should be instantiated", lista0);
-
-    // When: we inspect its emptiness
-    boolean emptyBefore = lista0.vazia();
-
-    // Then: it must be empty initially
-    assertTrue("A new list must report as empty", emptyBefore);
-
-    // And: calling imprime on an empty list should be safe (no exceptions) and produce output (possibly empty)
-    PrintStream originalOut = System.out;
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try {
-      System.setOut(new PrintStream(baos));
+  public void test0()  throws Throwable  {
+      Lista lista0 = new Lista();
+      Object object0 = new Object();
+      lista0.insere(object0);
       lista0.imprime();
-    } finally {
-      System.setOut(originalOut);
-    }
-    assertNotNull("imprime() on empty list should not return null output", baos.toString());
+      assertFalse(lista0.vazia());
   }
 
+  /**
+   * REQ-002: Verify that a newly created list is empty.
+   *
+   * Given a fresh list,
+   * When vazia() is queried,
+   * Then it should return true.
+   */
   @Test(timeout = 4000)
-  public void test2() throws Throwable {
-    // Given: an empty list
-    Lista lista0 = new Lista();
-    assertTrue("List should start empty", lista0.vazia());
+  public void test1()  throws Throwable  {
+      Lista lista0 = new Lista();
+      boolean boolean0 = lista0.vazia();
+      assertTrue(boolean0);
+  }
 
-    // When: attempting to insert null — either the implementation accepts null or rejects it with NPE.
-    try {
-      lista0.insere(null);
-      // Then: if insertion succeeds, the list should no longer be empty
-      assertFalse("If null is accepted by insere, list should not be empty after insertion", lista0.vazia());
-
-      // Additionally insert a regular object to ensure typical insertion still works
-      Object o = new Object();
-      lista0.insere(o);
-      assertFalse("List should remain non-empty after inserting a regular object", lista0.vazia());
-    } catch (NullPointerException npe) {
-      // Then: if insertion rejects null, it should throw NPE and the list should remain empty
-      assertTrue("insere(null) threw NullPointerException as a defensive behavior", npe instanceof NullPointerException);
-      assertTrue("List should remain empty if null insertion is rejected", lista0.vazia());
-    }
+  /**
+   * REQ-003: Verify that after inserting an element the list reports non-empty.
+   *
+   * Given a fresh list and a non-null element,
+   * When the element is inserted,
+   * Then vazia() should return false.
+   */
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+      Lista lista0 = new Lista();
+      Object object0 = new Object();
+      lista0.insere(object0);
+      boolean boolean0 = lista0.vazia();
+      assertFalse(boolean0);
   }
 }

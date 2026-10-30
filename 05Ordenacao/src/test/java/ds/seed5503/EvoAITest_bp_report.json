@@ -7,16 +7,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method contains multiple distinct Arrange-Act-Assert blocks and calls Ordenacao.ordena multiple times for different scenarios (arr1, arr2, arr3, arr4). Decision rule 1: more than one 'Act' operation was detected, so it is not atomic.",
-          "original_code": "    // When - call with a valid index (0)\n    try {\n      Ordenacao.ordena(arr1, 0);\n    } catch (ArrayIndexOutOfBoundsException e) {\n      fail(\"ordena should not throw for index 0 on non-empty array: \" + e);\n    }",
-          "improved_code": "  @Test\n  public void ordena_index0_preservesMultiset() throws Throwable {\n    int[] arr = new int[] {3, 1, 4, 1, 5, 9};\n    int[] before = Arrays.copyOf(arr, arr.length);\n    Ordenacao.ordena(arr, 0);\n    Arrays.sort(before); Arrays.sort(arr);\n    assertArrayEquals(before, arr);\n  }"
+          "status": "compliant",
+          "justification": "Single Act operation (Ordenacao.ordena) is exercised inside one try/catch; the test focuses on one behavior (expecting an exception). Only one Arrange-Act-Assert pattern is present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables within the method and does not rely on static or instance mutable state or ordered test names. No @Before/@After needed given local-only state (Decision rule 4).",
+          "justification": "Test uses only local variables and no shared mutable state; no test-order naming or static state is modified and no setup/teardown is required for this isolated test.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,63 +24,63 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Although the method contains both happy-path and error checks, there is only one test method in the class. Decision rule 4: class has < 2 test methods, so it fails the requirement to provide separate tests for normal and exceptional flows.",
-          "original_code": "    // Error scenarios - invalid large positive index\n    int[] arr3 = new int[9];\n    arr3[0] = 3301;\n    try {\n      Ordenacao.ordena(arr3, 3301);\n      fail(\"Expecting ArrayIndexOutOfBoundsException for index 3301\");\n    } catch (ArrayIndexOutOfBoundsException expected) {",
-          "improved_code": "  @Test\n  public void ordena_validIndex_noException() {\n    int[] arr = new int[] {10, -2, 7};\n    Ordenacao.ordena(arr, 0);\n    // assertions omitted for brevity\n  }\n\n  @Test(expected = ArrayIndexOutOfBoundsException.class)\n  public void ordena_invalidIndex_throws() {\n    int[] arr = new int[5];\n    Ordenacao.ordena(arr, 999);\n  }"
+          "justification": "The class contains only this single test method which exercises an exceptional flow. There is no corresponding happy-path test for the same method in this class; per rules a method under test should have at least a happy-path and an error case.",
+          "original_code": "int[] intArray0 = new int[9];\nintArray0[0] = 3301;\n// Undeclared exception!\ntry {\n  Ordenacao.ordena(intArray0, 3301);\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n} catch(ArrayIndexOutOfBoundsException e) {\n  //\n}",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_Fix {\n  @Test public void ordena_happyPath_sortsArray() {\n    int[] arr = {3,1,2};\n    Ordenacao.ordena(arr, 3);\n    assertArrayEquals(new int[]{1,2,3}, arr);\n  }\n  @Test(expected = ArrayIndexOutOfBoundsException.class) public void ordena_invalidIndex_throws() {\n    int[] arr = new int[9];\n    Ordenacao.ordena(arr, 3301);\n  }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test exercises boundary-like indices: 0, last index (arr.length-1), a large out-of-range positive index (3301), and a negative index (-1). These represent boundary and out-of-bound checks, satisfying the criteria.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Test uses a single out-of-range value (3301) but does not exercise boundary values such as zero-length array, max index, negative index or just-outside boundaries; no explicit boundary checks are present.",
+          "original_code": "int[] intArray0 = new int[9];\nintArray0[0] = 3301;\ntry {\n  Ordenacao.ordena(intArray0, 3301);\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n}",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_Boundaries {\n  @Test public void ordena_boundary_values() {\n    int[] a = new int[0];\n    Ordenacao.ordena(a, 0); // empty array\n    int[] b = new int[1]; b[0]=1;\n    Ordenacao.ordena(b, 1); // minimal non-empty\n    int[] c = new int[5];\n    Ordenacao.ordena(c, 5); // max valid size\n  }\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test repeats similar setup and verification logic for multiple arrays without extracting helper methods or constants. Decision rule 3: repeated code blocks indicate lack of modularity.",
-          "original_code": "    int[] before1 = Arrays.copyOf(arr1, arr1.length);\n    // ...\n    int[] sortedBefore1 = Arrays.copyOf(before1, before1.length);\n    int[] sortedAfter1 = Arrays.copyOf(arr1, arr1.length);\n    Arrays.sort(sortedBefore1);\n    Arrays.sort(sortedAfter1);\n    assertArrayEquals(\"The multiset of elements must be preserved after ordena (index 0)\", sortedBefore1, sortedAfter1);",
-          "improved_code": "  private void verifyMultisetPreserved(int[] before, int[] after) {\n    int[] sb = Arrays.copyOf(before, before.length);\n    int[] sa = Arrays.copyOf(after, after.length);\n    Arrays.sort(sb);\n    Arrays.sort(sa);\n    assertArrayEquals(sb, sa);\n  }"
+          "status": "compliant",
+          "justification": "Test is short and self-contained (< 10 lines) with no duplicated setup across methods; no helper methods required for this single simple test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is lengthy with multiple scenarios and comments; it exceeds the recommended size. Decision rule 1: method appears to be >30 lines, so it is non-compliant for size/complexity.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0() throws Throwable {\n    // Given - a small array with distinct values\n    int[] arr1 = new int[] {3, 1, 4, 1, 5, 9};\n    int[] before1 = Arrays.copyOf(arr1, arr1.length);\n    // When - call with a valid index (0)\n    try {",
-          "improved_code": "  @Test\n  public void ordena_preservesMultiset_index0() {\n    int[] arr = new int[] {3,1,4,1,5,9};\n    int[] before = Arrays.copyOf(arr, arr.length);\n    Ordenacao.ordena(arr, 0);\n    Arrays.sort(before); Arrays.sort(arr);\n    assertArrayEquals(before, arr);\n  }"
+          "status": "compliant",
+          "justification": "Method is short (< 20 lines), linear control flow with no loops or nested conditionals; cyclomatic complexity is low.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "Assertions verify multiple properties: length preservation and multiset equality (sorted array comparison). For object/collection results, at least two properties are checked (length and contents), meeting the requirement.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Test verifies only that an exception is thrown; there are no rich assertions verifying multiple properties of the result for any successful case. Only superficial assertion pattern (fail if no exception) is present.",
+          "original_code": "try {\n  Ordenacao.ordena(intArray0, 3301);\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n} catch(ArrayIndexOutOfBoundsException e) {\n  //\n}",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_Assertions {\n  @Test public void ordena_validInput_verifiesMultipleProperties() {\n    int[] arr = {4,2,3,1};\n    Ordenacao.ordena(arr, 4);\n    assertEquals(\"length should remain 4\", 4, arr.length);\n    assertArrayEquals(\"array contents must be sorted\", new int[]{1,2,3,4}, arr);\n  }\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the provided code. Tests are active and runnable.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; test is active and runnable (has @Test and timeout).",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class-level Javadoc explicitly references Requirement: ORD-1, providing traceability to a requirement ID (Decision rule 2).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "No annotations, Javadoc, or comments link this test to a requirement ID, ticket, or user story; no traceability metadata is present.",
+          "original_code": "public void test0()  throws Throwable  {\n  int[] intArray0 = new int[9];\n  // Undeclared exception!\n  try { \n    Ordenacao.ordena(intArray0, 3301);\n    fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n  } catch(ArrayIndexOutOfBoundsException e) {",
+          "improved_code": "/**\n * Tests REQ-ORD-001: Ordenacao.ordena must throw when index is out of bounds\n */\n@Test(expected = ArrayIndexOutOfBoundsException.class)\npublic void ordena_whenIndexTooLarge_reportsRequirementREQ_ORD_001() {\n  int[] arr = new int[9];\n  Ordenacao.ordena(arr, 3301);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test for functional behavior; there are no performance/security tests and the practice is normally not applicable to such unit tests (Decision rule 1).",
+          "status": "compliant",
+          "justification": "Although performance/security tests are normally not applicable, this test includes a @Test(timeout = 4000) which is explicit timing-related test metadata, so the presence of a timeout counts as an explicit performance-related assertion per decision rules.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name is 'test0', which is generic and does not describe the scenario or expected outcome. Decision rule 2: generic test name detected, so non-compliant.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0() throws Throwable {\n    // Given - a small array with distinct values",
-          "improved_code": "  @Test\n  public void ordena_withIndex0_preservesMultiset() throws Throwable {\n    int[] arr = new int[] {3,1,4,1,5,9};\n    int[] before = Arrays.copyOf(arr, arr.length);\n    Ordenacao.ordena(arr, 0);\n    Arrays.sort(before); Arrays.sort(arr);\n    assertArrayEquals(before, arr);\n  }"
+          "justification": "Test method name 'test0' is generic and does not describe scenario or expected result; it fails to follow descriptive naming conventions (methodName_scenario_expectedResult).",
+          "original_code": "public void test0()  throws Throwable  {\n  int[] intArray0 = new int[9];\n  intArray0[0] = 3301;\n  // Undeclared exception!",
+          "improved_code": "@Test(expected = ArrayIndexOutOfBoundsException.class)\npublic void ordena_whenIndexTooLarge_throwsArrayIndexOutOfBounds() {\n  int[] arr = new int[9];\n  Ordenacao.ordena(arr, 3301);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The presence of EvoSuite artifacts (EvoRunner, EvoRunnerParameters) and a test named 'test0' are indicative of auto-generated tests or heavy generation patterns (Decision rule 2). This suggests generated/verbose patterns rather than minimal hand-written tests.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)",
-          "improved_code": "public class OrdenacaoTest {\n  @Test\n  public void ordena_withValidIndex_preservesMultiset() {\n    int[] arr = new int[] {3,1,4};\n    int[] before = Arrays.copyOf(arr, arr.length);\n    Ordenacao.ordena(arr, 0);\n    Arrays.sort(before); Arrays.sort(arr);\n    assertArrayEquals(before, arr);\n  }\n}"
+          "justification": "Signs of heavy code generation are present: imports from org.evosuite.*, auto-generated style comment 'Undeclared exception!', and the generic test name 'test0' indicate this is auto-generated and verbose patterns are present.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n// Undeclared exception!\ntry {\n  Ordenacao.ordena(intArray0, 3301);\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n}",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_Minimal {\n  @Test(expected = ArrayIndexOutOfBoundsException.class)\n  public void ordena_invalidIndex_throws() {\n    int[] arr = new int[9];\n    Ordenacao.ordena(arr, 3301);\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then style comments which indicate BDD-like design intent and thought in organizing scenarios (Decision rule 1).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Test appears autogenerated and minimal (only an exceptional flow); no Given-When-Then structure or evidence of upfront test design and no coverage of multiple prioritized scenarios.",
+          "original_code": "// Undeclared exception!\ntry {\n  Ordenacao.ordena(intArray0, 3301);\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n} catch(ArrayIndexOutOfBoundsException e) {",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_GivenWhenThen {\n  @Test public void givenLargeIndex_whenOrdena_thenThrows() {\n    // Given\n    int[] arr = new int[9];\n    // When / Then\n    try {\n      Ordenacao.ordena(arr, 3301);\n      fail(\"Expected ArrayIndexOutOfBoundsException\");\n    } catch (ArrayIndexOutOfBoundsException ex) {\n      // expected\n    }\n  }\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts with public API Ordenacao.ordena and inspects public observable state (arrays). There is no reflection or checks of private internals (Decision rule 3).",
+          "justification": "Test exercises the public API (Ordenacao.ordena) and does not use reflection or access private internals; it verifies observable behavior (exception), not internal state.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use specific methods (assertEquals, assertArrayEquals) and include descriptive messages for key checks. This meets the expectation of clear, specific assertions (Decision rule 3).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions are minimal and lack descriptive failure messages; the test uses fail() to ensure exception but contains no specific assertion messages or multiple specific assertions to aid debugging.",
+          "original_code": "Ordenacao.ordena(intArray0, 3301);\nfail(\"Expecting exception: ArrayIndexOutOfBoundsException\");",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class EvoAITest_AssertionsMessage {\n  @Test(expected = ArrayIndexOutOfBoundsException.class)\n  public void ordena_invalidIndex_hasDescriptiveAssertion() {\n    int[] arr = new int[9];\n    Ordenacao.ordena(arr, 3301);\n    // exception expectation encodes the intent; for success cases use descriptive asserts\n  }\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test uses concise Given-When-Then comments that explain the scenario and are useful; there is no excessive or commented-out code. This is appropriate use of comments (Decision rule 3).",
+          "justification": "Comments are minimal and do not contain commented-out code; existing auto-generated comments are brief and there is no excessive or outdated inline commenting.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, time-based calls, or Thread.sleep). It operates on fixed data and local variables, so results are deterministic (Decision rules 1-3).",
+          "justification": "No use of Random, current time, Thread.sleep, or external dependencies are present in the test method; test uses deterministic input and local state only.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,182 +144,22 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses only local arrays and does not modify static/global state or external resources; no cleanup is required. There is no persistent side effect (Decision rule 3).",
+          "justification": "Test manipulates only a local array and does not persist data or modify static/global state; no cleanup is required.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "not-applicable",
-          "justification": "The class contains only one test method. Per the decision rules, when a test class has only one or two tests, categorization is not applicable for selective execution in practice (Decision rule 4).",
+          "status": "compliant",
+          "justification": "Class has a @Category(UnitTest.class) annotation at class level, providing categorization for selective execution as required by the practice.",
           "original_code": null,
           "improved_code": null
         }
       ],
       "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "64.7%"
-    },
-    {
-      "test_method_name": "test2",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs more than one distinct 'Act' operation: it constructs an instance (new Ordenacao()) and then performs a reflection check (Ordenacao.class.getConstructor()). According to the decision rules, multiple distinct acts indicate the test covers multiple behaviors and thus is not atomic.",
-          "original_code": "Ordenacao instance = null;\ntry {\n  instance = new Ordenacao();\n} catch (Throwable t) {\n  fail(\"Constructing Ordenacao must not throw an exception: \" + t);\n}",
-          "improved_code": "@Test\npublic void constructor_should_createInstance_withoutThrowing() {\n  // Act\n  Ordenacao instance = new Ordenacao();\n  // Assert\n  assertNotNull(\"Instance must be created\", instance);\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on or modify static/instance state. There are no numbered test names or shared mutable state visible in the snippet; hence it is independent. Both @Before/@After are not required for this single self-contained test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only one happy-path style test is present; there are no tests addressing exceptional flows or use of assertThrows/@Test(expected=...) in this class snippet. Decision rules require at least one error-case test in addition to happy paths.",
-          "original_code": "// Sanity: ensure class has a public no-arg constructor via reflection\ntry {\n  assertNotNull(\"Ordenacao should expose a public no-arg constructor\",\n      Ordenacao.class.getConstructor());\n} catch (NoSuchMethodException e) {\n  fail(\"Expected a public no-arg constructor on Ordenacao: \" + e);\n}",
-          "improved_code": "@Test\npublic void reflection_getConstructor_throws_for_wrong_params() {\n  try {\n    Ordenacao.class.getConstructor(String.class);\n    fail(\"Expected NoSuchMethodException\");\n  } catch (NoSuchMethodException e) {\n    // expected - verifies exceptional flow is tested\n  }\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "not-applicable",
-          "justification": "The test focuses on object construction and a reflection-based sanity check; it does not exercise numeric or range-based inputs where boundary testing would apply. Per decision rules, boundary analysis is not applicable to this constructor-focused test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test contains logic inline with no helper methods or constants and does not demonstrate reuse. The class does not define private helper methods or constants to remove duplication; although only one test exists, the evaluation rules require helper extraction for modularity when repetition or maintainability concerns are present.",
-          "original_code": "// Given / When - construct Ordenacao using public no-arg constructor\nOrdenacao instance = null;\ntry {\n  instance = new Ordenacao();\n} catch (Throwable t) {\n  fail(\"Constructing Ordenacao must not throw an exception: \" + t);\n}",
-          "improved_code": "private Ordenacao newOrdenacao() {\n  return new Ordenacao();\n}\n\n@Test\npublic void constructor_should_createInstance_usingHelper() {\n  Ordenacao instance = newOrdenacao();\n  assertNotNull(\"Instance should not be null\", instance);\n}"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test method is short, contains no loops or complex conditionals, and follows a simple linear Arrange-Act-Assert flow. There is low cyclomatic complexity and no excessive length or branching present in the method snippet.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test contains multiple substantive assertions: it checks non-null construction, runtime type, and presence of a public no-arg constructor via reflection. These multiple property checks increase fault-detection capability beyond a single superficial assertion.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the provided snippet. The test is active and runnable, and no TODO or commented-out tests are present.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class-level Javadoc includes a requirement identifier: 'Requirement: ORD-1', which provides traceability between the test and a specific requirement. This satisfies the expectation for traceability annotations/comments.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test of a constructor with no performance/security concerns and there are no explicit performance or security tests (timeouts, auth checks). Per the decision rules, this practice is usually not applicable for such unit tests.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name 'test2' is generic and does not follow descriptive naming conventions (e.g., methodName_scenario_expectedResult). Decision rules mark generic names as non-compliant since they do not describe intent or expected outcome.",
-          "original_code": "@Test(timeout = 4000)\npublic void test2() throws Throwable {",
-          "improved_code": "@Test(timeout = 4000)\npublic void constructor_whenInvoked_shouldCreateNonNullInstanceAndExposeNoArgConstructor() throws Throwable {\n  Ordenacao instance = new Ordenacao();\n  assertNotNull(\"Instance must not be null\", instance);\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Signs of automated test-generation are present: class is annotated with EvoRunner and the test method name 'test2' follows a generator-like pattern. Decision rules identify such repetitive/generic naming plus EvoSuite-specific runner usage as indicators of generated, potentially verbose tests.",
-          "original_code": "@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Ordenacao_ESTest_scaffolding {",
-          "improved_code": "// Prefer intention-revealing test name and remove generator-style naming\n@Test\npublic void constructor_whenInvoked_createsInstance() {\n  Ordenacao instance = new Ordenacao();\n  assertNotNull(\"Instance must not be null\", instance);\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given/When/Then comments at the top of the method which indicates a BDD-style design intent. This demonstrates some upfront design and intention in the test structure per the decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "The test interacts only with public APIs (constructor and public reflection API) and does not access private fields or use reflection to inspect internals beyond public constructor presence; thus it focuses on observable behavior rather than implementation details.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use specific methods (assertNotNull, assertTrue) and include descriptive failure messages for clarity; the majority of assertions include messages, satisfying the requirement for clear and specific assertions.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test contains minimal, value-adding comments (Given / When / Then) that explain the intent rather than the mechanics. There is no commented-out code present in the snippet.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "The test does not use random numbers, current time calls, Thread.sleep, or external services. It uses local state and thus yields deterministic results under the same environment and inputs.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test uses local variables only and does not persist data to files/databases or modify static state; no cleanup/@After is required. Therefore the test avoids side effects and is safe to run in isolation.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "non-compliant",
-          "justification": "No @Tag/@Category or equivalent annotations are present to label or categorize the test. Decision rules require such annotations for compliance; absence means tests cannot be selectively executed by category.",
-          "original_code": "@Test(timeout = 4000)\npublic void test2() throws Throwable {",
-          "improved_code": "public interface UnitTests { }\n\n@org.junit.experimental.categories.Category(UnitTests.class)\n@Test(timeout = 4000)\npublic void constructor_should_createInstance_and_beTagged() throws Throwable {\n  Ordenacao instance = new Ordenacao();\n  assertNotNull(\"Instance must not be null\", instance);\n}"
-        }
-      ],
-      "method_compliance_score": "57.9%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "64.7%"
+      "normalized_method_compliance_score": "57.9%"
     },
     {
       "test_method_name": "test1",
@@ -327,80 +167,80 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: tests should focus on a single behavior. EVALUATION: this method contains multiple Arrange-Act-Assert blocks (empty array exception, single-element preservation, zeros, reverse-sorted, duplicates). DECISION: multiple distinct 'Act' operations (>1) detected, so non-compliant.",
-          "original_code": "// Empty array: calling with index 0 should be out of bounds\nint[] empty = new int[0];\ntry {\n  Ordenacao.ordena(empty, 0);\n  fail(\"Expecting ArrayIndexOutOfBoundsException for empty array and index 0\");\n} catch (ArrayIndexOutOfBoundsException expected) {\n  assertNotNull(expected);\n}",
-          "improved_code": "@Test\npublic void ordena_emptyArray_throwsIndexOutOfBounds() {\n  int[] empty = new int[0];\n  assertThrows(ArrayIndexOutOfBoundsException.class, () -> Ordenacao.ordena(empty, 0));\n}\n\n@Test\npublic void ordena_singleElement_preservesElement() {\n  int[] single = new int[] {42};\n  int[] before = Arrays.copyOf(single, single.length);\n  Ordenacao.ordena(single, 0);\n  assertArrayEquals(before, single);\n}"
+          "status": "compliant",
+          "justification": "The method performs a single Arrange-Act-Assert: constructs one array, calls Ordenacao.ordena once, and asserts the resulting array. Only one distinct act operation is present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "PRINCIPLE: tests must not share mutable state. EVALUATION: test1 uses only local variables and does not modify static/instance state; no name ordering. DECISION: no shared mutable state detected and no ordering hints, so compliant.",
+          "justification": "The test uses only local variables and no shared static or instance state; there are no setup/teardown dependencies visible in the method, so it appears independent.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "compliant",
-          "justification": "PRINCIPLE: include happy and error paths. EVALUATION: the test explicitly asserts an ArrayIndexOutOfBoundsException for empty array and includes multiple happy-path scenarios (single element, zeros, reverse-sorted, duplicates). DECISION: both exceptional and normal flows are present, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Only a single happy-path test exists in this class (and this method shows only normal flow). There is no test for error conditions or exception handling (no assertThrows or try/catch expecting exceptions), and the class contains only one test method.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_shouldThrowOnNull() throws Throwable {\n    try {\n        Ordenacao.ordena(null, 7);\n        fail(\"Expected NullPointerException\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "PRINCIPLE: test boundaries like empty, zero, last index. EVALUATION: the test checks empty array (index 0 out-of-bounds), single-element (index 0), and last index on arrays (e.g., zeros at index 7, dup.length-1). DECISION: boundary cases present (empty, last index), so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test uses a single typical input (array of length 8 and pivot 7). There are no boundary checks such as empty array, zero-length, negative indices, or max values.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0,0,0,0,0,0,0,0}, intArray0);\n    int[] empty = new int[0];\n    Ordenacao.ordena(empty, 0);\n    assertArrayEquals(new int[] {}, empty);\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: extract repeated setup into helpers. EVALUATION: there are repeated patterns (Arrays.copyOf, try/catch + Ordenacao.ordena, sorting/compare) with no helper methods or constants. DECISION: no private helper methods found and duplicated code blocks exist, so non-compliant.",
-          "original_code": "int[] single = new int[] {42};\nint[] beforeSingle = Arrays.copyOf(single, single.length);\ntry {\n  Ordenacao.ordena(single, 0);\n} catch (ArrayIndexOutOfBoundsException e) {\n  fail(\"ordena should not throw for single-element array with index 0: \" + e);\n}",
-          "improved_code": "private void assertOrdenacaoPreservesMultiset(int[] arr, int index) {\n  int[] before = Arrays.copyOf(arr, arr.length);\n  Ordenacao.ordena(arr, index);\n  int[] sortedBefore = Arrays.copyOf(before, before.length);\n  int[] sortedAfter = Arrays.copyOf(arr, arr.length);\n  Arrays.sort(sortedBefore);\n  Arrays.sort(sortedAfter);\n  assertArrayEquals(sortedBefore, sortedAfter);\n}"
+          "status": "compliant",
+          "justification": "The test is short and self-contained (<10 lines) and does not repeat code across multiple methods in this class; there are no obvious duplicated helper blocks to extract within the shown snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: tests should be short and focused. EVALUATION: the test method is long with many scenario blocks (well over 30 lines) and complex linear flow, indicating high size/complexity. DECISION: length >30 lines triggers non-compliance.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  // Empty array: calling with index 0 should be out of bounds\n  int[] empty = new int[0];\n  try {\n    Ordenacao.ordena(empty, 0);\n    fail(\"Expecting ArrayIndexOutOfBoundsException for empty array and index 0\");\n  } catch (ArrayIndexOutOfBoundsException expected) {\n    assertNotNull(expected);\n  }",
-          "improved_code": "@Test\npublic void ordena_emptyArray_throws() {\n  int[] empty = new int[0];\n  assertThrows(ArrayIndexOutOfBoundsException.class, () -> Ordenacao.ordena(empty, 0));\n}\n\n@Test\npublic void ordena_singleElement_preserved() {\n  int[] single = new int[] {42};\n  int[] before = Arrays.copyOf(single, single.length);\n  Ordenacao.ordena(single, 0);\n  assertArrayEquals(before, single);\n}"
+          "status": "compliant",
+          "justification": "The test method is small (<20 lines) with a simple linear flow and no loops or conditionals, indicating low cyclomatic complexity.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "PRINCIPLE: assertions should verify multiple properties. EVALUATION: the test verifies multiset preservation by sorting and comparing before/after arrays and uses assertArrayEquals for content equality; multiple meaningful assertions exist. DECISION: assertions are substantive and verify key properties, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains only one assertion (assertArrayEquals). It does not verify multiple properties (e.g., length and content with descriptive assertions) that would increase fault-detection capability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertNotNull(\"Resulting array should not be null\", intArray0);\n    assertEquals(\"Array length should be 8\", 8, intArray0.length);\n    assertArrayEquals(\"Contents should be all zeros\", new int[] {0,0,0,0,0,0,0,0}, intArray0);\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "PRINCIPLE: avoid disabled/ignored tests. EVALUATION: no @Ignore/@Disabled annotations and no commented-out @Test methods are present. DECISION: all tests are active and runnable, so compliant.",
+          "justification": "There are no @Ignore/@Disabled annotations, commented-out tests, or TODOs in the shown method; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "PRINCIPLE: link tests to requirements. EVALUATION: class-level Javadoc contains 'Requirement: ORD-1' linking tests to a requirement. DECISION: traceability information present, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no annotations or Javadoc comments linking this test to a requirement, ticket, or user story (no @Story, @Issue, or REQ-/JIRA- identifiers).",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "/**\n * Tests REQ-001: ordena should leave a zero-filled array unchanged.\n */\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0,0,0,0,0,0,0,0}, intArray0);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "PRINCIPLE: performance/security tests are separate. EVALUATION: this is a unit test without any timing/security assertions; practice is usually not applicable to unit tests. DECISION: mark not-applicable.",
+          "status": "compliant",
+          "justification": "The test includes an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related assertion as per the evaluation rules, so the presence of that timing constraint marks it as compliant for this practice.",
           "original_code": null,
           "improved_code": null
         },
@@ -408,47 +248,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: descriptive test names are required. EVALUATION: the test method is named 'test1', which is generic and does not describe scenario or expected outcome. DECISION: name is generic => non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {",
-          "improved_code": "@Test\npublic void ordena_withEmptyArray_throwsIndexOutOfBounds() {\n  int[] empty = new int[0];\n  assertThrows(ArrayIndexOutOfBoundsException.class, () -> Ordenacao.ordena(empty, 0));\n}"
+          "justification": "The method name is generic ('test1') and does not follow descriptive naming conventions (method_operation_expectedBehavior). It does not communicate the scenario or expected result.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void ordena_withZeroFilledArray_returnsSameArray() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0,0,0,0,0,0,0,0}, intArray0);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: avoid heavy auto-generated verbose tests. EVALUATION: class uses EvoSuite/EvoRunner artifacts and has auto-like naming (test1), indicating generated patterns. DECISION: presence of EvoRunner and non-descriptive names suggests heavy generation => non-compliant.",
-          "original_code": "@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Ordenacao_ESTest_scaffolding {",
-          "improved_code": "public class OrdenacaoTest {\n  @Test\n  public void ordena_withReverseSorted_preservesMultiset() {\n    int[] rev = new int[] {9,7,5,3,1};\n    int[] before = Arrays.copyOf(rev, rev.length);\n    Ordenacao.ordena(rev, 0);\n    int[] sortedBefore = Arrays.copyOf(before, before.length);\n    int[] sortedAfter = Arrays.copyOf(rev, rev.length);\n    Arrays.sort(sortedBefore);\n    Arrays.sort(sortedAfter);\n    assertArrayEquals(sortedBefore, sortedAfter);\n  }\n}"
+          "justification": "The class shows clear signs of heavy test-generation tooling (EvoSuite imports, EvoRunner, generic test name 'test1', and scaffolding class), indicating generated verbose tests rather than intentionally minimal hand-written tests.",
+          "original_code": "package ds.seed5503;\n\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Ordenacao_ESTest_scaffolding {\n\n    @Test(timeout = 4000)\n    public void test1() throws Throwable {\n        int[] intArray0 = new int[8];\n        Ordenacao.ordena(intArray0, 7);\n        assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n    }\n\n}",
+          "improved_code": "@Test\npublic void ordena_preservesZeroArray() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0,0,0,0,0,0,0,0}, intArray0);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "PRINCIPLE: tests should show thoughtful design (Given-When-Then or coverage). EVALUATION: although no explicit Given-When-Then comments, the test covers multiple scenarios including boundary and error cases indicating some design/prioritization. DECISION: multiple scenario coverage signals planned design, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears minimal and likely written after-the-fact (single happy path), with no Given-When-Then structure or BDD-style naming and no evidence of prioritization or multiple scenario coverage.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test\npublic void test_ordena_givenZeroArray_whenSorted_thenRemainsZero() throws Throwable {\n    // Given\n    int[] arr = new int[8];\n    // When\n    Ordenacao.ordena(arr, 7);\n    // Then\n    assertArrayEquals(new int[] {0,0,0,0,0,0,0,0}, arr);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "PRINCIPLE: tests should exercise public APIs and avoid implementation coupling. EVALUATION: test invokes public static Ordenacao.ordena and uses public APIs (Arrays) without reflection or internal access. DECISION: no reflection/internal coupling, so compliant.",
+          "justification": "The test calls a public API (Ordenacao.ordena) and verifies observable behavior via public assertions; there is no reflection or access to private internals visible in the method.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "PRINCIPLE: use specific assertions and messages. EVALUATION: most assertions are specific (assertArrayEquals with messages); failures include messages and assertNotNull used appropriately. DECISION: majority of assertions use specific methods and messages, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and there is only a single assertion. The method does not use multiple, specific assertions with messages to aid debugging.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(new int[] {0, 0, 0, 0, 0, 0, 0, 0}, intArray0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_withMessages() throws Throwable {\n    int[] intArray0 = new int[8];\n    Ordenacao.ordena(intArray0, 7);\n    assertArrayEquals(\"Sorted array should be all zeros\", new int[] {0,0,0,0,0,0,0,0}, intArray0);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "PRINCIPLE: comments should add value and not clutter. EVALUATION: comments explain scenarios concisely; no commented-out code present and class-level Javadoc documents requirement. DECISION: comments are appropriate and not excessive, so compliant.",
+          "justification": "The test method has no commented-out code and contains no excessive comments; the code is concise and self-explanatory, so no unnecessary inline comments are present.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +296,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "PRINCIPLE: avoid non-determinism. EVALUATION: test does not use Random, time-based calls, Thread.sleep, or external systems; behavior is deterministic. DECISION: no non-deterministic constructs found, so compliant.",
+          "justification": "The test contains no usage of Random, current time APIs, Thread.sleep, or external dependencies in the shown method. The inputs are deterministic and local, so the test should be deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,22 +304,182 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "PRINCIPLE: tests should not persist state or modify globals. EVALUATION: only local arrays are used; no file/db operations or static modifications and no cleanup needed. DECISION: side-effect free, so compliant.",
+          "justification": "The test only uses local variables and does not create files, persist data, or modify static/global state; no cleanup is required based on the shown code.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: use categories/tags to organize tests. EVALUATION: no @Tag/@Category annotations present at class or method level. DECISION: absent categorization leads to non-compliance.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {",
-          "improved_code": "import org.junit.experimental.categories.Category;\npublic interface UnitTest {}\n\n@Category(UnitTest.class)\n@Test\npublic void ordena_unit_preservesMultiset() {\n  int[] arr = new int[] {1,2,3};\n  int[] before = Arrays.copyOf(arr, arr.length);\n  Ordenacao.ordena(arr, 2);\n  assertArrayEquals(Arrays.copyOf(before, before.length), Arrays.copyOf(arr, arr.length));\n}"
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization at the class level which satisfies the labeling requirement.",
+          "original_code": null,
+          "improved_code": null
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "66.7%"
+      "normalized_method_compliance_score": "57.9%"
+    },
+    {
+      "test_method_name": "test2",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test should focus on a single behavior. RATIONALE: Single Arrange-Act-Assert block improves diagnosis. EVALUATION CRITERIA: Look for number of distinct Act operations. DECISION RULES: 1) Count Act operations; only object construction present (one act). 2) Test name not explicitly indicating multiple operations. 3) One method call and single group -> compliant. VERDICT: compliant because the method performs a single operation (new Ordenacao()) and contains a single, simple arrange/act block.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be independent. RATIONALE: Independence allows arbitrary execution order. EVALUATION CRITERIA: Look for @Before/@After or shared mutable state. DECISION RULES: 1) No @Before/@After found. 2) No static/instance mutable state modified in this method. 3) Tests use only local variables -> compliant. VERDICT: compliant because the test uses only a local variable and does not rely on shared state or ordering.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Provide happy path and error scenario tests. RATIONALE: Ensures robustness by testing exceptions. EVALUATION CRITERIA: Need at least two test methods (happy + error) for the behavior. DECISION RULES: 1) Count test methods in class; only one test method present -> non-compliant. 2) No @Test(expected=...) or assertThrows present in the class for this behavior. VERDICT: non-compliant because the class contains only a single test method and no tests for error/exceptional flows.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "@Test(timeout = 4000)\npublic void test2_happyPath() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Constructor should create instance\", ordenacao0);\n}\n\n@Test\npublic void test2_errorCase_example() {\n    // Example error-case test pattern (illustrates adding a failing scenario)\n    assertThrows(RuntimeException.class, () -> { throw new RuntimeException(); });\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Validate inputs at boundaries. RATIONALE: Boundaries find off-by-one/range errors. EVALUATION CRITERIA: Look for tests of empty/zero/negative/MAX values. DECISION RULES: The tested code is only a constructor call with no input parameters; the method under test has no obvious numeric/string boundaries. VERDICT: not-applicable because the test does not exercise input domains with boundaries.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be modular and reusable. RATIONALE: Helper methods reduce duplication. EVALUATION CRITERIA: Look for helper methods, constants or very short tests. DECISION RULES: No helpers/constants found but the test is very short (<10 lines) and does not repeat code -> compliant. VERDICT: compliant because the single short test is self-contained and not duplicated.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and low-complexity. RATIONALE: Simpler tests reduce bugs. EVALUATION CRITERIA: Tests <20 lines, no loops/conditionals. DECISION RULES: Method is 3 lines, no loops or conditionals -> compliant. VERDICT: compliant due to short, linear flow and low cyclomatic complexity.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should verify multiple relevant properties. RATIONALE: Superficial assertions miss faults. EVALUATION CRITERIA: Count assertions; need >=2 property checks for objects or collection size+contents. DECISION RULES: 1) This test has 0 assertions -> non-compliant. 2) No multiple property checks present. VERDICT: non-compliant because there are no assertions verifying properties of the created object.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "@Test(timeout = 4000)\npublic void test2_shouldCreateOrdenacao_andHaveCorrectType() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Instance should not be null\", ordenacao0);\n    assertEquals(\"Ordenacao\", ordenacao0.getClass().getSimpleName());\n}"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests active and runnable. RATIONALE: Ignored/disabled tests provide no value. EVALUATION CRITERIA: Look for @Ignore/@Disabled or commented-out tests. DECISION RULES: No @Ignore/@Disabled and no commented-out @Test found -> compliant. VERDICT: compliant because the test is active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should be linked to requirements. RATIONALE: Traceability aids maintenance. EVALUATION CRITERIA: Look for @Story/@Requirement or Javadoc with REQ ID. DECISION RULES: No such annotations or requirement IDs present -> non-compliant. VERDICT: non-compliant because there is no traceability metadata or comments linking the test to requirements.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "/**\n * Tests REQ-001: Ordenacao constructor creates an instance\n */\n@Test(timeout = 4000)\npublic void test2_constructor_createsInstance() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Constructor should create instance\", ordenacao0);\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Performance/security should be tested separately. RATIONALE: Unit tests usually don't cover non-functional requirements. EVALUATION CRITERIA: Look for @Test(timeout=...) or explicit security tests. DECISION RULES: Although @Test(timeout=4000) is present, this is a generic timeout on the test runner and the test contains no explicit performance or security assertions. Generally for unit tests this practice is not applicable. VERDICT: not-applicable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Test names should be descriptive. RATIONALE: Names indicate scenario and expected outcome. EVALUATION CRITERIA: Names should follow methodName_scenario_expectedBehavior. DECISION RULES: Test method name is 'test2', which is generic -> non-compliant. VERDICT: non-compliant because the name does not describe scenario or expected result.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "@Test(timeout = 4000)\npublic void constructor_withNoArgs_shouldCreateOrdenacaoInstance() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Constructor should create instance\", ordenacao0);\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated tests are often hard to maintain. EVALUATION CRITERIA: Look for auto-generated comments or repetitive generic names like test0/test1/test2. DECISION RULES: No explicit 'Auto-generated' comment, but the test name 'test2' is indicative of generated tests (pattern testN) -> non-compliant. VERDICT: non-compliant since the method name follows an auto-generated pattern, suggesting heavy code generation.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "/** Human-written focused test replacing generated name */\n@Test(timeout = 4000)\npublic void constructor_should_create_instance_quickly() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Instance created\", ordenacao0);\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then or BDD). RATIONALE: Thoughtful design improves coverage. EVALUATION CRITERIA: Look for Given-When-Then comments, BDD naming, or multiple scenario coverage. DECISION RULES: No Given-When-Then or BDD naming present; only a minimal happy-path object creation -> non-compliant. VERDICT: non-compliant because the test shows no evidence of deliberate test-first design or scenario prioritization.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "// Given: a need to create an Ordenacao instance\n// When: the no-arg constructor is invoked\n// Then: an instance is returned\n@Test(timeout = 4000)\npublic void given_noArgs_when_construct_then_instanceCreated() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Instance should be created by constructor\", ordenacao0);\n}"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should focus on public behavior, not internals. RATIONALE: Behavior-focused tests are less brittle. EVALUATION CRITERIA: Look for reflection or internal state checks. DECISION RULES: No reflection or private-field access found; only public constructor used -> compliant. VERDICT: compliant because the test interacts only with public API and does not tie to implementation details.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and include messages when appropriate. RATIONALE: Specific assertions make failures easier to diagnose. EVALUATION CRITERIA: Prefer assertEquals/assertThat with messages over generic assertTrue. DECISION RULES: 1) There are 0 assertions in this test -> non-compliant. VERDICT: non-compliant because the test contains no assertions at all and thus cannot detect faults.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Ordenacao ordenacao0 = new Ordenacao();\n  }",
+          "improved_code": "@Test(timeout = 4000)\npublic void test2_assertions_with_messages() throws Throwable {\n    Ordenacao ordenacao0 = new Ordenacao();\n    assertNotNull(\"Ordenacao instance should not be null\", ordenacao0);\n    assertEquals(\"Class name should be Ordenacao\", \"Ordenacao\", ordenacao0.getClass().getSimpleName());\n}"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Comments should explain 'why', not 'what'. RATIONALE: Minimal, valuable comments increase maintainability. EVALUATION CRITERIA: Look for commented-out code or excessive comments. DECISION RULES: No commented-out code or excessive comments; only a small class-level Javadoc exists -> compliant. VERDICT: compliant because comments are minimal and not cluttering the test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: Avoid randomness/time dependencies. EVALUATION CRITERIA: Look for Random(), System.currentTimeMillis(), Thread.sleep(), external dependencies. DECISION RULES: None of those constructs are present in the method; it uses only a constructor call -> compliant. VERDICT: compliant because the method has no sources of non-determinism.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should not produce side effects. RATIONALE: Side-effects create inter-test dependencies. EVALUATION CRITERIA: Look for file/db creation, static modifications, or lack of cleanup. DECISION RULES: The test uses only a local variable and does not perform persistence or modify static state -> compliant. VERDICT: compliant because there are no observable side effects in the method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Use tags/categories to organize tests. RATIONALE: Allows selective execution. EVALUATION CRITERIA: Look for @Tag/@Category annotations at class or method level. DECISION RULES: @Category(UnitTest.class) is present at class level -> compliant. VERDICT: compliant because the class is categorized via @Category.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "52.6%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "58.8%"
     }
   ],
   "practices_report": [
@@ -487,11 +487,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 3,
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "0.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-02",
@@ -507,26 +507,6 @@
       "practice_code": "CS-03",
       "practice_title": "Coverage of Normal and Exceptional Flows",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 2,
-      "not_applicable_methods": 0,
-      "total_methods": 3,
-      "compliance_score": "33.3%"
-    },
-    {
-      "practice_code": "CS-04",
-      "practice_title": "Boundary Value Analysis",
-      "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 0,
-      "not_applicable_methods": 1,
-      "total_methods": 3,
-      "compliance_score": "100.0%"
-    },
-    {
-      "practice_code": "CS-05",
-      "practice_title": "Complete Modularity of Test Cases",
-      "description": "",
       "compliant_methods": 0,
       "non_compliant_methods": 3,
       "not_applicable_methods": 0,
@@ -534,24 +514,44 @@
       "compliance_score": "0.0%"
     },
     {
-      "practice_code": "CS-06",
-      "practice_title": "Detailed Analysis of Size and Complexity",
+      "practice_code": "CS-04",
+      "practice_title": "Boundary Value Analysis",
       "description": "",
-      "compliant_methods": 1,
+      "compliant_methods": 0,
       "non_compliant_methods": 2,
-      "not_applicable_methods": 0,
+      "not_applicable_methods": 1,
       "total_methods": 3,
-      "compliance_score": "33.3%"
+      "compliance_score": "0.0%"
     },
     {
-      "practice_code": "CS-07",
-      "practice_title": "Complex Design for Fault Detection",
+      "practice_code": "CS-05",
+      "practice_title": "Complete Modularity of Test Cases",
       "description": "",
       "compliant_methods": 3,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
       "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-06",
+      "practice_title": "Detailed Analysis of Size and Complexity",
+      "description": "",
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 3,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-07",
+      "practice_title": "Complex Design for Fault Detection",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
+      "not_applicable_methods": 0,
+      "total_methods": 3,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-08",
@@ -567,21 +567,21 @@
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 0,
+      "compliant_methods": 2,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 3,
+      "not_applicable_methods": 1,
       "total_methods": 3,
-      "compliance_score": "N/A"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-12",
@@ -607,11 +607,11 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-06",
@@ -627,11 +627,11 @@
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
@@ -667,20 +667,20 @@
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 2,
-      "not_applicable_methods": 1,
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "0.0%"
+      "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "59.6%",
+  "overall_compliance_score": "56.1%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 21728,
-    "completion_tokens": 23712,
-    "total_tokens": 45440,
-    "cost": 0.0501232
+    "prompt_tokens": 20275,
+    "completion_tokens": 25604,
+    "total_tokens": 45879,
+    "cost": 0.05215835
   },
-  "normalized_overall_compliance_score": "65.4%"
+  "normalized_overall_compliance_score": "58.2%"
 }

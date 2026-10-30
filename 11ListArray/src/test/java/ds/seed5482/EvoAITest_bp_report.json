@@ -2,13 +2,13 @@
   "test_class_name": "EvoAITest",
   "test_methods": [
     {
-      "test_method_name": "test4",
+      "test_method_name": "test1",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "compliant",
-          "justification": "The test performs a single primary 'Act' (lista0.insere(...)) and verifies the resulting exception and invariant state. There is one clear Arrange-Act-Assert flow focused on the single behavior of insertion into a simulated-full list.",
+          "justification": "The test performs a single Act (lista0.imprime()) and contains a single Arrange-Act-Assert flow validating the resulting state with two related assertions about the same behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -16,7 +16,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The method uses only local variables and does not reference or modify shared static state. No @Before/@After are required for this single method; no evidence of inter-test dependencies is present in the method itself.",
+          "justification": "The method uses only local variables and does not rely on shared mutable state or ordered execution; no setup/teardown is required in this snippet.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,39 +24,39 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "This test exercises an exceptional/error flow (inserting into a simulated full list) but there is no accompanying happy-path test in the provided class snippet. With only one test method present and no tests for the normal (successful insertion) flow, the class does not demonstrate both happy and error path coverage.",
-          "original_code": "    // When / Then\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expected Exception when inserting into a list simulated as full (ultimo=\" + simulatedFullIndex + \")\");\n    } catch (Exception e) {\n",
-          "improved_code": "    @Test\n    public void insere_whenListNotFull_insertsSuccessfully() throws Throwable {\n        Lista lista = new Lista();\n        lista.insere(\"element\");\n        assertFalse(\"List should not be empty after insert\", lista.vazia());\n    }"
+          "justification": "Only a single happy-path test exists; there is no test for error/exceptional behavior related to the same functionality.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_error_onNullReceiver() throws Throwable {\n    Lista lista = null;\n    try {\n        lista.imprime();\n        fail(\"Expected NullPointerException\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test uses a large simulated index (1603) to force an error, but it does not explicitly test canonical boundary values (e.g., 0, -1, Integer.MAX_VALUE, empty inputs) or values just inside/outside boundaries. No explicit boundary-value assertions are present.",
-          "original_code": "        // Use a large positive index to simulate \"full\" internal state as in original test.\n        final int simulatedFullIndex = 1603;\n        setIntField(lista0, \"ultimo\", 1);   // match original sequence where ultimo was set to 1 then to 1603\n        setIntField(lista0, \"ultimo\", simulatedFullIndex);\n",
-          "improved_code": "    @Test\n    public void insere_boundaryValues_zeroAndNegativeHandled() throws Throwable {\n        Lista lista = new Lista();\n        // Boundary: primeiro/ultimo negative should be treated as empty\n        setIntField(lista, \"primeiro\", -1);\n        assertTrue(\"List should be empty when 'primeiro' is -1\", lista.vazia());\n\n        // Boundary: try inserting null (already present) and normal element\n        lista.insere(\"x\");\n        assertFalse(\"List should not be empty after insertion\", lista.vazia());\n    }"
+          "status": "not-applicable",
+          "justification": "The tested behavior does not expose numeric/input boundaries in the test method; no boundary inputs are relevant in this snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is self-contained and short. There are no duplicated code blocks visible in this single test; repeated logic is minimal. The test follows Arrange-Act-Assert structure and does not rely on external helpers beyond the scaffolding utilities.",
+          "justification": "The test is short and self-contained (<10 lines) and does not duplicate logic within this class; no helper extraction is necessary for this single method.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test is somewhat long and contains multiple assertion blocks and reflection-based setup; while there are no loops or conditionals, the method is over a compact/simple size threshold and mixes setup, act, and multiple asserts which increases cognitive complexity. It exceeds the stricter short-method guideline (<20 lines of core logic).",
-          "original_code": "        // Capture pre-insert state for later comparison\n        final int beforeUltimo = getIntField(lista0, \"ultimo\");\n        final int beforePos = getIntField(lista0, \"pos\");\n\n        // When / Then\n        try {\n            lista0.insere((Object) null);\n",
-          "improved_code": "    // helper to prepare a simulated-full list\n    private Lista createSimulatedFullLista(int simulatedFullIndex) {\n        Lista lista = new Lista();\n        setIntField(lista, \"ultimo\", simulatedFullIndex);\n        return lista;\n    }\n\n    @Test\n    public void insere_intoSimulatedFull_throws() throws Throwable {\n        Lista lista0 = createSimulatedFullLista(1603);\n        final int beforeUltimo = getIntField(lista0, \"ultimo\");\n        final int beforePos = getIntField(lista0, \"pos\");\n        assertThrows(Exception.class, () -> lista0.insere((Object) null));\n        assertEquals(beforeUltimo, getIntField(lista0, \"ultimo\"));\n    }"
+          "status": "compliant",
+          "justification": "The method is small (few lines), contains no loops or conditionals, and follows a simple linear Arrange-Act-Assert flow.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test makes multiple meaningful assertions: it checks the exception message contents and also verifies that internal state (ultimo and pos) did not change after the failed insertion. This verifies multiple properties of behavior, not just a superficial not-null check.",
+          "justification": "The test contains multiple assertions (two) verifying different properties of the result, increasing fault-detection capability beyond a single superficial assertion.",
           "original_code": null,
           "improved_code": null
         },
@@ -64,23 +64,23 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the method. The test is active and runnable (annotated with @Test(timeout=4000)).",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the shown method; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes explicit Requirements traceability (REQ-001 ... REQ-005), which links tests to requirements and satisfies traceability criteria.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test method and its surrounding code contain no annotations or Javadoc linking it to requirements, tickets, or user stories.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "/**\n * Tests REQ-001: imprime on empty list sets ultimo to 0 and pos to -1\n */\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals(-1, lista0.pos);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit @Test(timeout = 4000) annotation, demonstrating a performance-related assertion (timeout). Therefore the class includes an explicit timing constraint in this unit test.",
+          "status": "not-applicable",
+          "justification": "No performance or security testing is relevant or present in this unit test; absence is expected for a simple functional unit test.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test4' is generic and does not describe the scenario or expected result. Naming does not follow methodName_scenario_expectedResult or BDD-style conventions, making purpose unclear without reading the body or class comments.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test4() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n",
-          "improved_code": "    @Test(timeout = 4000)\n    public void insere_whenListSimulatedFull_throwsExceptionAndLeavesStateUnchanged() throws Throwable {\n        Lista lista0 = new Lista();\n        // test body unchanged\n    }"
+          "justification": "The method name 'test1' is generic and does not describe the scenario or expected outcome, reducing self-documentation.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testImprime_emptyList_setsUltimo0_posMinus1() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals(-1, lista0.pos);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test shows signs of automated generation: method name 'test4', imports from EvoSuite (EvoRunner, EvoAssertions), and scaffolding base class suggest tests were generated. The naming and patterns are indicative of heavy test generation rather than concise, intention-revealing tests.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\npublic class EvoAITest extends Lista_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test4() throws Throwable {\n",
-          "improved_code": "/* Replace generated-style naming and dependencies with intention-revealing tests */\n@Category(UnitTest.class)\npublic class ListaUnitTest extends Lista_ESTest_scaffolding {\n    @Test\n    public void insere_whenListSimulatedFull_throwsException() throws Throwable {\n        Lista lista = new Lista();\n        // test body\n    }\n}"
+          "justification": "The file contains an explicit 'automatically generated by EvoSuite' header and a generic test name, signaling heavy test generation rather than concise hand-written tests.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n@Test(timeout = 4000)\npublic void test1()  throws Throwable  {",
+          "improved_code": "@Test(timeout = 4000)\npublic void testImprime_emptyList_setsUltimo0_posMinus1() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals(-1, lista0.pos);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The class-level Javadoc documents requirements and mentions Given-When-Then structure; within the method there is a 'Given' comment. These indicate an attempt at designed tests and prioritization rather than ad-hoc one-liners.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test shows only a single basic happy-path case without Given-When-Then structure or multiple scenario coverage, suggesting post-hoc generation rather than prioritized design.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testImprime_emptyList_shouldReportEmptyState() throws Throwable {\n    // Given an empty list\n    Lista lista0 = new Lista();\n    // When we print the list\n    lista0.imprime();\n    // Then internal state should indicate empty list\n    assertEquals(\"ultimo should be 0 for empty list\", 0, lista0.ultimo);\n    assertEquals(\"pos should be -1 for empty list\", -1, lista0.pos);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "non-compliant",
-          "justification": "The test manipulates internal object state via setIntField/getIntField (implementation-detail access), coupling the test to private fields. This violates the guideline to test via public API and avoid reflection/internal-state assertions.",
-          "original_code": "        setIntField(lista0, \"ultimo\", 1);   // match original sequence where ultimo was set to 1 then to 1603\n        setIntField(lista0, \"ultimo\", simulatedFullIndex);\n        final int beforeUltimo = getIntField(lista0, \"ultimo\");\n        final int beforePos = getIntField(lista0, \"pos\");\n",
-          "improved_code": "    @Test\n    public void insere_whenListFull_throws_usingPublicApiToFill() throws Throwable {\n        Lista lista = new Lista();\n        // fill list using public API until it reports full (example loop uses public insert)\n        for (int i = 0; i < 100; i++) {\n            try {\n                lista.insere(\"x\");\n            } catch (Exception e) {\n                // reached full state via public API\n                break;\n            }\n        }\n        assertThrows(Exception.class, () -> lista.insere(\"y\"));\n    }"
+          "justification": "The test inspects internal fields (ultimo, pos) directly, coupling the test to the class's implementation details rather than validating behavior via public contracts.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_verifyPrintableOutput_insteadOfInternalFields() throws Throwable {\n    Lista lista0 = new Lista();\n    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();\n    java.io.PrintStream ps = new java.io.PrintStream(baos);\n    java.io.PrintStream old = System.out;\n    System.setOut(ps);\n    try {\n        lista0.imprime();\n    } finally {\n        System.out.flush();\n        System.setOut(old);\n    }\n    String out = baos.toString();\n    assertNotNull(\"Expected some printed output\", out);\n}"
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertNotNull, assertTrue with message, assertEquals with message). This improves diagnosability of failures.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use default forms; no assertion messages are provided to aid diagnosis when failures occur.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(0, lista0.ultimo);\n    assertEquals((-1), lista0.pos);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_withAssertionMessages() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertEquals(\"Ultimo should be 0 for empty list\", 0, lista0.ultimo);\n    assertEquals(\"Pos should be -1 for empty list\", -1, lista0.pos);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are concise (Given/When/Then) and class-level Javadoc documents requirements. There is no excessive or commented-out code in the method, and comments explain intent rather than restating obvious code.",
+          "justification": "The test code is concise and contains no commented-out code; there are no excessive or misleading comments within the method.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use Random, current time, Thread.sleep, or external resources; it deterministically sets internal state and asserts results. No non-deterministic APIs are present in the method body.",
+          "justification": "No sources of non-determinism (random, current time, sleeps, external services) are used in the method; it operates deterministically on local state.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only modifies a locally created Lista instance and does not persist external resources or modify static/shared state. No cleanup is required for external resources, so side effects are contained.",
+          "justification": "The test uses only local variables, does not persist external resources, and does not modify static/global state, so it has no observable side effects.",
           "original_code": null,
           "improved_code": null
         },
@@ -152,14 +152,334 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization for selective execution.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful label for classification at the class level.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "68.4%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "68.4%"
+      "normalized_method_compliance_score": "58.8%"
+    },
+    {
+      "test_method_name": "test3",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: A test should focus on a single behavior. RATIONALE: Single Arrange-Act-Assert helps root-cause. EVALUATION: The method asserts initial state (assertEquals on lista0.primeiro) and then mutates state and asserts vazia() result — effectively testing two behaviors. DECISION: There are multiple distinct assertions/operations testing different behaviors in one test, so non-compliant. VERDICT: non-compliant because the test mixes checking default field value and behavior after manual state change.",
+          "original_code": "Lista lista0 = new Lista();\nassertEquals(0, lista0.primeiro);\n\nlista0.primeiro = (-1108);\nboolean boolean0 = lista0.vazia();\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_onlyChecksVaziaAfterManualSet() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.primeiro = -1108;\n    assertFalse(lista0.vazia());\n}"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must be independent. RATIONALE: Independent tests allow any execution order. EVALUATION: The method uses only local variables and does not rely on shared mutable state or ordering; no @Before/@After is required. DECISION: No shared mutable state found and only local variables are used. VERDICT: compliant because the test is self-contained and does not depend on other tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should cover happy and error paths. RATIONALE: Exception/error scenarios must be tested. EVALUATION: The class contains only one test and it exercises a normal path; no exception or invalid-input tests are present. DECISION: With only one test method and no exception assertions, mark non-compliant. VERDICT: non-compliant because no error/exception flows are tested and only a happy/path-like scenario is present.",
+          "original_code": "Lista lista0 = new Lista();\nassertEquals(0, lista0.primeiro);\n\nlista0.primeiro = (-1108);\nboolean boolean0 = lista0.vazia();\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_happyPath() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.primeiro = -1108;\n    assertFalse(lista0.vazia());\n}\n\n@Test(timeout = 4000, expected = NullPointerException.class)\npublic void test3_error_nullReference() throws Throwable {\n    Lista lista0 = null;\n    // expecting a NullPointerException when calling method on null\n    lista0.vazia();\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test boundaries like zero/negative. RATIONALE: Boundaries reveal off-by-one and range errors. EVALUATION: The test checks primeiro equals 0 (zero) and then sets a negative value (-1108), which touches boundary/edge inputs. DECISION: Presence of zero and negative value indicates some boundary testing. VERDICT: compliant because the test includes zero and a negative value as inputs.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be modular and avoid duplication. RATIONALE: Helpers/constants reduce duplication. EVALUATION: The class contains a single short test (<10 lines) and no repeated code to refactor; no helper methods are necessary. DECISION: For very short tests with no repetition, mark compliant. VERDICT: compliant because the single short test does not duplicate code and is self-contained.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and simple. RATIONALE: Low complexity reduces test bugs. EVALUATION: The method is short (<20 lines), with no loops or conditionals. DECISION: Meets size and complexity criteria. VERDICT: compliant because the method is concise and linear.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Assertions should verify multiple properties. RATIONALE: Multiple checks detect more faults. EVALUATION: The test performs two assertions (initial field value and vazia result). DECISION: There are >=2 assertions, so it verifies multiple properties. VERDICT: compliant because the test asserts more than one property of the object.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be active and not ignored. RATIONALE: Disabled tests hide defects. EVALUATION: No @Ignore/@Disabled or commented-out @Test found. DECISION: All tests are active. VERDICT: compliant because there are no ignored/disabled or commented-out tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should map to requirements. RATIONALE: Traceability aids maintenance. EVALUATION: No annotations or Javadoc referencing requirement IDs or tickets; test name is generic. DECISION: No traceability information present. VERDICT: non-compliant due to absence of requirement links or comments.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n\n@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Lista lista0 = new Lista();\n    assertEquals(0, lista0.primeiro);\n\n    lista0.primeiro = (-1108);\n    boolean boolean0 = lista0.vazia();\n    assertFalse(boolean0);\n}",
+          "improved_code": "/* Tests REQ-001: empty list should report empty; REQ-002: list with non-zero primeiro is not empty */\n@Test(timeout = 4000)\npublic void testVazia_withNegativePrimeiro_shouldBeFalse() throws Throwable {\n    Lista lista = new Lista();\n    lista.primeiro = -1108;\n    assertFalse(\"List with primeiro set should not be empty\", lista.vazia());\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Performance/security belong in dedicated tests. RATIONALE: Unit tests typically do not include these. EVALUATION: No performance/security assertions present. DECISION: This practice is usually not-applicable for simple unit tests. VERDICT: not-applicable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Test names should describe scenario and expected outcome. RATIONALE: Descriptive names improve readability. EVALUATION: The method name 'test3' is generic and gives no scenario or expected result. DECISION: Name does not follow descriptive conventions. VERDICT: non-compliant due to generic auto-generated name.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Lista lista0 = new Lista();\n    assertEquals(0, lista0.primeiro);\n\n    lista0.primeiro = (-1108);\n    boolean boolean0 = lista0.vazia();\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void primeiroZeroOnNewList_andVaziaFalseAfterManualSet() throws Throwable {\n    Lista lista = new Lista();\n    assertEquals(\"primeiro should be 0 for new lists\", 0, lista.primeiro);\n    lista.primeiro = -1108;\n    assertFalse(\"list should not be empty after primeiro is set\", lista.vazia());\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated tests can be hard to maintain. EVALUATION: File header indicates EvoSuite auto-generation and test name 'test3' is generic; hints of heavy generation. DECISION: Presence of auto-generated comments and naming pattern indicates generated code. VERDICT: non-compliant because this is clearly auto-generated and verbose metadata is present.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\n@Category(UnitTest.class)",
+          "improved_code": "/* Hand-written unit test focusing on behavior */\n@RunWith(org.junit.runners.JUnit4.class)\n@Category(UnitTest.class)\npublic class EvoAITest {\n    @Test(timeout = 4000)\n    public void testVaziaAfterManualPrimeiroSet() {\n        Lista lista = new Lista();\n        lista.primeiro = -1108;\n        assertFalse(lista.vazia());\n    }\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then, BDD naming). RATIONALE: Prioritization and design improve coverage. EVALUATION: Test appears auto-generated and minimal (single scenario) with no Given-When-Then comments or BDD naming. DECISION: No evidence of test-first or thoughtful design. VERDICT: non-compliant because the test lacks design cues and only covers a minimal scenario.",
+          "original_code": "/* This file was automatically generated by EvoSuite */\n@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Lista lista0 = new Lista();\n    assertEquals(0, lista0.primeiro);\n\n    lista0.primeiro = (-1108);\n    boolean boolean0 = lista0.vazia();\n    assertFalse(boolean0);\n}",
+          "improved_code": "/** Given a newly created list, when primeiro is set to a non-zero value, then vazia() should return false */\n@Test(timeout = 4000)\npublic void givenNewList_whenPrimeiroSet_thenNotEmpty() throws Throwable {\n    // Given\n    Lista lista = new Lista();\n    // When\n    lista.primeiro = -1108;\n    // Then\n    assertFalse(\"list should not be empty after primeiro is set\", lista.vazia());\n}"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should target public behavior, not internal implementation. RATIONALE: Implementation-coupled tests are brittle. EVALUATION: The test directly accesses and mutates the public field 'primeiro', which is an internal state detail rather than a public behavior. DECISION: Presence of field access to verify state indicates coupling to implementation. VERDICT: non-compliant because it inspects/manipulates internal field instead of relying purely on public behavior.",
+          "original_code": "Lista lista0 = new Lista();\nassertEquals(0, lista0.primeiro);\n\nlista0.primeiro = (-1108);\nboolean boolean0 = lista0.vazia();\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void testVazia_reliesOnPublicBehaviorOnly() throws Throwable {\n    Lista lista = new Lista();\n    // do not access internal fields; only verify public behavior\n    assertTrue(\"new list should be empty\", lista.vazia());\n}"
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use clear, specific assertions with messages. RATIONALE: Descriptive messages and specific assertions improve diagnostics. EVALUATION: The test uses assertEquals and assertFalse without descriptive failure messages; no descriptive messages present. DECISION: Lack of messages and use of assertFalse on a boolean variable without message is non-compliant. VERDICT: non-compliant due to missing descriptive assertion messages.",
+          "original_code": "assertEquals(0, lista0.primeiro);\n...\nboolean boolean0 = lista0.vazia();\nassertFalse(boolean0);",
+          "improved_code": "assertEquals(\"primeiro should be zero for newly created list\", 0, lista0.primeiro);\nlista0.primeiro = -1108;\nassertFalse(\"vazia() should return false after primeiro is set\", lista0.vazia());"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Comments should add value and explain why. RATIONALE: Minimal useful comments improve readability. EVALUATION: No commented-out code or excessive inline comments present; file contains a generation header but no distracting commented-out test code. DECISION: No problematic comments or commented-out code found. VERDICT: compliant because the code is concise and not cluttered with commented-out test logic.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: Avoid randomness/time dependencies. EVALUATION: The method contains no Random, currentTime, sleeps, or external dependencies; uses local state only. DECISION: No non-deterministic constructs detected in method body. VERDICT: compliant because the test is deterministic based on visible code.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should avoid shared side effects and clean up resources. RATIONALE: Side effects cause flakiness. EVALUATION: The test only manipulates a local Lista instance and does not persist data or modify static state; no resources to clean up. DECISION: Local-only operations imply no side effects. VERDICT: compliant because the test does not produce persistent side effects or modify global state.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Use tags/categories to organize tests. RATIONALE: Labels allow selective execution. EVALUATION: The class is annotated with @Category(UnitTest.class), which provides classification. DECISION: Presence of meaningful @Category annotation marks compliant. VERDICT: compliant because the class uses @Category to label tests.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "52.6%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "55.6%"
+    },
+    {
+      "test_method_name": "test2",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "Single method call under test (lista0.vazia()) with one clear Arrange-Act-Assert flow and additional assertions checking the resulting state. There is only one distinct 'Act' operation, so the test focuses on a single behavior.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not rely on or modify shared static/instance state. No @Before/@After are present but the test is self-contained, so it is independent from other tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path scenario is tested (empty list behavior). There are no tests that exercise error or exceptional flows, and no use of assertThrows or try/catch to validate exceptions.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test2_exceptional_whenNull_throwsNPE() {\n      Lista lista0 = null;\n      try {\n          // calling a method on null to demonstrate testing an exceptional path\n          lista0.vazia();\n          fail(\"Expected NullPointerException\");\n      } catch (NullPointerException e) {\n          // expected exceptional flow\n      }\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "The test exercises the empty-list boundary (vazia on a newly created list). It checks emptiness and resulting boundary-related fields (ultimo == 0, pos == -1), indicating explicit boundary checking.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (< 10 lines) with no repeated setup across multiple methods (only one method present), so modularity concerns are minimal. No helper extraction needed for this single test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is small (well under 20 lines), has linear control flow with no loops or conditionals, and follows a simple Arrange-Act-Assert pattern, meeting low complexity criteria.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "compliant",
+          "justification": "The test verifies multiple properties of the result (the boolean from vazia and two internal fields ultimo and pos), providing several assertions that increase fault-detection capability beyond a single superficial check.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the visible code. Tests are active and runnable, despite the file being generated automatically.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "No annotations, Javadoc, or comments link this test to any requirement ID, ticket, or user story. There is no traceability metadata present.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  /**\n   * REQ-001: Verify that a newly created list is empty and initial indexes are set.\n   */\n  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      assertTrue(lista0.vazia());\n  }"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "This is a simple unit test focusing on functional behavior; there are no performance or security test indicators and unit tests typically do not include such tests. No timing/security checks are present.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test2' is generic and does not communicate the scenario or expected result. It does not follow descriptive naming patterns like method_condition_expectedResult.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void vazia_whenNewList_thenReturnsTrueAndInitialIndexes() throws Throwable {\n      Lista lista0 = new Lista();\n      assertTrue(lista0.vazia());\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The file contains an explicit auto-generated header ('This file was automatically generated by EvoSuite') and a generic test name 'test2', which are clear signs of heavy code generation rather than a concise, intention-revealing hand-written test.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */",
+          "improved_code": "/**\n * Unit tests for Lista — hand-crafted to be concise and intention-revealing.\n */\n@RunWith(EvoRunner.class)\n@Category(UnitTest.class)\npublic class EvoAITest extends Lista_ESTest_scaffolding {\n  // hand-written, focused tests follow\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "The test appears minimal and generated (single happy-path check) with no Given-When-Then structure, BDD naming, or evidence of prioritized test design. No edge cases or error scenarios are included.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void vazia_givenNewList_whenChecked_thenIsEmpty() throws Throwable {\n      // Given\n      Lista lista0 = new Lista();\n      // When\n      boolean empty = lista0.vazia();\n      // Then\n      assertTrue(\"list should be empty after creation\", empty);\n  }"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "non-compliant",
+          "justification": "The test inspects internal fields (lista0.ultimo and lista0.pos) directly rather than relying solely on public API behavior, which couples the test to implementation details and increases brittleness.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void vazia_whenNewList_thenIsEmpty_onlyUsePublicApi() throws Throwable {\n      Lista lista0 = new Lista();\n      // Verify behavior through public API only\n      assertTrue(\"list should be empty after creation\", lista0.vazia());\n  }"
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use generic assertTrue; none of the assertions include text to ease diagnosis. Better use of descriptive messages or more specific asserts would improve clarity.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Lista lista0 = new Lista();\n      boolean boolean0 = lista0.vazia();\n      assertTrue(boolean0);\n      assertEquals(0, lista0.ultimo);\n      assertEquals((-1), lista0.pos);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void vazia_withMessages() throws Throwable {\n      Lista lista0 = new Lista();\n      assertTrue(\"Newly created list should be empty\", lista0.vazia());\n      assertEquals(\"ultimo should be 0 for a new list\", 0, lista0.ultimo);\n      assertEquals(\"pos should be -1 for a new list\", -1, lista0.pos);\n  }"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The class includes minimal Javadoc for the marker interface and no excessive or commented-out code within the test method. There are no commented-out tests, and comments are not dominating the code.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use randomness, time-based calls, sleeps, or external dependencies; it relies on deterministic creation of a Lista instance and its behavior, so results are deterministic.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not persist files, modify static variables, or leave open resources. No cleanup is required, so there are no side effects that would affect other tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class uses @Category(UnitTest.class) at class level, providing a meaningful label for grouping. This satisfies the practice of categorizing tests.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "57.9%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "61.1%"
     },
     {
       "test_method_name": "test0",
@@ -168,7 +488,7 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "compliant",
-          "justification": "The test focuses on a single behavior: calling imprime() when 'primeiro' is set to an invalid negative index. There is a single Act (lista0.imprime()) and a single Arrange-Act-Assert structure inside the try/catch.",
+          "justification": "PRINCIPLE: Test should focus on a single behavior. RATIONALE: Single Arrange-Act-Assert improves root-cause identification. EVALUATION CRITERIA: Compliant if single method call/one scenario. DECISION RULES: Count distinct 'Act' operations; if one, mark compliant. VERDICT: Compliant — method performs a single Act (lista0.imprime()) and a single assertion group (expect exception).",
           "original_code": null,
           "improved_code": null
         },
@@ -176,7 +496,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables (creates its own Lista instance) and does not rely on other test methods or shared mutable state. No numbered test names or cross-test dependencies are present.",
+          "justification": "PRINCIPLE: Tests must not depend on each other. RATIONALE: Enables any-order/parallel execution. EVALUATION CRITERIA: Compliant if uses local variables and no shared mutable state. DECISION RULES: If only local variables used and no @Before/@After required, mark compliant. VERDICT: Compliant — test uses only local Lista instance, no visible shared/static state or ordered naming.",
           "original_code": null,
           "improved_code": null
         },
@@ -184,63 +504,63 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The class contains only this single test, which exercises an exceptional flow. There is no complementary happy-path test for the same behavior (no success case tested).",
-          "original_code": "// Then\ntry {\n    lista0.imprime();\n    fail(\"Expected ArrayIndexOutOfBoundsException when 'primeiro' is negative (badIndex=\" + badIndex + \")\");\n} catch (ArrayIndexOutOfBoundsException e) {",
-          "improved_code": "@Test(timeout = 4000)\npublic void test0_happyPath() throws Throwable {\n    Lista lista = new Lista();\n    // Use public API to create observable content\n    lista.insere(1);\n    // Should not throw for a valid internal state\n    lista.imprime();\n    assertFalse(\"List should not be empty after insert\", lista.vazia());\n}"
+          "justification": "PRINCIPLE: Tests should cover both happy and error paths. RATIONALE: Ensures robustness and exception handling. EVALUATION CRITERIA: Compliant only if class provides both success and error tests (e.g., assertThrows or @Test(expected)). DECISION RULES: If all tests only cover an error or only happy path, mark non-compliant. VERDICT: Non-compliant — the single test covers only an exceptional flow (expects ArrayIndexOutOfBoundsException) and there is no happy-path test in the provided snippet.",
+          "original_code": "Lista lista0 = new Lista();\nlista0.primeiro = (-411);\n// Undeclared exception!\ntry { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "@Test\npublic void testImprime_happyPath() {\n    Lista lista = new Lista();\n    lista.primeiro = 0;\n    lista.imprime();\n}\n\n@Test(expected = ArrayIndexOutOfBoundsException.class)\npublic void testImprime_negative_throws() {\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    lista.imprime();\n} "
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test explicitly uses a negative boundary-like value (-411) for 'primeiro' to test invalid index behavior, which is an edge condition relevant to the behavior under test.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should check min/max and just-outside boundaries. RATIONALE: Many bugs are at boundaries. EVALUATION CRITERIA: Compliant if tests include 0, -1, Integer.MAX_VALUE, empty, etc. DECISION RULES: If only typical/middle values are used, mark non-compliant. VERDICT: Non-compliant — the test uses a single negative value (-411) which is not clearly a boundary case (no explicit 0, -1 or max/min checks).",
+          "original_code": "Lista lista0 = new Lista();\nlista0.primeiro = (-411);\ntry { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "@Test\npublic void testImprime_boundary_negativeOne() {\n    Lista l = new Lista();\n    l.primeiro = -1;\n    try { l.imprime(); } catch (Exception e) { /* expected or assert accordingly */ }\n}\n\n@Test\npublic void testImprime_boundary_zero() {\n    Lista l = new Lista();\n    l.primeiro = 0;\n    l.imprime();\n}\n\n@Test\npublic void testImprime_boundary_max() {\n    Lista l = new Lista();\n    l.primeiro = Integer.MAX_VALUE;\n    try { l.imprime(); } catch (Exception e) { /* observe behavior */ }\n} "
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test uses hard-coded magic values and no helper methods or constants are defined to reduce duplication or express intent; no modular helpers are present in the visible method.",
-          "original_code": "final int badIndex = -411;\nsetIntField(lista0, \"primeiro\", badIndex);\n",
-          "improved_code": "private static final int BAD_INDEX = -411;\nprivate void setPrimeiroField(Lista lista, int value) throws Exception {\n    setIntField(lista, \"primeiro\", value);\n}\n\n@Test(timeout = 4000)\npublic void test0() throws Throwable {\n    Lista lista0 = new Lista();\n    setPrimeiroField(lista0, BAD_INDEX);\n    // rest of assertions...\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be self-contained and reuse helpers. RATIONALE: Reduces duplication and improves maintainability. EVALUATION CRITERIA: Compliant if short tests with no duplication or if helper methods/constants exist. DECISION RULES: If tests are very short (<10 lines) and don't repeat code, mark compliant. VERDICT: Compliant — this test is short and self-contained; no repeating code visible in the snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is small and linear with no loops or complex conditionals and follows a clear Arrange-Act-Assert pattern; its size and complexity are low.",
+          "justification": "PRINCIPLE: Keep tests small and with low complexity. RATIONALE: Easier to understand and less error-prone. EVALUATION CRITERIA: Compliant if methods are <20 lines and have linear flow. DECISION RULES: If method is <15 lines and simple, mark compliant. VERDICT: Compliant — test is short (~10 lines) with a straight-line try/catch and no loops or complex conditions.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test includes multiple assertions about the thrown exception (non-null message and that the message contains the invalid index), verifying multiple properties of the failure.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should verify multiple properties where appropriate. RATIONALE: Comprehensive assertions detect deeper faults. EVALUATION CRITERIA: Compliant if multiple properties of result are asserted; non-compliant if only superficial assertions (assertNotNull or single check). DECISION RULES: If only 1 assertion or only superficial checks, mark non-compliant. VERDICT: Non-compliant — the test only verifies that an exception is thrown and does not assert additional properties such as exception message or state after operation.",
+          "original_code": "Lista lista0 = new Lista();\nlista0.primeiro = (-411);\ntry { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "@Test\npublic void testImprime_exceptionMessage() {\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    try {\n        lista.imprime();\n        fail(\"Expected ArrayIndexOutOfBoundsException\");\n    } catch (ArrayIndexOutOfBoundsException e) {\n        assertEquals(\"Exception message should contain index\", \"-411\", e.getMessage());\n    }\n} "
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the visible code; the test appears active and runnable.",
+          "justification": "PRINCIPLE: Avoid @Ignore or commented-out tests. RATIONALE: Ignored tests hide problems. EVALUATION CRITERIA: Compliant if no @Ignore/@Disabled or commented-out tests. DECISION RULES: If no @Ignore/@Disabled and no commented-out @Test, mark compliant. VERDICT: Compliant — no @Ignore/@Disabled or commented-out tests visible in the provided snippet.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class Javadoc explicitly lists requirement IDs (REQ-001 ... REQ-005), providing traceability between tests and requirements.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should link to requirements or tickets. RATIONALE: Facilitates coverage and impact analysis. EVALUATION CRITERIA: Compliant only if annotations or Javadoc reference requirement IDs. DECISION RULES: Search for @Story/@Requirement or REQ-/US- comments; absent => non-compliant. VERDICT: Non-compliant — no traceability annotations or Javadoc referring to requirement IDs are present.",
+          "original_code": "Lista lista0 = new Lista();\nlista0.primeiro = (-411);\n// Undeclared exception!\ntry { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "/**\n * REQ-001: imprime must throw ArrayIndexOutOfBoundsException for negative primeiro\n */\n@Test(expected = ArrayIndexOutOfBoundsException.class)\npublic void testImprime_negative_throws() {\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    lista.imprime();\n} "
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "This is a unit functional test; there are no performance or security tests expected here and none are present (the practice is typically not applicable to such unit tests).",
+          "justification": "PRINCIPLE: Performance/security tests are separate concerns. RATIONALE: These are usually not part of small unit tests. EVALUATION CRITERIA: Mark not-applicable unless explicit timing or security checks present. DECISION RULES: If no @Test(timeout=...) or security checks present, mark not-applicable for unit tests. VERDICT: Not-applicable — no performance or security testing constructs are present in this unit test method.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +568,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' is generic and does not follow a descriptive naming convention describing scenario and expected result.",
-          "original_code": "public void test0() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n    ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void imprime_primeiroNegative_throwsArrayIndexOutOfBounds() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n\n    // When\n    final int badIndex = -411;\n    setIntField(lista0, \"primeiro\", badIndex);\n\n    // Then\n    try {\n        lista0.imprime();\n        fail(\"Expected ArrayIndexOutOfBoundsException when 'primeiro' is negative (badIndex=\" + badIndex + \")\");\n    } catch (ArrayIndexOutOfBoundsException e) {\n        assertNotNull(\"Exception message should not be null for ArrayIndexOutOfBoundsException\", e.getMessage());\n        assertTrue(\"Exception message should contain the invalid index value (\" + badIndex + \")\", e.getMessage().contains(String.valueOf(badIndex)));\n    }\n}"
+          "justification": "PRINCIPLE: Test names should describe scenario and expected outcome. RATIONALE: Names help identify failures. EVALUATION CRITERIA: Compliant if name follows method_scenario_expected pattern. DECISION RULES: If name is generic like test0/test1, mark non-compliant. VERDICT: Non-compliant — the method name is 'test0', which is generic and does not describe scenario or expected behavior.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.primeiro = (-411);\n    // Undeclared exception!\n    try { \n      lista0.imprime();\n      fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n    \n    } catch(ArrayIndexOutOfBoundsException e) {\n       //\n       // -411\n       //\n       verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test(expected = ArrayIndexOutOfBoundsException.class, timeout = 4000)\npublic void imprime_withNegativePrimeiro_throwsIndexOutOfBounds() {\n    Lista lista0 = new Lista();\n    lista0.primeiro = -411;\n    lista0.imprime();\n} "
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test shows signs of automated generation (class name EvoAITest, import of EvoSuite runtime, and the generated-style method name test0), suggesting heavy code generation patterns.",
-          "original_code": "public void test0() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n    // When\n    final int badIndex = -411;\n    setIntField(lista0, \"primeiro\", badIndex);\n    // Then\n    try {",
-          "improved_code": "@Test(timeout = 4000)\npublic void imprime_withInvalidPrimeiro_reportsInvalidIndex() throws Throwable {\n    Lista lista0 = new Lista();\n    final int badIndex = -411;\n    setIntField(lista0, \"primeiro\", badIndex);\n    try {\n        lista0.imprime();\n        fail(\"Expected ArrayIndexOutOfBoundsException when 'primeiro' is negative (\" + badIndex + \")\");\n    } catch (ArrayIndexOutOfBoundsException e) {\n        assertTrue(e.getMessage().contains(String.valueOf(badIndex)));\n    }\n}"
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated code can be verbose and hard to maintain. EVALUATION CRITERIA: Non-compliant if auto-generated comments or names like test0/test1 are present. DECISION RULES: If file header states 'automatically generated' or repetitive auto-generated names present, mark non-compliant. VERDICT: Non-compliant — file header plainly states it was automatically generated by EvoSuite and method name 'test0' follows auto-generated pattern.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n\n@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.primeiro = (-411);\n    // Undeclared exception!\n    try { \n      lista0.imprime();\n      fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n    } catch(ArrayIndexOutOfBoundsException e) {\n       verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test(expected = ArrayIndexOutOfBoundsException.class)\npublic void imprime_givenNegativePrimeiro_thenThrows() {\n    // concise, intention-revealing test (no auto-generated header or generic name)\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    lista.imprime();\n} "
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments, indicating a BDD-style/structured design intent and showing thought put into the test scenario.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show deliberate design (Given-When-Then, BDD). RATIONALE: Thoughtful design improves coverage. EVALUATION CRITERIA: Compliant if Given-When-Then or BDD-style naming/comments exist. DECISION RULES: If no such structure and tests appear minimal, mark non-compliant. VERDICT: Non-compliant — the test appears minimal and auto-generated with no Given-When-Then comments or evidence of intentional prioritization.",
+          "original_code": "Lista lista0 = new Lista();\nlista0.primeiro = (-411);\n// Undeclared exception!\ntry { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "@Test\npublic void imprime_givenNegativePrimeiro_thenThrows() {\n    // Given\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    // When / Then\n    try { lista.imprime(); fail(\"Expected exception\"); } catch (ArrayIndexOutOfBoundsException e) { /* expected */ }\n} "
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test uses reflection (setIntField) to modify a private/internal field ('primeiro'), coupling the test to internal implementation details rather than testing through public APIs.",
-          "original_code": "final int badIndex = -411;\nsetIntField(lista0, \"primeiro\", badIndex);\n",
-          "improved_code": "@Test(timeout = 4000)\npublic void test0_withoutReflection_usesPublicApi() throws Throwable {\n    Lista lista0 = new Lista();\n    // Use public behavior to prepare state rather than modifying private fields\n    assertTrue(\"New list should be empty\", lista0.vazia());\n    // Verify public behavior of imprime on an empty list (should not throw or should have defined behavior)\n    lista0.imprime();\n    assertTrue(\"List still empty after imprime\", lista0.vazia());\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should focus on public behavior not internals. RATIONALE: Behavior-focused tests are less brittle. EVALUATION CRITERIA: Compliant if no reflection and only public API used. DECISION RULES: If only public methods are invoked and no reflection/private-state checks exist, mark compliant. VERDICT: Compliant — test interacts via public field and public method; no reflection or private-field inspection is present in the snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertNotNull and assertTrue) and include descriptive failure messages, improving diagnosability of failures.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and include messages. RATIONALE: Specific assertions detect subtle faults and give clear failure info. EVALUATION CRITERIA: Compliant if assertions use assertEquals/assertThat with messages; non-compliant if only generic assertTrue or no messages. DECISION RULES: If assertions lack descriptive messages and are generic, mark non-compliant. VERDICT: Non-compliant — the test uses fail() and verifyException() but does not include specific assertEquals/assertThat checks or descriptive failure messages for expected properties.",
+          "original_code": "try { \n  lista0.imprime();\n  fail(\"Expecting exception: ArrayIndexOutOfBoundsException\");\n\n} catch(ArrayIndexOutOfBoundsException e) {\n  verifyException(\"ds.Lista\", e);\n}",
+          "improved_code": "@Test\npublic void testImprime_exceptionMessage() {\n    Lista lista = new Lista();\n    lista.primeiro = -411;\n    try {\n        lista.imprime();\n        fail(\"Expected ArrayIndexOutOfBoundsException\");\n    } catch (ArrayIndexOutOfBoundsException e) {\n        assertEquals(\"Exception message should contain index\", \"-411\", e.getMessage());\n    }\n} "
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test uses concise Given-When-Then comments and class-level Javadoc to explain intent; there is no excessive or irrelevant commenting and no commented-out code.",
+          "justification": "PRINCIPLE: Comments should explain 'why', not 'what'. RATIONALE: Excessive comments clutter tests. EVALUATION CRITERIA: Compliant if minimal useful comments and no commented-out code. DECISION RULES: If no commented-out code and comments not excessive, mark compliant. VERDICT: Compliant — there is no commented-out code in the test method and comments are minimal; class-level Javadoc exists for marker interface.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +616,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use random values, time-based calls, Thread.sleep, or external dependencies; it operates deterministically on a local Lista instance.",
+          "justification": "PRINCIPLE: Tests must be deterministic (no random/time/external dependencies). RATIONALE: Flaky tests waste time. EVALUATION CRITERIA: Compliant if no Random(), System.currentTimeMillis(), Thread.sleep(), external deps without mocks. DECISION RULES: If none of those constructs are present, mark compliant. VERDICT: Compliant — the method contains no random/time/external calls and uses a local instance, so it is deterministic given the same environment.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,7 +624,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test operates on a local Lista instance and does not persist external resources or modify global/static state; side effects are limited to the local object under test.",
+          "justification": "PRINCIPLE: Tests must not create lasting side effects. RATIONALE: Side effects cause inter-test interference. EVALUATION CRITERIA: Compliant if only local variables used and no persisted external resources or static modifications. DECISION RULES: If test uses only local variables and no persistent operations, mark compliant. VERDICT: Compliant — test uses a local Lista and does not create files, DB records, or modify static state within the snippet.",
           "original_code": null,
           "improved_code": null
         },
@@ -312,23 +632,23 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful label that supports selective execution of test categories.",
+          "justification": "PRINCIPLE: Use labels/categories to organize tests. RATIONALE: Enables selective execution and management. EVALUATION CRITERIA: Compliant if @Tag/@Category present. DECISION RULES: If class contains @Category or equivalent, mark compliant. VERDICT: Compliant — the class is annotated with @Category(UnitTest.class) at class level (visible in the class header), providing categorization.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "68.4%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "72.2%"
+      "normalized_method_compliance_score": "55.6%"
     },
     {
-      "test_method_name": "test3",
+      "test_method_name": "test4",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "compliant",
-          "justification": "PRINCIPLE: Single-behavior focus. RATIONALE: Single Arrange-Act-Assert improves diagnosability. EVALUATION: The method performs one primary Act (lista0.vazia()) after a single mutation and assertions relate to that scenario. DECISION: Only one distinct method call being tested and one coherent scenario. VERDICT: compliant.",
+          "justification": "The method performs a single act (lista0.insere(null)) and asserts the expected exception in a single Arrange-Act-Assert flow. Only one primary operation is exercised, so it focuses on one behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -336,7 +656,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests must not depend on other tests. RATIONALE: Deterministic and parallel execution. EVALUATION: The method uses only local variables; no @Before/@After needed and no shared mutable state is evident in the method body. DECISION: No shared static/instance mutable state used in the method. VERDICT: compliant.",
+          "justification": "The test uses only local variables (creates a new Lista instance) and does not rely on other tests or shared static state within the method. No evidence of inter-test coupling is present.",
           "original_code": null,
           "improved_code": null
         },
@@ -344,23 +664,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Provide both happy path and error scenarios. RATIONALE: Ensure robustness across flows. EVALUATION: The class has only one test method; no explicit happy-path test for the same behavior (e.g., using valid inputs) is present. DECISION: With only a single test in the class and no explicit exception/error-case pair for the same method, mark as non-compliant. VERDICT: non-compliant.",
-          "original_code": "    // When\n    setIntField(lista0, \"primeiro\", invalidPrimeiro);\n    boolean empty = lista0.vazia();\n\n    // Then\n    assertFalse(\"With 'primeiro' set to \" + invalidPrimeiro + \", vazia() was expected to return false.\", empty);",
-          "improved_code": "    @Test(timeout = 4000)\n    public void test3() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n        // Happy path: new list should be empty\n        assertTrue(\"New list should be empty.\", lista0.vazia());\n\n        // When mutated internal state\n        setIntField(lista0, \"primeiro\", -1108);\n        boolean empty = lista0.vazia();\n\n        // Then\n        assertFalse(\"With 'primeiro' set to -1108, vazia() expected to return false.\", empty);\n    }"
+          "justification": "The class contains only this single test which exercises an exceptional flow. There is no corresponding happy-path test for the same method; the test suite (as shown) lacks complementary normal-case coverage.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test\npublic void test4_happyPath_insertsSuccessfully() throws Throwable {\n    Lista lista = new Lista();\n    // Insert a normal object and expect success (no exception)\n    lista.insere(\"item\");\n    assertNotNull(\"List should still exist after insert\", lista);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Test boundary/min/max and near-boundary values. RATIONALE: Boundaries reveal off-by-one and range errors. EVALUATION: The test mutates 'primeiro' to an arbitrary negative value (-1108) that is not an obvious boundary (e.g., -1, 0, Integer.MAX_VALUE). DECISION: No explicit boundary values are tested; mark as non-compliant. VERDICT: non-compliant.",
-          "original_code": "    final int invalidPrimeiro = -1108;\n    // When\n    setIntField(lista0, \"primeiro\", invalidPrimeiro);\n    boolean empty = lista0.vazia();",
-          "improved_code": "    @Test(timeout = 4000)\n    public void test3_boundaries() throws Throwable {\n        Lista lista0 = new Lista();\n        // test boundary -1\n        setIntField(lista0, \"primeiro\", -1);\n        assertFalse(\"primeiro=-1 should not be considered empty\", lista0.vazia());\n        // test boundary 0\n        setIntField(lista0, \"primeiro\", 0);\n        assertTrue(\"primeiro=0 should be considered empty\", lista0.vazia());\n    }"
+          "justification": "The test sets numeric fields but does not explicitly target or document boundary values (zero, negative, max, empty). No explicit boundary tests (empty, zero, negative, Integer.MAX_VALUE) are present in this method.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test\npublic void test4_boundaryValues() throws Throwable {\n    Lista lista = new Lista();\n    // boundary: zero\n    lista.ultimo = 0;\n    lista.insere(\"first\");\n    // boundary: very large\n    lista.ultimo = Integer.MAX_VALUE - 1;\n    // ensure no unexpected exceptions for non-boundary overflow here\n    assertNotNull(lista);\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should be self-contained and reuse helpers. RATIONALE: Reduces duplication and improves maintainability. EVALUATION: The method is short and self-contained; no duplicated code across methods is visible. DECISION: No helper methods needed for this short test; mark as compliant. VERDICT: compliant.",
+          "justification": "The test is short and self-contained (<10 lines) and does not show repeated code within the single-method context. No helper extraction is necessary for this small test.",
           "original_code": null,
           "improved_code": null
         },
@@ -368,39 +688,39 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "PRINCIPLE: Keep tests small and simple. RATIONALE: Low complexity lowers test bugs. EVALUATION: The method is short (<20 lines), linear, with no loops or complex conditionals. DECISION: Meets size/complexity limits. VERDICT: compliant.",
+          "justification": "Method is short (well under 20 lines), has a single linear flow with no loops or nested conditionals, satisfying size and complexity criteria.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Assertions should verify multiple properties. RATIONALE: Multiple checks detect more faults. EVALUATION: The test asserts both the return value of vazia() and that the 'primeiro' field reflects the mutation (two related properties). DECISION: Multiple meaningful assertions present. VERDICT: compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test uses a single assertion pattern (expecting an exception) and does not perform multiple, detailed assertions on the result or state. It is superficial in its verification of outcomes.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testInsere_whenListFull_throwsException_andMessageVerified() throws Throwable {\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    try {\n        lista.insere(null);\n        fail(\"Expected exception when inserting into full list\");\n    } catch(Exception e) {\n        assertEquals(\"Erro: A lista esta cheia\", e.getMessage());\n    }\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "PRINCIPLE: Avoid ignored/commented tests. RATIONALE: Keep suite active. EVALUATION: No @Ignore/@Disabled or commented-out @Test methods in the shown class. DECISION: All visible tests active. VERDICT: compliant.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the shown method. The test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Link tests to requirements. RATIONALE: Facilitates impact analysis. EVALUATION: Class-level Javadoc includes explicit 'Requirements traceability' entries (REQ-001..REQ-005). DECISION: Traceability information is present in Javadoc. VERDICT: compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no annotations, Javadoc comments, or inline comments linking this test to requirement IDs, tickets, or user stories, so traceability is absent.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "// REQ-001: Inserting into a full list must throw an exception\n@Test(timeout = 4000)\npublic void test4_requirement_REQ_001() throws Throwable {\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    try { lista.insere(null); fail(\"Expecting exception\"); } catch(Exception e) { }\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "PRINCIPLE: Separate performance/security tests. RATIONALE: Not usually relevant for unit tests. EVALUATION: No timing or security tests present; class is a unit test. DECISION: Mark as not-applicable for this unit test method. VERDICT: not-applicable.",
+          "status": "compliant",
+          "justification": "The test method includes a @Test(timeout = 4000) annotation, which is an explicit timing constraint. Per rules, presence of a timeout is considered evidence of a performance-related assertion.",
           "original_code": null,
           "improved_code": null
         },
@@ -408,47 +728,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Descriptive test names convey purpose. RATIONALE: Easier to understand failures. EVALUATION: Method name is 'test3' (generic) and does not follow descriptive naming patterns. DECISION: Generic name -> non-compliant. VERDICT: non-compliant.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test3() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();",
-          "improved_code": "    @Test(timeout = 4000)\n    public void vazia_withInvalidPrimeiro_returnsFalse() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n        setIntField(lista0, \"primeiro\", -1108);\n        assertFalse(\"With 'primeiro' set to -1108, vazia() was expected to return false.\", lista0.vazia());\n    }"
+          "justification": "The test method name 'test4' is generic and auto-generated; it does not follow a descriptive naming convention indicating scenario and expected result.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void insere_whenListFull_throwsException() throws Throwable {\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    try {\n        lista.insere(null);\n        fail(\"Expected exception when inserting into full list\");\n    } catch(Exception e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated code is hard to maintain. EVALUATION: Presence of EvoSuite-specific imports and scaffolding (org.evosuite.runtime.*, extends Lista_ESTest_scaffolding) and class name EvoAITest indicates test-generation artifacts. DECISION: Signs of heavy code generation present -> non-compliant. VERDICT: non-compliant.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\npublic class EvoAITest extends Lista_ESTest_scaffolding {",
-          "improved_code": "    @Test(timeout = 4000)\n    public void vazia_givenInvalidPrimeiro_returnsFalse() throws Throwable {\n        Lista lista0 = new Lista();\n        // Use clear, hand-written intent and avoid generator scaffolding\n        setIntField(lista0, \"primeiro\", -1108);\n        assertFalse(\"With 'primeiro' set to -1108, vazia() should be false.\", lista0.vazia());\n    }"
+          "justification": "The file header explicitly states the test was 'automatically generated by EvoSuite' and the method name is auto-generated (test4), indicating heavy use of a code generation tool and non-intentional naming.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n\n@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try { lista0.insere((Object) null); fail(\"Expecting exception: Exception\"); } catch(Exception e) { verifyException(\"ds.Lista\", e); }\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void insere_withNull_onFullList_throws() throws Throwable {\n    // Reduced, intention-revealing test name instead of auto-generated one\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    try { lista.insere(null); fail(\"Expected exception\"); } catch(Exception e) { }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then). RATIONALE: Improves clarity and coverage. EVALUATION: The method contains Given/When/Then comments and structured assertions indicating design intent. DECISION: Given-When-Then present -> compliant. VERDICT: compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test shows no Given-When-Then structure, no BDD-style naming, and appears to be a single minimal happy/exception path generated after-the-fact rather than showing evidence of prioritized design.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test\npublic void insere_givenFullList_whenInsertingNull_thenThrows() throws Throwable {\n    // Given: a full list\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    // When: inserting null\n    try { lista.insere(null); fail(\"Expected exception\"); } catch(Exception e) { /* Then: exception is thrown */ }\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Tests should exercise public API, not internals. RATIONALE: Avoid brittle tests tied to implementation. EVALUATION: The test uses reflection helpers setIntField/getIntField to mutate and inspect private/internal fields, indicating coupling to internals. DECISION: Presence of reflection-based access to private 'primeiro' -> non-compliant. VERDICT: non-compliant.",
-          "original_code": "    // When\n    setIntField(lista0, \"primeiro\", invalidPrimeiro);\n    boolean empty = lista0.vazia();\n    // Then\n    assertEquals(\"The 'primeiro' field should reflect the test mutation.\", invalidPrimeiro, getIntField(lista0, \"primeiro\"));",
-          "improved_code": "    @Test(timeout = 4000)\n    public void testVaziaAfterInsert() throws Throwable {\n        Lista lista0 = new Lista();\n        // Use public API: new list should be empty, after insert should not be empty\n        assertTrue(\"New list should be empty\", lista0.vazia());\n        lista0.insere(1); // use public insertion method\n        assertFalse(\"List should not be empty after insert\", lista0.vazia());\n    }"
+          "justification": "The test directly modifies the internal field 'ultimo' of Lista, coupling the test to internal implementation details rather than using public APIs; this makes tests brittle to refactors.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test\npublic void insere_whenFull_constructFullListViaPublicApi_thenThrow() throws Throwable {\n    Lista lista = new Lista();\n    // Fill the list via public API rather than touching internal fields\n    for (int i = 0; i < 100; i++) {\n        lista.insere(\"item\" + i);\n    }\n    try { lista.insere(\"overflow\"); fail(\"Expected exception when list is full\"); } catch(Exception e) { }\n}"
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Use clear and specific assertions. RATIONALE: Makes failures informative. EVALUATION: Assertions use assertFalse/assertEquals with descriptive messages (specific assertions rather than generic assertTrue only). DECISION: Specific assertions with messages present -> compliant. VERDICT: compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions in the method lack descriptive failure messages and are limited to expecting an exception via fail/verifyException; they do not use clear assertEquals/assertThat checks with messages.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Lista lista0 = new Lista();\n    lista0.ultimo = 1;\n    lista0.ultimo = 1603;\n    try {\n        lista0.insere((Object) null);\n        fail(\"Expecting exception: Exception\");\n    } catch(Exception e) {\n        verifyException(\"ds.Lista\", e);\n    }\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void insere_whenListFull_assertExceptionMessage() throws Throwable {\n    Lista lista = new Lista();\n    lista.ultimo = 1603;\n    try {\n        lista.insere(null);\n        fail(\"Expected exception when inserting into full list\");\n    } catch(Exception e) {\n        assertEquals(\"Erro: A lista esta cheia\", e.getMessage());\n    }\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "PRINCIPLE: Comments should explain why, not restate what. RATIONALE: Useful comments improve maintainability. EVALUATION: The method uses concise Given-When-Then comments which explain intent; no commented-out code. DECISION: Comments add value and are minimal -> compliant. VERDICT: compliant.",
+          "justification": "The method contains minimal inline comments (a short Portuguese error comment) and the code is small and readable. No commented-out code or excessive comments are present.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +776,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: Avoid flaky tests. EVALUATION: No random values, time-based calls, sleeps, or external dependencies appear in the method; operations are deterministic. DECISION: No sources of non-determinism detected -> compliant. VERDICT: compliant.",
+          "justification": "No use of random number generation, current time, Thread.sleep, or external systems is present in the method; the test uses deterministic operations only.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,7 +784,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should not leave persistent side effects. RATIONALE: Prevent inter-test interference. EVALUATION: The test only operates on a local Lista instance and does not create files or modify global/static state. DECISION: No persistent side effects detected -> compliant. VERDICT: compliant.",
+          "justification": "The test uses a local Lista instance and does not modify global/static state or persistent resources. No file or DB operations or static modifications are visible and nothing is left uncleaned.",
           "original_code": null,
           "improved_code": null
         },
@@ -472,334 +792,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "PRINCIPLE: Use tags/categories to organize tests. RATIONALE: Enables selective execution. EVALUATION: Class is annotated with @Category(UnitTest.class). DECISION: Categorization present at class level -> compliant. VERDICT: compliant.",
+          "justification": "The test class is annotated with @Category(UnitTest.class), providing classification of the tests. This indicates use of labels/categories at class level.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "68.4%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "72.2%"
-    },
-    {
-      "test_method_name": "test1",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Test should focus on a single behavior. EVALUATION: This method calls lista0.imprime() (Act) and then performs multiple assertions on different observable properties (vazia(), interno fields ultimo and pos). DECISION: Multiple distinct 'Act' and verification targets present -> non-compliant. The test mixes verifying that imprime() does not throw with several independent state assertions rather than a single Arrange-Act-Assert focus.",
-          "original_code": "Lista lista0 = new Lista();\n\ntry {\n    lista0.imprime();\n} catch (Exception e) {\n    fail(\"imprime() on a fresh empty Lista should not throw: \" + e.getMessage());\n}\nassertTrue(\"A newly created Lista should be reported as empty (vazia()==true).\", lista0.vazia());",
-          "improved_code": "@Test(timeout = 4000)\npublic void initialState_newLista_shouldBeEmpty() {\n    // Arrange\n    Lista lista0 = new Lista();\n    // Act & Assert: verify initial state only (atomic)\n    assertTrue(\"A newly created Lista should be reported as empty.\", lista0.vazia());\n    // Avoid calling imprime() in this atomic test; test imprime() separately\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests must be independent. EVALUATION: This test uses only local variables (lista0) and no shared mutable state; no @Before/@After required for this simple case. DECISION: No evidence of shared static/instance state or naming implying ordering; compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Provide happy path and error tests. EVALUATION: The test class contains only one test method that checks only the happy path (no exception or invalid-case test). DECISION: With a single test and no assertThrows/@Test(expected...) or methods named for invalid/error scenarios, the class lacks coverage of exceptional flows -> non-compliant.",
-          "original_code": "Lista lista0 = new Lista();\n\ntry {\n    lista0.imprime();\n} catch (Exception e) {\n    fail(\"imprime() on a fresh empty Lista should not throw: \" + e.getMessage());\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void imprime_withInvalidInternalIndexes_shouldThrow() throws Exception {\n    Lista lista0 = new Lista();\n    java.lang.reflect.Field f = Lista.class.getDeclaredField(\"primeiro\");\n    f.setAccessible(true);\n    f.setInt(lista0, -10); // corrupt internal state\n    try {\n        lista0.imprime();\n        fail(\"Expected exception when 'primeiro' is invalid\");\n    } catch (Exception e) {\n        // expected - verifies exceptional flow\n    }\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should include boundary checks. EVALUATION: The test verifies the empty-list boundary (vazia()==true, ultimo==0, pos==-1) which are boundary conditions for a newly created Lista. DECISION: Presence of empty-list assertions indicates boundary testing -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should be modular and avoid duplication. EVALUATION: The test is short, self-contained, and there is no evidence of duplicated code in this single-method class; no helper extraction needed for this isolated test. DECISION: Given small size and self-containment, mark compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Keep tests small and simple. EVALUATION: The method is concise (<20 lines), has no loops or conditionals besides a simple try/catch, and follows a linear Arrange-Act-Assert style. DECISION: Meets complexity and size criteria -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Assertions should comprehensively verify result properties. EVALUATION: The test asserts multiple observable properties (vazia(), ultimo, pos) rather than a single superficial assertion. DECISION: Multiple property checks increase fault-detection depth -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should be active and maintained. EVALUATION: No @Ignore/@Disabled annotations or commented-out tests are present; method is active and runnable. DECISION: No signs of ignored or commented-out tests -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should link to requirements. EVALUATION: The class-level Javadoc includes explicit Requirements traceability (REQ-001 ... REQ-005). DECISION: Presence of traceability comments -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "PRINCIPLE: Performance/security tests separate from unit tests. EVALUATION: This is a unit test with no performance/security intent; no timeout-based performance checks beyond JUnit timeout annotation which is functional. DECISION: Usually not applicable for small unit tests -> not-applicable.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Descriptive test names are required. EVALUATION: The test method is named 'test1', which is generic and does not describe the scenario or expected result. DECISION: Generic name fails the naming convention -> non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    // ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void imprime_onNewLista_shouldNotThrow_and_initialStateIsEmpty() throws Throwable {\n    Lista lista0 = new Lista();\n    lista0.imprime();\n    assertTrue(\"A newly created Lista should be reported as empty (vazia()==true).\", lista0.vazia());\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Avoid heavy autogenerated tests. EVALUATION: The presence of EvoSuite-related imports (org.evosuite.runtime.*, static EvoAssertions) and a generic test name (test1) are signals of generated test code. DECISION: Signs of heavy code generation and generic naming -> non-compliant.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    Lista lista0 = new Lista();",
-          "improved_code": "import static org.junit.Assert.*;\n\n@Test(timeout = 4000)\npublic void initialState_newLista_shouldBeEmpty() {\n    Lista lista0 = new Lista();\n    assertTrue(\"A newly created Lista should be reported as empty.\", lista0.vazia());\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should show thoughtful design/Given-When-Then. EVALUATION: The test includes Given/When/Then comments and descriptive assertion messages, indicating design intent. DECISION: Evidence of BDD-style structure and design -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Tests should avoid coupling to internal implementation. EVALUATION: The test calls getIntField(lista0, \"ultimo\") and getIntField(lista0, \"pos\"), which indicate reliance on internal fields (reflection) rather than public API. DECISION: Presence of reflective internal-field checks -> non-compliant.",
-          "original_code": "assertEquals(\"ultimo should be 0 for a newly created Lista.\", 0, getIntField(lista0, \"ultimo\"));\nassertEquals(\"pos should be -1 for a newly created Lista.\", -1, getIntField(lista0, \"pos\"));",
-          "improved_code": "assertTrue(\"A newly created Lista should be reported as empty (vazia()==true).\", lista0.vazia());\n// Verify observable behavior only; avoid checking internal fields via reflection."
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Assertions should be specific and include messages. EVALUATION: The test uses specific assertions (assertTrue, assertEquals) and includes descriptive failure messages. DECISION: Assertions are specific and informative -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Comments should explain 'why' and be minimal. EVALUATION: The test uses concise Given/When/Then comments and class-level Javadoc; no excessive or commented-out code. DECISION: Comments are appropriate and minimal -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests must be deterministic. EVALUATION: No use of random, time-based APIs, sleeps, or external resources in the test; it uses deterministic calls. DECISION: No non-deterministic constructs detected -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests must avoid modifying shared state. EVALUATION: Test only uses local Lista instance and does not persist data or modify static fields; no cleanup required. DECISION: Side-effect free -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Use labels/tags to classify tests. EVALUATION: The class is annotated with @Category(UnitTest.class), providing test classification. DECISION: Appropriate use of category annotation -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "68.4%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "72.2%"
-    },
-    {
-      "test_method_name": "test2",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs multiple 'Act' operations: it calls vazia(), inspects internal fields, then calls imprime() and checks vazia() again. This means more than one distinct operation/behavior is being exercised in the same test rather than a single Arrange-Act-Assert focused on one behavior.",
-          "original_code": "Lista lista0 = new Lista();\nboolean empty = lista0.vazia();\nassertTrue(\"vazia() must return true for a freshly created list.\", empty);\nlista0.imprime();\nassertTrue(\"imprime() should not change emptiness of a fresh list.\", lista0.vazia());",
-          "improved_code": "@Test(timeout = 4000)\npublic void testVaziaOnNewList() throws Throwable {\n    Lista lista0 = new Lista();\n    // Act\n    boolean empty = lista0.vazia();\n    // Assert\n    assertTrue(\"vazia() must return true for a freshly created list.\", empty);\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables (lista0) and does not reference or modify shared static/instance state. No setup/teardown is required within the test method to ensure independence.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single test method is present and it exercises a happy path (fresh list behavior). There are no tests exercising error conditions or exception flows (e.g., invalid indices, full-list insertion failure).",
-          "original_code": "Lista lista0 = new Lista();\nboolean empty = lista0.vazia();\nassertTrue(\"vazia() must return true for a freshly created list.\", empty);",
-          "improved_code": "@Test(timeout = 4000)\npublic void testVaziaWhenPrimeiroNegative() throws Throwable {\n    Lista lista = new Lista();\n    java.lang.reflect.Field f = Lista.class.getDeclaredField(\"primeiro\");\n    f.setAccessible(true);\n    f.setInt(lista, -5);\n    assertTrue(\"vazia() should remain true when primeiro is negative\", lista.vazia());\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test only checks the freshly created list case and does not exercise boundary values (e.g., pos = -1, pos = 0, maximum index) or just-outside cases. No edge/boundary inputs are present.",
-          "original_code": "Lista lista0 = new Lista();\nassertEquals(\"ultimo should be 0 on an empty list.\", 0, getIntField(lista0, \"ultimo\"));\nassertEquals(\"pos should be -1 on an empty list.\", -1, getIntField(lista0, \"pos\"));",
-          "improved_code": "@Test(timeout = 4000)\npublic void testBoundaryPositions() throws Throwable {\n    Lista lista = new Lista();\n    Field fPos = Lista.class.getDeclaredField(\"pos\");\n    fPos.setAccessible(true);\n    fPos.setInt(lista, -1);\n    assertTrue(\"vazia() should be true when pos = -1\", lista.vazia());\n    fPos.setInt(lista, 0);\n    // depending on implementation, pos==0 may indicate first element present; assert deterministic behavior\n    // Here we assert that calling vazia() after setting pos to 0 returns a deterministic result (true/false)\n    assertNotNull(\"Boundary check executed\", lista.vazia());\n}"
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "compliant",
-          "justification": "The test is short, self-contained and does not duplicate setup across multiple methods. There are no helper methods in the class, but the test is under 10 lines and does not repeat code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test method is concise (well under 20-30 lines) and contains no loops or complex conditionals; it follows a simple linear Arrange-Act-Assert flow.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test asserts multiple properties of the object's state (vazia(), ultimo, pos) rather than only a single superficial assertion, increasing the chance to detect inconsistent internal state.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test lines in the visible method. The test is active and uses descriptive assertion messages, indicating maintained, runnable test code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The file contains a Requirements traceability Javadoc with REQ-001..REQ-005, providing traceability between tests and requirements at the class level.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test of list behavior with no indications that performance/security tests are relevant; no timing or security-related checks are expected in this test method.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name is generic ('test2') and does not follow descriptive naming conventions such as methodName_scenario_expectedResult; it does not clearly communicate the scenario or expected outcome.",
-          "original_code": "public void test2() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n    // When\n    boolean empty = lista0.vazia();\n    // Then\n    assertTrue(\"vazia() must return true for a freshly created list.\", empty);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void testVazia_onNewList_returnsTrue() throws Throwable {\n    Lista lista0 = new Lista();\n    assertTrue(\"vazia() must return true for a freshly created list.\", lista0.vazia());\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Signs of automated test generation are present: class name EvoAITest, imports from org.evosuite.runtime, and a non-descriptive test method name 'test2', which are strong indicators of heavy code generation and autogenerated naming.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\npublic class EvoAITest extends Lista_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test2() throws Throwable {",
-          "improved_code": "/* Replace autogenerated test name with intention-revealing name and remove generated noise in new tests */\n@Test(timeout = 4000)\npublic void testVazia_onNewList_returnsTrue() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n    // When / Then\n    assertTrue(\"vazia() must return true for a freshly created list.\", lista0.vazia());\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The method contains Given-When-Then comments and the class-level Javadoc documents requirements; this indicates some test-design intent and prioritization rather than purely ad-hoc tests.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test inspects private/internal fields via getIntField(...) which couples the test to implementation details rather than using only public APIs to verify observable behavior, making it brittle to refactoring.",
-          "original_code": "assertEquals(\"ultimo should be 0 on an empty list.\", 0, getIntField(lista0, \"ultimo\"));\nassertEquals(\"pos should be -1 on an empty list.\", -1, getIntField(lista0, \"pos\"));",
-          "improved_code": "@Test(timeout = 4000)\npublic void testVazia_onNewList_publicBehaviorOnly() throws Throwable {\n    Lista lista0 = new Lista();\n    // Verify observable behavior via public API only\n    assertTrue(\"vazia() must return true for a freshly created list.\", lista0.vazia());\n}"
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertEquals, assertTrue) rather than only generic assertions, improving diagnosability.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test includes compact Given-When-Then comments that explain intent without excessive or redundant commenting; there are no commented-out lines of code.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, no time-based calls, no Thread.sleep) and uses local setup; its behavior should be deterministic.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test only operates on a local Lista instance and does not create files, modify static globals, or perform persistent operations. No cleanup is necessary for this local-only test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful label that supports selective execution of unit tests.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "63.2%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "66.7%"
+      "normalized_method_compliance_score": "52.6%"
     },
     {
       "test_method_name": "test5",
@@ -808,7 +808,7 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "compliant",
-          "justification": "The test performs a single Act operation (lista0.insere((Object) null)) and then asserts the observable consequences (ultimo and vazia). There is one clear Arrange-Act-Assert scenario focused on insertion behavior, so it is atomic.",
+          "justification": "The test performs a single action (lista0.insere(null)) and a single group of assertions (assertEquals on ultimo). Only one Act operation is present and the test focuses on one behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -816,7 +816,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not reference shared static/instance state or rely on test execution order. No @Before/@After are required for this single short test, and it appears independent.",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or ordered test names. No setup/teardown is visible but per decision rules local-only usage is compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -824,23 +824,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The class (and this method) exercises a happy path (inserting null) but does not include any test for an error condition or exception scenario (no @Test(expected=...) or assertThrows usage, and only one test method exists). Therefore it fails to cover both normal and exceptional flows.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test5() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n\n        // When\n        try {\n            lista0.insere((Object) null);\n        } catch (Exception e) {\n            fail(\"insere(null) on an empty Lista should not throw: \" + e.getMessage());\n        }\n",
-          "improved_code": "    @Test(timeout = 4000)\n    public void testInsereThrowsWhenFull() throws Exception {\n        Lista lista = new Lista();\n        java.lang.reflect.Field f = Lista.class.getDeclaredField(\"ultimo\");\n        f.setAccessible(true);\n        // simulate a full/invalid internal index\n        f.setInt(lista, Integer.MAX_VALUE);\n        try {\n            lista.insere(new Object());\n            fail(\"Expected exception when inserting into a simulated-full list\");\n        } catch (Exception expected) {\n            // expected path: exceptional flow verified\n        }\n    }"
+          "justification": "Only one test method exists in the class and it exercises a single (likely happy-path) scenario. There is no test for exceptional/error flows (e.g., assertThrows or @Test(expected=...)).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(expected = NullPointerException.class, timeout = 4000)\n  public void test5_nullInsertion_throws() throws Throwable {\n      Lista lista0 = new Lista();\n      // attempt to insert null should raise an exception (error flow)\n      lista0.insere(null);\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test exercises insertion of null (an edge), but it does not exercise other boundary conditions (e.g., negative indices, zero, full list limits, max values). There is no explicit boundary-value testing for min/max/just-outside cases.",
-          "original_code": "    // Then\n    assertEquals(\"After inserting one element, ultimo should be 1.\", 1, getIntField(lista0, \"ultimo\"));\n    // pos semantics may vary; check that vazia() reports false and ultimo advanced\n    assertFalse(\"After inserting an element, vazia() should return false.\", lista0.vazia());\n}",
-          "improved_code": "    @Test\n    public void testVaziaWhenPrimeiroNegative() throws Exception {\n        Lista lista = new Lista();\n        java.lang.reflect.Field f = Lista.class.getDeclaredField(\"primeiro\");\n        f.setAccessible(true);\n        // set boundary/invalid value\n        f.setInt(lista, -1);\n        assertTrue(\"vazia() should be true when 'primeiro' is negative\", lista.vazia());\n    }"
+          "status": "compliant",
+          "justification": "The test explicitly inserts a null value, which is an edge/boundary input. This demonstrates testing of a non-typical boundary condition rather than only mid-range values.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained without duplicated logic. There are no repeated blocks across multiple tests in the visible snippet, and the structure follows Arrange-Act-Assert. For a single short test this is modular enough.",
+          "justification": "The test is short and self-contained (<10 lines) and does not show duplicated setup across multiple tests. No helper methods are needed for this small test.",
           "original_code": null,
           "improved_code": null
         },
@@ -848,39 +848,39 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is concise (well under 20-30 lines) and contains no loops or complex conditionals; it follows a linear Arrange-Act-Assert pattern, indicating low cyclomatic complexity.",
+          "justification": "The test is small (few lines) and contains no loops or complex conditionals, following a simple Arrange-Act-Assert flow.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test includes multiple specific assertions (checks for 'ultimo' value and that vazia() is false), verifying multiple observable properties after the operation rather than a single superficial assertion.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains only a single assertion (assertEquals on ultimo). It does not verify multiple properties of the resulting state, making the assertion superficial and less likely to detect deeper faults.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test5_multipleAssertions() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertNotNull(\"Lista instance should not be null\", lista0);\n      assertEquals(\"ultimo should be 1 after insertion\", 1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods in the provided snippet. Tests appear active and runnable.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the method snippet. The test appears active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class Javadoc includes requirements traceability lines (REQ-001..REQ-005). This provides explicit traceability information linking tests to requirements.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no annotations, Javadoc comments, or other references linking this test to a requirement ID, user story, or ticket, so traceability is missing.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  /**\n   * Tests REQ-001: inserting null should increment ultimo to 1\n   */\n  @Test(timeout = 4000)\n  public void test5_req001_insertNullIncrementsUltimo() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere(null);\n      assertEquals(1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test method is annotated with a timeout (@Test(timeout = 4000)), which is an explicit performance-related constraint. Per decision rules this counts as an explicit performance test presence, so the practice is considered compliant.",
+          "status": "not-applicable",
+          "justification": "This is a small unit test with no indication that performance/security testing is required. No timing or security assertions are present; per rules this practice is usually not-applicable for unit tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -888,47 +888,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name is 'test5', which is generic and does not describe the scenario or expected result. This does not follow descriptive naming conventions like method_condition_expectedResult.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test5() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n",
-          "improved_code": "    @Test(timeout = 4000)\n    public void insertNull_onEmptyList_shouldNotThrow_andUpdateState() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n\n        // When\n        try {\n            lista0.insere((Object) null);\n        } catch (Exception e) {\n            fail(\"insere(null) on an empty Lista should not throw: \" + e.getMessage());\n        }\n\n        // Then\n        assertFalse(\"After inserting an element, vazia() should return false.\", lista0.vazia());\n    }"
+          "justification": "The test method name 'test5' is generic and does not describe the scenario or expected outcome. It does not follow descriptive naming conventions like methodName_scenario_expectedResult.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertNull_givenEmptyList_thenUltimoIsOne() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere(null);\n      assertEquals(1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The class name (EvoAITest), imports from org.evosuite.runtime, and a numeric test method name (test5) indicate generated tests from a test-generation tool. The presence of generated scaffolding and auto-style names suggests heavy code generation rather than minimal handcrafted tests.",
-          "original_code": "@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    // Given\n    Lista lista0 = new Lista();\n\n    // When\n    try {\n",
-          "improved_code": "    @Test\n    public void insertNull_shouldNotThrow_andMarkNonEmpty() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n\n        // When\n        try {\n            lista0.insere((Object) null);\n        } catch (Exception e) {\n            fail(\"insere(null) on an empty Lista should not throw: \" + e.getMessage());\n        }\n\n        // Then\n        assertFalse(\"After inserting an element, vazia() should return false.\", lista0.vazia());\n    }"
+          "justification": "The file contains an auto-generated header comment stating it was generated by EvoSuite, indicating heavy use of test generation tools and auto-generated naming (test5). This matches signals of generated verbose tests.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 19:42:12 GMT 2020\n */\n\n@RunWith(EvoRunner.class)",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertNull_shouldIncrementUltimo() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere(null);\n      assertEquals(1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test uses Given-When-Then comments and the class Javadoc documents requirements, indicating some upfront design thought and BDD-like structure for the test, which aligns with prioritized test design.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears auto-generated and minimal with no Given-When-Then structure or evidence of thoughtful prioritization. It only covers a single basic scenario.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertNull_givenEmptyList_thenUltimoIsOne() throws Throwable {\n      // Given\n      Lista lista0 = new Lista();\n      // When\n      lista0.insere(null);\n      // Then\n      assertEquals(1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "non-compliant",
-          "justification": "The test accesses internal state via getIntField(lista0, \"ultimo\"), which is reflection-based and couples the test to internal implementation details rather than testing only public behavior. This makes the test brittle and tightly coupled to implementation.",
-          "original_code": "    // Then\n    assertEquals(\"After inserting one element, ultimo should be 1.\", 1, getIntField(lista0, \"ultimo\"));\n    // pos semantics may vary; check that vazia() reports false and ultimo advanced\n    assertFalse(\"After inserting an element, vazia() should return false.\", lista0.vazia());\n}",
-          "improved_code": "    @Test(timeout = 4000)\n    public void insertNull_shouldMakeListNonEmpty_withoutInspectingPrivateState() throws Throwable {\n        // Given\n        Lista lista0 = new Lista();\n\n        // When\n        try {\n            lista0.insere((Object) null);\n        } catch (Exception e) {\n            fail(\"insere(null) on an empty Lista should not throw: \" + e.getMessage());\n        }\n\n        // Then: verify behavior via public API only\n        assertFalse(\"After inserting an element, vazia() should return false.\", lista0.vazia());\n    }"
+          "justification": "The test asserts on the field 'ultimo' directly, which is likely an internal implementation detail rather than a public behavioral API. This couples the test to implementation details and increases brittleness.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test5_publicApiOnly() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere(null);\n      // Verify through public API rather than internal fields (example: getUltimo())\n      assertEquals(1, lista0.getUltimo());\n  }"
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertEquals and assertFalse) and include descriptive failure messages, which aids diagnosing failures and uses specific assertion methods rather than generic assertTrue alone.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and there is only one assertion. The test does not include descriptive messages that would help diagnose failures.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test5()  throws Throwable  {\n      Lista lista0 = new Lista();\n      lista0.insere((Object) null);\n      assertEquals(1, lista0.ultimo);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test5_withMessages() throws Throwable {\n      Lista lista0 = new Lista();\n      lista0.insere(null);\n      assertNotNull(\"Lista instance should not be null after insertion\", lista0);\n      assertEquals(\"ultimo should be 1 after inserting null\", 1, lista0.ultimo);\n  }"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The method contains concise Given-When-Then comments and the class has helpful Javadoc. There is no excessive commenting or commented-out code in the visible snippet, so comments are appropriate and not cluttering.",
+          "justification": "The test contains no commented-out code or excessive comments. The small method is self-explanatory; no debugging comments are present that clutter the code.",
           "original_code": null,
           "improved_code": null
         },
@@ -936,7 +936,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test contains no non-deterministic constructs (no Random, no System.currentTimeMillis(), no Thread.sleep()). It uses deterministic operations and local state, so outcomes should be reproducible.",
+          "justification": "No use of non-deterministic constructs (Random, current time, Thread.sleep) is present in the test method. The test uses only deterministic operations on local objects.",
           "original_code": null,
           "improved_code": null
         },
@@ -944,7 +944,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only mutates a local Lista instance and does not create files, modify static globals, or persist data. No cleanup is necessary for local-only state, satisfying side-effect avoidance.",
+          "justification": "The test only operates on a locally created Lista instance and does not create files, modify static variables, or persist external resources; thus it has no observable side effects across tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -952,14 +952,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), which provides categorization for selective execution and CI filtering. The labeling is meaningful and applied at class level.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing classification of tests. This satisfies the practice of using labels/categories at class level.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "73.7%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "73.7%"
+      "normalized_method_compliance_score": "55.6%"
     }
   ],
   "practices_report": [
@@ -967,11 +967,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 4,
-      "non_compliant_methods": 2,
+      "compliant_methods": 5,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 6,
-      "compliance_score": "66.7%"
+      "compliance_score": "83.3%"
     },
     {
       "practice_code": "CS-02",
@@ -997,41 +997,41 @@
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
       "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 4,
-      "not_applicable_methods": 0,
+      "compliant_methods": 3,
+      "non_compliant_methods": 2,
+      "not_applicable_methods": 1,
       "total_methods": 6,
-      "compliance_score": "33.3%"
+      "compliance_score": "60.0%"
     },
     {
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
-      "description": "",
-      "compliant_methods": 5,
-      "non_compliant_methods": 1,
-      "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "83.3%"
-    },
-    {
-      "practice_code": "CS-06",
-      "practice_title": "Detailed Analysis of Size and Complexity",
-      "description": "",
-      "compliant_methods": 5,
-      "non_compliant_methods": 1,
-      "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "83.3%"
-    },
-    {
-      "practice_code": "CS-07",
-      "practice_title": "Complex Design for Fault Detection",
       "description": "",
       "compliant_methods": 6,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 6,
       "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-06",
+      "practice_title": "Detailed Analysis of Size and Complexity",
+      "description": "",
+      "compliant_methods": 6,
+      "non_compliant_methods": 0,
+      "not_applicable_methods": 0,
+      "total_methods": 6,
+      "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-07",
+      "practice_title": "Complex Design for Fault Detection",
+      "description": "",
+      "compliant_methods": 3,
+      "non_compliant_methods": 3,
+      "not_applicable_methods": 0,
+      "total_methods": 6,
+      "compliance_score": "50.0%"
     },
     {
       "practice_code": "CS-08",
@@ -1047,19 +1047,19 @@
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 6,
       "not_applicable_methods": 0,
       "total_methods": 6,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 2,
+      "compliant_methods": 1,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 4,
+      "not_applicable_methods": 5,
       "total_methods": 6,
       "compliance_score": "100.0%"
     },
@@ -1087,16 +1087,6 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
-      "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "100.0%"
-    },
-    {
-      "practice_code": "LS-06",
-      "practice_title": "Responsible Addition of Test Code Maintenance",
-      "description": "",
       "compliant_methods": 0,
       "non_compliant_methods": 6,
       "not_applicable_methods": 0,
@@ -1104,14 +1094,24 @@
       "compliance_score": "0.0%"
     },
     {
+      "practice_code": "LS-06",
+      "practice_title": "Responsible Addition of Test Code Maintenance",
+      "description": "",
+      "compliant_methods": 1,
+      "non_compliant_methods": 5,
+      "not_applicable_methods": 0,
+      "total_methods": 6,
+      "compliance_score": "16.7%"
+    },
+    {
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 6,
       "not_applicable_methods": 0,
       "total_methods": 6,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
@@ -1154,13 +1154,13 @@
       "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "68.4%",
+  "overall_compliance_score": "53.5%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 41704,
-    "completion_tokens": 47724,
-    "total_tokens": 89428,
-    "cost": 0.098994
+    "prompt_tokens": 40668,
+    "completion_tokens": 51949,
+    "total_tokens": 92617,
+    "cost": 0.1058282
   },
-  "normalized_overall_compliance_score": "70.9%"
+  "normalized_overall_compliance_score": "56.5%"
 }

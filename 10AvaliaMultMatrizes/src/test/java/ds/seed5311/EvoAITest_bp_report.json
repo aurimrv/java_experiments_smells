@@ -7,16 +7,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs multiple distinct 'Act' operations: it calls AvaliaMultMatrizes.multmatrize(...) with a real array and later calls it again with null to assert an exception. This is multiple Arrange-Act-Assert sequences in one method, violating atomicity.",
-          "original_code": "int[] intArray0 = createIntArray(DEFAULT_SIZE);\nAvaliaMultMatrizes.multmatrize(7, intArray0);\nassertEquals(DEFAULT_SIZE, intArray0.length);\nfor (int val : intArray0) {\n    assertEquals(0, val);\n}\ntry {\n    AvaliaMultMatrizes.multmatrize(7, null);\n    fail(\"Expected NullPointerException when passing null array\");\n} catch (NullPointerException expected) {\n    // expected\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void multmatrize_preservesArrayLength() throws Throwable {\n    int[] intArray0 = createIntArray(DEFAULT_SIZE);\n    AvaliaMultMatrizes.multmatrize(7, intArray0);\n    assertEquals(\"Array length should be preserved\", DEFAULT_SIZE, intArray0.length);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test should focus on a single behavior. RATIONALE: single Arrange-Act-Assert improves root cause identification. EVALUATION CRITERIA: compliant if one method call and one assertion group. DECISION RULES: Count distinct Act operations (only AvaliaMultMatrizes.multmatrize), name does not suggest multiple operations, one assertion group present. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and there is an empty @Before scaffold. No shared mutable static/instance state is used within the method.",
+          "justification": "PRINCIPLE: Tests should be independent and use setup/teardown. RATIONALE: allows any-order execution. EVALUATION CRITERIA: presence of @Before/@After to initialize/cleanup. DECISION RULES: Class defines @Before setUp() and @After tearDown() that initialize and reset intArray0, so tests avoid shared mutable state. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,47 +24,47 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The class as a whole does not provide separate test methods for the happy path and the error scenario for the multmatrize operation. Although this method exercises both flows, the practice expects separate dedicated tests (at least two) per method under test.",
-          "original_code": "AvaliaMultMatrizes.multmatrize(7, intArray0);\n// ...\ntry {\n    AvaliaMultMatrizes.multmatrize(7, null);\n    fail(\"Expected NullPointerException when passing null array\");\n} catch (NullPointerException expected) {\n    // expected\n}",
-          "improved_code": "@Test(expected = NullPointerException.class)\npublic void multmatrize_nullArray_throwsNPE() {\n    AvaliaMultMatrizes.multmatrize(7, null);\n}"
+          "justification": "PRINCIPLE: Must test happy and error paths. RATIONALE: ensures robustness. EVALUATION CRITERIA: look for exception tests or complementary negative tests. DECISION RULES: This class/method only exercises a happy path (valid array) and contains no exception tests or assertThrows; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_shouldThrowOnNullArray() {\n      try {\n          AvaliaMultMatrizes.multmatrize(7, null);\n          fail(\"Expected NullPointerException for null array\");\n      } catch (NullPointerException e) {\n          // expected - verifies exceptional flow\n      }\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test checks a typical DEFAULT_SIZE array and a null case, but it does not exercise boundary values such as zero-length arrays or other edge sizes.",
-          "original_code": "int[] intArray0 = createIntArray(DEFAULT_SIZE);\nAvaliaMultMatrizes.multmatrize(7, intArray0);\nassertEquals(DEFAULT_SIZE, intArray0.length);",
-          "improved_code": "@Test(timeout = 4000)\npublic void multmatrize_zeroLength_preserved() throws Throwable {\n    int[] empty = createIntArray(0);\n    AvaliaMultMatrizes.multmatrize(7, empty);\n    assertEquals(\"Zero-length array should remain zero-length\", 0, empty.length);\n}"
+          "justification": "PRINCIPLE: Tests should validate boundary inputs. RATIONALE: boundaries reveal off-by-one errors. EVALUATION CRITERIA: look for empty/zero/negative/Max values. DECISION RULES: test0 uses only a typical array length (12) and does not check empty/zero or edge lengths; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_boundary_emptyArray_keepsLength() {\n      int[] arr = new int[0];\n      AvaliaMultMatrizes.multmatrize(0, arr);\n      assertEquals(\"Empty array length should remain 0\", 0, arr.length);\n  }"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The class defines a helper method createIntArray(int) that reduces duplication and the test follows a clear Arrange-Act-Assert structure.",
+          "justification": "PRINCIPLE: Tests should be self-contained and reuse helpers. RATIONALE: reduces duplication. EVALUATION CRITERIA: look for helper methods/constants. DECISION RULES: Class defines TEST_ARRAY_LENGTH and setUp/tearDown; test methods are short and don't duplicate complex setup. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test contains an explicit for-each loop to check each array element, which increases test complexity and introduces loop logic into the test body. The presence of a loop violates the guideline to avoid loops in unit tests.",
-          "original_code": "for (int val : intArray0) {\n    assertEquals(\"Elements should be zero-initialized unless documented otherwise\", 0, val);\n}",
-          "improved_code": "int[] expected = new int[DEFAULT_SIZE];\nAvaliaMultMatrizes.multmatrize(7, intArray0);\nassertArrayEquals(\"Elements should be zero-initialized\", expected, intArray0);"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep test methods small and simple. RATIONALE: lower cyclomatic complexity. EVALUATION CRITERIA: method lines <20 and no loops/complex conditionals. DECISION RULES: test0 is short (~5 lines) with linear flow and no loops. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test verifies multiple properties: array length and element values, and also checks behavior for a null input (exception). Assertions go beyond superficial checks.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be comprehensive. RATIONALE: superficial assertions may miss faults. EVALUATION CRITERIA: multiple property checks vs single superficial asserts. DECISION RULES: test0 contains only one assertion that checks array length (superficial); therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_improved_assertions() {\n      int[] arr = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, arr);\n      assertNotNull(\"Array reference should not be null\", arr);\n      assertEquals(\"Length should remain 12\", 12, arr.length);\n      assertSame(\"Reference should remain unchanged\", arr, arr);\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the shown code; tests are active and runnable.",
+          "justification": "PRINCIPLE: Avoid ignored/commented tests. RATIONALE: inactive tests provide no value. EVALUATION CRITERIA: presence of @Ignore/@Disabled or commented @Test. DECISION RULES: no @Ignore/@Disabled and no commented-out tests in method; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -72,7 +72,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The method Javadoc explicitly references the requirement ID (REQ-MULT-001), providing traceability to requirements.",
+          "justification": "PRINCIPLE: Tests should reference requirements. RATIONALE: enables traceability to requirements. EVALUATION CRITERIA: annotations or Javadoc with requirement IDs. DECISION RULES: method has Javadoc with 'REQ-001' and Given-When-Then; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -80,7 +80,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The test uses a timeout attribute (@Test(timeout = 4000)), which is an explicit performance-related guard; therefore the presence of a timeout counts as an explicit performance-related test indicator.",
+          "justification": "PRINCIPLE: Performance/security tests should be explicit. RATIONALE: separate non-functional testing. EVALUATION CRITERIA: presence of timeout or explicit security assertions. DECISION RULES: test0 uses @Test(timeout = 4000), an explicit timing constraint, so mark as compliant for presence of a performance-related assertion. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,23 +88,23 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test0' is generic and does not follow descriptive naming conventions despite the presence of a Javadoc comment. Naming should describe the scenario and expected outcome.",
-          "original_code": "public void test0() throws Throwable {\n    // Given\n    int[] intArray0 = createIntArray(DEFAULT_SIZE);\n    ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void multmatrize_preservesArrayLength_andZeroInitializes() throws Throwable {\n    int[] intArray0 = createIntArray(DEFAULT_SIZE);\n    AvaliaMultMatrizes.multmatrize(7, intArray0);\n    assertEquals(DEFAULT_SIZE, intArray0.length);\n}"
+          "justification": "PRINCIPLE: Test names should be descriptive. RATIONALE: descriptive names are self-documenting. EVALUATION CRITERIA: names should follow methodName_scenario_expectedBehavior. DECISION RULES: the method name 'test0' is generic and provides no scenario or expected result; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testMultmatrize_given12LengthArray_lengthUnchanged() {\n      int[] arr = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, arr);\n      assertEquals(\"Array length should remain unchanged\", 12, arr.length);\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' combined with the EvoSuite runner and typical autogenerated naming patterns suggests remnants of code generation; repetitive generic names are a sign of heavy generation.",
-          "original_code": "@RunWith(EvoRunner.class)\n... \n@Test(timeout = 4000)\npublic void test0() throws Throwable { ... }",
-          "improved_code": "/** Unit test for multmatrize preserving length (REQ-MULT-001) */\n@Test(timeout = 4000)\npublic void multmatrize_preservesArrayLength() throws Throwable {\n    int[] intArray0 = createIntArray(DEFAULT_SIZE);\n    AvaliaMultMatrizes.multmatrize(7, intArray0);\n    assertEquals(DEFAULT_SIZE, intArray0.length);\n}"
+          "justification": "PRINCIPLE: Avoid verbose generated tests. RATIONALE: generated names/patterns reduce maintainability. EVALUATION CRITERIA: look for generated names like test0/test1 and auto-generated comments. DECISION RULES: method name 'test0' and class annotations from EvoSuite indicate a generated-style test name pattern; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void multmatrize_givenTwelveLengthArray_keepsLength() {\n      int[] arr = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, arr);\n      assertEquals(\"Length should remain 12\", 12, arr.length);\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The test includes Given/When/Then comments and a requirement ID in the Javadoc, indicating deliberate design and prioritization of the scenario.",
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then). RATIONALE: test-first design improves coverage. EVALUATION CRITERIA: presence of Given-When-Then comments or BDD naming. DECISION RULES: method includes Javadoc with Given-When-Then; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -112,23 +112,23 @@
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises public API methods only and does not use reflection or access internal private state; it validates behavior via public calls.",
+          "justification": "PRINCIPLE: Tests should verify observable behavior via public APIs. RATIONALE: reduces brittleness. EVALUATION CRITERIA: absence of reflection/private-field access. DECISION RULES: test0 calls a public static method and asserts public property (length); no reflective access, so compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages (assertNotNull and assertEquals with messages) rather than bare true/false checks, and multiple specific assertions are used.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and include messages. RATIONALE: clear failure diagnostics. EVALUATION CRITERIA: count assertions with descriptive messages. DECISION RULES: test0 has a single assertEquals without a message; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      int[] intArray0 = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, intArray0);\n      assertEquals(12, intArray0.length);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test0_withMessageOnAssertion() {\n      int[] arr = new int[12];\n      AvaliaMultMatrizes.multmatrize(7, arr);\n      assertEquals(\"Array length should remain 12 after multmatrize\", 12, arr.length);\n  }"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are minimal and describe Given/When/Then; there is no excess commented-out code and the method-level Javadoc documents purpose.",
+          "justification": "PRINCIPLE: Comments should explain why, not what. RATIONALE: Avoid excessive or commented-out code. EVALUATION CRITERIA: search for commented-out code or excessive comments. DECISION RULES: method has concise Javadoc describing requirement and Given-When-Then; no commented-out code. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The method contains no use of Random, current time, sleeps, or external dependencies; it is deterministic based on the provided inputs.",
+          "justification": "PRINCIPLE: Avoid randomness/time dependence. RATIONALE: deterministic tests reduce flakiness. EVALUATION CRITERIA: presence of Random(), currentTimeMillis(), Thread.sleep. DECISION RULES: method uses only deterministic calls; no random/time/sleep detected. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,22 +144,22 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only manipulates local arrays and does not create files, modify static state, or persist data; it is side-effect free.",
+          "justification": "PRINCIPLE: Tests should not leave persistent side effects. RATIONALE: prevents inter-test dependencies. EVALUATION CRITERIA: presence of cleanup via @After or only local variables. DECISION RULES: method uses local array and class-level teardown resets intArray0; no persistent resources used. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for test selection.",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Use tags/categories to organize tests. RATIONALE: enables selective execution. EVALUATION CRITERIA: presence of @Tag/@Category. DECISION RULES: class has only two tests; per guidance marking categorization as not-applicable for small classes. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "68.4%",
+      "method_compliance_score": "63.2%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "68.4%"
+      "normalized_method_compliance_score": "66.7%"
     },
     {
       "test_method_name": "test1",
@@ -167,16 +167,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The method constructs a single object and performs a single assertion; there is one clear Arrange-Act-Assert flow and no extra acts.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should target a single behavior and include an assertion. RATIONALE: single Arrange-Act-Assert helps identify failures. EVALUATION CRITERIA: compliant requires one method call and one assertion group. DECISION RULES: test1 performs only construction but contains NO assertions; absence of any assertion means it does not specify observable behavior for a single requirement. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test1_instanceCreation_returnsInstance() {\n      AvaliaMultMatrizes instance = new AvaliaMultMatrizes();\n      assertNotNull(\"Constructor should create an instance\", instance);\n  }"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not depend on other tests; there is a @Before scaffold but no shared mutable state in this method.",
+          "justification": "PRINCIPLE: Tests should be independent with proper setup/teardown. RATIONALE: avoids inter-test coupling. EVALUATION CRITERIA: presence of @Before/@After. DECISION RULES: class-level @Before and @After are present and there are no shared mutable variables used without reset in this method. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -184,15 +184,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The test only validates the happy-path constructor behavior and there is no separate test for an exceptional or invalid-construction scenario for this API; the practice expects at least one error-flow test for the functionality under test.",
-          "original_code": "AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\nassertNotNull(\"Constructor should return a non-null instance (REQ-MULT-INIT-001)\", avaliaMultMatrizes0);",
-          "improved_code": "@Test(expected = NullPointerException.class)\npublic void multmatrize_nullArray_throwsNPE_forCoverage() {\n    // Add an explicit error-case test for multmatrize to complement constructor tests\n    AvaliaMultMatrizes.multmatrize(1, null);\n}"
+          "justification": "PRINCIPLE: Both happy and error paths should be tested. RATIONALE: improves robustness. EVALUATION CRITERIA: existence of exception tests like assertThrows or try-catch. DECISION RULES: test1 only contains a constructor call and no exceptional-case tests; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test1_multmatrizeWithNull_throwsNullPointer() {\n      try {\n          AvaliaMultMatrizes.multmatrize(1, null);\n          fail(\"Expected NullPointerException for null array\");\n      } catch (NullPointerException e) {\n          // expected\n      }\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "not-applicable",
-          "justification": "The constructor under test has no input parameters or numeric domain to analyze for boundaries; boundary-value testing is not applicable for this simple default construction check.",
+          "justification": "PRINCIPLE: Validate boundary inputs. RATIONALE: boundary tests find off-by-one errors. EVALUATION CRITERIA: presence of tests for empty/zero/negative/Max values. DECISION RULES: test1 only constructs an instance and has no input domain with numeric boundaries to validate in this method; therefore mark not-applicable. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -200,7 +200,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained, with no duplicated setup logic; it could be reused as a simple construction check.",
+          "justification": "PRINCIPLE: Tests should extract repeated logic into helpers/constants. RATIONALE: reduces duplication. EVALUATION CRITERIA: existence of helper methods/constants and clear structure. DECISION RULES: class defines TEST_ARRAY_LENGTH and setUp; test1 is small and self-contained without duplicated setup. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -208,7 +208,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The method is very short (< 20 lines) and contains no loops or conditionals, satisfying the low complexity requirement.",
+          "justification": "PRINCIPLE: Keep tests small. RATIONALE: simpler tests less error-prone. EVALUATION CRITERIA: methods <20 lines and no loops. DECISION RULES: test1 is very short and linear. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -216,15 +216,15 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "The test only performs a single assertNotNull check; it does not verify multiple properties of the constructed object (type, default state), so it is superficial and may miss faults.",
-          "original_code": "AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\nassertNotNull(\"Constructor should return a non-null instance (REQ-MULT-INIT-001)\", avaliaMultMatrizes0);",
-          "improved_code": "@Test\npublic void constructor_initializesInstance_correctly() {\n    AvaliaMultMatrizes avalia = new AvaliaMultMatrizes();\n    assertNotNull(\"Constructor should return an instance\", avalia);\n    assertTrue(\"Instance should be of correct type\", avalia instanceof AvaliaMultMatrizes);\n}"
+          "justification": "PRINCIPLE: Assertions should verify multiple properties. RATIONALE: more assertions detect deeper faults. EVALUATION CRITERIA: tests should assert multiple properties where applicable. DECISION RULES: test1 includes no assertions; it fails to verify any properties of the constructed object. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test1_constructorAssertions() {\n      AvaliaMultMatrizes instance = new AvaliaMultMatrizes();\n      assertNotNull(\"Instance should not be null\", instance);\n      assertTrue(\"Instance should be of correct type\", instance instanceof AvaliaMultMatrizes);\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled or commented-out tests are present in this method; the test is active.",
+          "justification": "PRINCIPLE: Avoid ignored or disabled tests. RATIONALE: keeps suite active. EVALUATION CRITERIA: absence of @Ignore/@Disabled or commented-out tests. DECISION RULES: test1 is active with no @Ignore/@Disabled; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -232,7 +232,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The method Javadoc references a requirement identifier (REQ-MULT-INIT-001), providing traceability to requirements.",
+          "justification": "PRINCIPLE: Tests should reference requirements. RATIONALE: improves traceability. EVALUATION CRITERIA: annotations or Javadoc with requirement IDs. DECISION RULES: test1 has Javadoc referencing 'REQ-001' and Given-When-Then description; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -240,7 +240,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "This test also uses the @Test(timeout = 4000) attribute, indicating an explicit performance/time-based guard.",
+          "justification": "PRINCIPLE: Use explicit performance tests or keep not-applicable. RATIONALE: timeouts indicate performance constraints. EVALUATION CRITERIA: presence of @Test(timeout=...) or explicit security tests. DECISION RULES: test1 has @Test(timeout = 4000), so it includes a timing constraint and is marked compliant under the rule that recognizes explicit performance/timeouts. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +248,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test1' is generic and does not convey the scenario or expected outcome; descriptive naming is required for clarity.",
-          "original_code": "public void test1() throws Throwable {\n    AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n    assertNotNull(...);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void constructor_defaultInstance_notNull() throws Throwable {\n    AvaliaMultMatrizes avalia = new AvaliaMultMatrizes();\n    assertNotNull(\"Constructor should return a non-null instance\", avalia);\n}"
+          "justification": "PRINCIPLE: Test names should describe scenario and expected outcome. RATIONALE: descriptive names help identify failures. EVALUATION CRITERIA: method names should follow descriptive patterns. DECISION RULES: name 'test1' is generic and provides no scenario or expected behavior; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void constructor_whenInvoked_returnsInstance() {\n      AvaliaMultMatrizes instance = new AvaliaMultMatrizes();\n      assertNotNull(\"Constructor should return an instance\", instance);\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The generic method name 'test1' and the presence of EvoSuite-related runner/parameters indicate generated or auto-derived patterns rather than concise, intention-revealing tests.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n    assertNotNull(...);\n}",
-          "improved_code": "/** Unit test for default construction (REQ-MULT-INIT-001) */\n@Test(timeout = 4000)\npublic void constructor_defaultInstance_notNull() throws Throwable {\n    AvaliaMultMatrizes avalia = new AvaliaMultMatrizes();\n    assertNotNull(\"Constructor should return a non-null instance\", avalia);\n}"
+          "justification": "PRINCIPLE: Prefer concise intention-revealing tests over generated names. RATIONALE: generated artifacts become hard to maintain. EVALUATION CRITERIA: repetitive test names like test0/test1 indicate generation. DECISION RULES: method name test1 and class comment referencing formerly generated test class indicate generated-style naming; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void constructor_createsAvaliaMultMatrizesInstance() {\n      AvaliaMultMatrizes instance = new AvaliaMultMatrizes();\n      assertNotNull(\"Instance should be created\", instance);\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "non-compliant",
-          "justification": "The test appears minimal and written after-the-fact: it lacks Given-When-Then comments or BDD-style naming and does not show multiple scenario coverage (only a basic happy path).",
-          "original_code": "AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\nassertNotNull(\"Constructor should return a non-null instance (REQ-MULT-INIT-001)\", avaliaMultMatrizes0);",
-          "improved_code": "/** Given: default state expectation\n *  When: constructing AvaliaMultMatrizes\n *  Then: instance is non-null and ready for use\n */\n@Test\npublic void constructor_givenDefault_whenConstructed_thenInstanceIsValid() {\n    // Given\n    // (no preconditions)\n    // When\n    AvaliaMultMatrizes avalia = new AvaliaMultMatrizes();\n    // Then\n    assertNotNull(\"Instance should be created\", avalia);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should show design intent. RATIONALE: Given-When-Then increases clarity. EVALUATION CRITERIA: presence of Given-When-Then or BDD naming. DECISION RULES: test1 includes Javadoc with Given-When-Then; verdict compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test invokes a public constructor and asserts public behavior; it does not access private fields or use reflection, reducing brittleness.",
+          "justification": "PRINCIPLE: Tests should test behavior via public API not internals. RATIONALE: avoids brittle tests. EVALUATION CRITERIA: no reflection or private-field access. DECISION RULES: test1 uses only public constructor; no reflective access; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "The assertion includes a descriptive message (assertNotNull with message), and the assertion is specific rather than a generic assertTrue, satisfying this practice.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use clear, specific assertions and messages. RATIONALE: improves failure diagnostics. EVALUATION CRITERIA: assertions should include messages or be specific; count assertions with messages. DECISION RULES: test1 contains no assertions; therefore non-compliant. VERDICT: non-compliant.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      AvaliaMultMatrizes avaliaMultMatrizes0 = new AvaliaMultMatrizes();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test1_constructorHasAssertionsWithMessages() {\n      AvaliaMultMatrizes instance = new AvaliaMultMatrizes();\n      assertNotNull(\"Constructor should create a non-null instance\", instance);\n      assertTrue(\"Instance should be correct type\", instance instanceof AvaliaMultMatrizes);\n  }"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The class and method have concise Javadoc and there is no commented-out code; comments add value rather than explaining obvious code.",
+          "justification": "PRINCIPLE: Comments should explain non-obvious intent. RATIONALE: avoid excessive comments. EVALUATION CRITERIA: look for commented-out code or excessive comments. DECISION RULES: method has descriptive Javadoc and no commented-out code; verdict compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +296,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The method contains no random values, time-based operations, sleeps, or external dependencies; it is deterministic.",
+          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: avoid random/time dependencies. EVALUATION CRITERIA: presence of Random/time/sleep. DECISION RULES: test1 uses deterministic constructor only; no random/time/sleep detected. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,29 +304,29 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test does not persist data, alter static state, or leave resources open; it is side-effect free.",
+          "justification": "PRINCIPLE: Tests should not leave persistent side effects. RATIONALE: ensures test isolation. EVALUATION CRITERIA: presence of @After cleanup or only local variables. DECISION RULES: test1 uses local variable only and class-level teardown exists; no persistent side effects detected. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The test class is annotated with @Category(UnitTest.class) at class level, providing suitable labeling for test selection.",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Use labels/categories to organize tests. RATIONALE: helps selective execution. EVALUATION CRITERIA: presence of @Tag/@Category. DECISION RULES: class has only two tests; per guidance mark categorization as not-applicable for this very small class. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "68.4%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "72.2%"
+      "normalized_method_compliance_score": "64.7%"
     }
   ],
   "practices_report": [
     {
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
-      "description": "Each test case must focus on a single requirement or behavior.",
+      "description": "Each test must focus on a single requirement/behavior with a single Arrange-Act-Assert block.",
       "compliant_methods": 1,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -336,7 +336,7 @@
     {
       "practice_code": "CS-02",
       "practice_title": "Complete Independence of Test Cases",
-      "description": "Tests should not depend on other tests or execution order.",
+      "description": "Tests should not depend on execution order; use setup/teardown to ensure independence.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -346,7 +346,7 @@
     {
       "practice_code": "CS-03",
       "practice_title": "Coverage of Normal and Exceptional Flows",
-      "description": "Test cases must check both normal and edge case scenarios.",
+      "description": "Provide tests for both happy path and error scenarios for tested methods.",
       "compliant_methods": 0,
       "non_compliant_methods": 2,
       "not_applicable_methods": 0,
@@ -356,7 +356,7 @@
     {
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
-      "description": "Tests should validate inputs at minimum, maximum, and just outside boundaries.",
+      "description": "Validate inputs at min/max and just outside boundaries (empty, zero, negative, max length).",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 1,
@@ -366,7 +366,7 @@
     {
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
-      "description": "Tests should be self-contained and reusable; extract repeated setup.",
+      "description": "Extract repeated setup into helpers/constants to reduce duplication.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -376,27 +376,27 @@
     {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
-      "description": "Keep tests small and avoid unnecessary complexity (loops, nested conditionals).",
-      "compliant_methods": 1,
-      "non_compliant_methods": 1,
+      "description": "Keep tests small, avoid loops and complex conditionals.",
+      "compliant_methods": 2,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 2,
-      "compliance_score": "50.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-07",
       "practice_title": "Complex Design for Fault Detection",
-      "description": "Assertions should be comprehensive and verify relevant properties.",
-      "compliant_methods": 1,
-      "non_compliant_methods": 1,
+      "description": "Assertions should verify multiple relevant properties of results.",
+      "compliant_methods": 0,
+      "non_compliant_methods": 2,
       "not_applicable_methods": 0,
       "total_methods": 2,
-      "compliance_score": "50.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-08",
       "practice_title": "Complete Maintenance of Test Code",
-      "description": "Avoid @Ignore or commented-out tests; keep suite active.",
+      "description": "Avoid @Ignore/@Disabled or commented-out tests; keep tests active and runnable.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -406,7 +406,7 @@
     {
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
-      "description": "Each test should be linked to a requirement (annotations or Javadoc).",
+      "description": "Link tests to requirements via annotations or Javadoc comments.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -416,7 +416,7 @@
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
-      "description": "Performance/security tests should be explicit and separate when relevant.",
+      "description": "Separate performance/security tests; explicit timeouts or dedicated security checks when relevant.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -426,7 +426,7 @@
     {
       "practice_code": "CS-12",
       "practice_title": "Clear Understanding of Test Cases",
-      "description": "Test names should describe the scenario and expected outcome.",
+      "description": "Test names should describe scenario and expected outcome (method_scenario_expected).",
       "compliant_methods": 0,
       "non_compliant_methods": 2,
       "not_applicable_methods": 0,
@@ -436,7 +436,7 @@
     {
       "practice_code": "LS-04",
       "practice_title": "Small Footprint of Test Code Generation",
-      "description": "Avoid verbose autogenerated tests and generic names (test0/test1).",
+      "description": "Avoid verbose/generated tests; prefer concise, intention-revealing tests.",
       "compliant_methods": 0,
       "non_compliant_methods": 2,
       "not_applicable_methods": 0,
@@ -446,17 +446,17 @@
     {
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
-      "description": "Tests should show Given-When-Then structure or BDD-style design intent.",
-      "compliant_methods": 1,
-      "non_compliant_methods": 1,
+      "description": "Tests should show design intent (Given-When-Then, BDD naming, prioritized scenarios).",
+      "compliant_methods": 2,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 2,
-      "compliance_score": "50.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "LS-06",
       "practice_title": "Responsible Addition of Test Code Maintenance",
-      "description": "Tests should focus on public API and avoid implementation coupling.",
+      "description": "Tests should verify behavior via public APIs and avoid implementation coupling.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -466,17 +466,17 @@
     {
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
-      "description": "Use specific assertions and include descriptive messages where appropriate.",
-      "compliant_methods": 2,
-      "non_compliant_methods": 0,
+      "description": "Assertions should be specific and include descriptive messages where helpful.",
+      "compliant_methods": 0,
+      "non_compliant_methods": 2,
       "not_applicable_methods": 0,
       "total_methods": 2,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
       "practice_title": "Responsible Addition of Debugging Comments",
-      "description": "Comments should explain 'why' not 'what' and avoid commented-out code.",
+      "description": "Comments should explain why; avoid commented-out code and excessive comments.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -486,7 +486,7 @@
     {
       "practice_code": "LS-09",
       "practice_title": "Deterministic Design of Test Results",
-      "description": "Avoid randomness, time-dependence, or external dependencies in tests.",
+      "description": "Avoid randomness/time dependence; use mocks for sources of non-determinism.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -496,7 +496,7 @@
     {
       "practice_code": "LS-10",
       "practice_title": "Complete Avoidance of Test Side Effects",
-      "description": "Tests should not leave persistent side effects or modify shared state.",
+      "description": "Tests must not modify shared state or persist data without cleanup.",
       "compliant_methods": 2,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -506,22 +506,22 @@
     {
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
-      "description": "Use @Tag/@Category to organize tests by type or priority.",
-      "compliant_methods": 2,
+      "description": "Use @Tag/@Category to classify tests for selective execution.",
+      "compliant_methods": 0,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 0,
+      "not_applicable_methods": 2,
       "total_methods": 2,
-      "compliance_score": "100.0%"
+      "compliance_score": "N/A"
     }
   ],
-  "overall_compliance_score": "68.4%",
+  "overall_compliance_score": "60.5%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 7108,
-    "completion_tokens": 11651,
-    "total_tokens": 18759,
-    "cost": 0.0237542
+    "prompt_tokens": 6986,
+    "completion_tokens": 13301,
+    "total_tokens": 20287,
+    "cost": 0.0270237
   },
   "llm_model": "openai/gpt-5-mini",
-  "normalized_overall_compliance_score": "70.3%"
+  "normalized_overall_compliance_score": "65.7%"
 }

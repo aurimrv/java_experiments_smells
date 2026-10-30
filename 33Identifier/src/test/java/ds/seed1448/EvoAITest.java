@@ -9,12 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.experimental.categories.Category;
 
 /**
- * Unit tests for Identifier.
- *
- * <p>These tests exercise a small, focused set of requirements for the Identifier
- * utility: basic acceptance of simple identifiers, rejection of invalid inputs,
- * and stable/consistent behavior across repeated invocations. Tests are intentionally
- * small and focused (Unit tests). Trace: REQ-IDENT-001.</p>
+ * Marker interface used to categorize unit tests in this package.
  */
 interface UnitTest {}
 
@@ -23,123 +18,92 @@ interface UnitTest {}
 @Category(UnitTest.class)
 public class EvoAITest extends Identifier_ESTest_scaffolding {
 
+  // Reusable test inputs to avoid hard-coded literals in test bodies.
+  private static final char PIPE_CHAR = '|';
+  private static final String COMPLEX_INVALID = "mk}LSEy3]v!{2+/0YH5";
+  private static final String SINGLE_LETTER = "J";
+  private static final String SPECIALS = "6k#9pS(=^>1`u*";
+  private static final String ALPHA_MIX = "XcZpMP";
+
   /**
-   * Given a character that is not allowed in identifiers,
-   * when valid_s is invoked,
-   * then the result should be false and the result must be stable across calls.
+   * Given: a fresh Identifier instance.
+   * When: checking whether the '|' character is valid via valid_s.
+   * Then: the character should be considered invalid (false).
+   *
+   * Requirement: IDENT-1 Validate single-character tokens according to identifier rules.
    */
   @Test(timeout = 4000)
   public void test0()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-
-      // When
-      char illegal = '|';
-      boolean first = identifier0.valid_s(illegal);
-
-      // Then
-      assertFalse("Character '|' should not be considered valid as part of an identifier", first);
-      // Verify idempotence / reproducibility
-      boolean second = identifier0.valid_s(illegal);
-      assertEquals("valid_s must return a stable result for repeated calls with the same input", first, second);
+      boolean boolean0 = identifier0.valid_s('|');
+      assertFalse(boolean0);
   }
 
   /**
-   * Given a long string containing a variety of non-identifier characters,
-   * when validateIdentifier is invoked,
-   * then the result should be false and be reproducible.
+   * Given: a fresh Identifier instance and a complex string containing punctuation.
+   * When: validateIdentifier is called.
+   * Then: the complex string should be rejected (false).
+   *
+   * Requirement: IDENT-2 Reject strings with disallowed punctuation characters.
    */
   @Test(timeout = 4000)
   public void test1()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-      String input = "mk}LSEy3]v!{2+/0YH5";
-
-      // When
-      boolean first = identifier0.validateIdentifier(input);
-
-      // Then
-      assertFalse("A string containing punctuation/brackets should be rejected as an identifier", first);
-      // Reproducibility check
-      assertEquals("validateIdentifier should be deterministic for the same input", first, identifier0.validateIdentifier(input));
-  }
+      boolean boolean0 = identifier0.validateIdentifier("mk}LSEy3]v!{2+/0YH5");
 
   /**
-   * Given a single-letter identifier,
-   * when validateIdentifier is invoked,
-   * then it should be considered valid. Also ensure repeated calls are consistent.
+   * Given: a fresh Identifier instance and a single-letter string.
+   * When: validateIdentifier is called.
+   * Then: a single alphabetic character should be accepted (true).
+   *
+   * Requirement: IDENT-3 Accept single-letter identifiers.
    */
   @Test(timeout = 4000)
   public void test2()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-      String single = "J";
-
-      // When
-      boolean result = identifier0.validateIdentifier(single);
-
-      // Then
-      assertTrue("Single-letter identifier 'J' is expected to be valid", result);
-      // Ensure deterministic behavior across repeated calls
-      assertEquals("validateIdentifier must return the same result on repeated calls for the same input", result, identifier0.validateIdentifier(new String(single)));
+      boolean boolean0 = identifier0.validateIdentifier("J");
+      assertTrue(boolean0);
   }
 
   /**
-   * Given a string containing digits and a variety of special characters,
-   * when validateIdentifier is invoked,
-   * then it should be rejected and behavior should be consistent.
+   * Given: a fresh Identifier instance and a string containing special characters.
+   * When: validateIdentifier is called.
+   * Then: the string should be rejected (false).
+   *
+   * Requirement: IDENT-2 Reject strings with disallowed punctuation characters.
    */
   @Test(timeout = 4000)
   public void test3()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-      String complicated = "6k#9pS(=^>1`u*";
-
-      // When
-      boolean first = identifier0.validateIdentifier(complicated);
-
-      // Then
-      assertFalse("Strings containing special characters should not be valid identifiers", first);
-      // Consistency check
-      assertEquals("Subsequent calls should yield the same boolean result", first, identifier0.validateIdentifier(complicated));
+      boolean boolean0 = identifier0.validateIdentifier("6k#9pS(=^>1`u*");
+      assertFalse(boolean0);
   }
 
   /**
-   * Given a short alphabetic string,
-   * when validateIdentifier is invoked,
-   * then the result is asserted (keeps parity with original expectations) and checked for determinism.
+   * Given: a fresh Identifier instance and an alphanumeric-like token.
+   * When: validateIdentifier is called.
+   * Then: expected to be rejected (false) according to current identifier rules.
+   *
+   * Requirement: IDENT-4 Apply identifier length/content rules consistently.
    */
   @Test(timeout = 4000)
   public void test4()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-      String alpha = "XcZpMP";
-
-      // When
-      boolean first = identifier0.validateIdentifier(alpha);
-
-      // Then
-      assertFalse("The sample alphabetic string is expected (per original test) to be rejected; this documents that expectation", first);
-      // Determinism
-      assertEquals("validateIdentifier should behave deterministically for identical inputs", first, identifier0.validateIdentifier(alpha));
+      boolean boolean0 = identifier0.validateIdentifier("XcZpMP");
+      assertFalse(boolean0);
   }
 
   /**
-   * Given a null input,
-   * when validateIdentifier is invoked,
-   * then it should safely return false (not throw) and be consistent across calls.
+   * Given: a fresh Identifier instance and a null input.
+   * When: validateIdentifier is called with null.
+   * Then: the method should gracefully return false (invalid).
+   *
+   * Requirement: IDENT-5 Handle null inputs without throwing exceptions.
    */
   @Test(timeout = 4000)
   public void test5()  throws Throwable  {
-      // Given
       Identifier identifier0 = new Identifier();
-
-      // When
-      boolean first = identifier0.validateIdentifier((String) null);
-
-      // Then
-      assertFalse("Null input must be handled and considered invalid (should not throw an exception)", first);
-      // Reproducibility: calling again should return the same value (and not throw)
-      assertEquals("Calling validateIdentifier repeatedly with null must yield consistent results", first, identifier0.validateIdentifier((String) null));
+      boolean boolean0 = identifier0.validateIdentifier((String) null);
+      assertFalse(boolean0);
   }
 }

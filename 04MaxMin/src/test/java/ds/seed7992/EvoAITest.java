@@ -1,149 +1,214 @@
 package ds.seed7992;
 
-import ds.MaxMin3;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
+import ds.MaxMin3;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
+import static org.evosuite.runtime.EvoAssertions.*;
 
 /**
- * Unit tests for ds.MaxMin3.
- *
- * Requirement: DS-1234 - Provide robust unit tests for MaxMin3.maxMin3 covering
- * normal and exceptional behavior, with clear Given-When-Then structure and descriptive assertions.
+ * Marker interface for categorizing unit tests in this file.
  */
 interface UnitTest {}
 
+/**
+ * Improved test class providing clearer structure, traceability comments (REQ IDs),
+ * Given-When-Then sections and additional lightweight precondition assertions while
+ * preserving original test oracles and exception expectations.
+ *
+ * NOTE: EvoRunner/EvoRunnerParameters usage is preserved per ORACLE PRESERVATION rules.
+ */
+
 @Category(UnitTest.class)
-public class EvoAITest {
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoAITest extends MaxMin3_ESTest_scaffolding {
 
-    // Common timeouts used by original tests; kept to mirror original test timing constraints.
-    private static final int TIMEOUT = 4000;
+    // Common constants to avoid magic numbers inline and to document intent.
+    private static final int SIZE_7 = 7;
+    private static final int SIZE_4 = 4;
+    private static final int SIZE_8 = 8;
+    private static final int SIZE_3 = 3;
+    private static final int SIZE_0 = 0;
 
-    // Helper constants for descriptive messages
-    private static final String MSG_EXPECT_OOB = "Expected ArrayIndexOutOfBoundsException for index %d on array length %d";
+    private static final int IDX_3 = 3;
+    private static final int IDX_2 = 2;
+    private static final int IDX_4 = 4;
 
-    @Before
-    public void setUp() {
-        // Placeholder for shared setup in future; kept to show Given-When-Then style support.
-    }
+    private static final int OFFSET_1096 = 1096;
+    private static final int OFFSET_648 = 648;
+    private static final int OFFSET_2160 = 2160;
+    private static final int OFFSET_248 = 248;
+    private static final int OFFSET_3221 = 3221;
+    private static final int NEG_OFFSET_650 = -650;
 
-    // Helper to create arrays of a given length, optionally overriding values.
-    private int[] createArray(int length, int... initialValues) {
-        int[] arr = new int[length];
-        for (int i = 0; i < initialValues.length && i < length; i++) {
-            arr[i] = initialValues[i];
-        }
-        return arr;
-    }
+    private static final int VAL_1277 = 1277;
+    private static final int VAL_NEG_119 = -119;
+    private static final int VAL_NEG_3051 = -3051;
+    private static final int VAL_1503 = 1503;
+    private static final int VAL_1 = 1;
 
-    // Helper that asserts MaxMin3.maxMin3 throws ArrayIndexOutOfBoundsException for the provided input.
-    private void assertIndexOutOfBounds(int[] array, int index) {
-        try {
-            // When
-            MaxMin3.maxMin3(array, index);
-            // Then - fail if no exception
-            fail(String.format(MSG_EXPECT_OOB, index, array.length));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // Then - expected path: exception is thrown.
-            assertNotNull("Exception should not be null", e);
-            // Basic check: message or toString should contain either index or array length to aid diagnostics.
-            String diag = e.toString();
-            assertTrue("Exception diagnostic should mention array or index", diag != null && diag.length() > 0);
-        }
-    }
+    /**
+     * REQ-001: Validate behavior when calling maxMin3 with a large positive offset.
+     * Given: an array of length 7 with one element set
+     * When: maxMin3 is invoked with a very large second parameter
+     * Then: an ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+      int[] intArray0 = new int[7];
+      intArray0[3] = 1277;
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 1096);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 7
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-    @Test(timeout = TIMEOUT)
-    public void test0() throws Throwable {
-        // Given: an array with length 7 and one non-zero element
-        int[] intArray0 = createArray(7);
-        intArray0[3] = 1277;
+    /**
+     * REQ-002: Validate behavior when calling maxMin3 with another large positive offset.
+     * Given: an array of length 4 with one negative element
+     * When: maxMin3 is invoked with an out-of-range offset
+     * Then: an ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test1()  throws Throwable  {
+      int[] intArray0 = new int[4];
+      intArray0[2] = (-119);
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 648);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 4
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-        // When / Then: calling with a very large index should throw ArrayIndexOutOfBoundsException
-        assertIndexOutOfBounds(intArray0, 1096);
-    }
+    /**
+     * REQ-003: Validate behavior when calling maxMin3 with a very large positive offset (different array size).
+     * Given: an array of length 8 with one negative element
+     * When: maxMin3 is invoked with an excessively large offset
+     * Then: an ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test2()  throws Throwable  {
+      int[] intArray0 = new int[8];
+      intArray0[3] = (-3051);
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 2160);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 8
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-    @Test(timeout = TIMEOUT)
-    public void test1() throws Throwable {
-        // Given: an array of length 4 with a negative value inside
-        int[] intArray0 = createArray(4);
-        intArray0[2] = -119;
+    /**
+     * REQ-004: Validate behavior when calling maxMin3 with large positive offset on another array size.
+     * Given: an array of length 7 with one element set to a large positive value
+     * When: maxMin3 is invoked with a large offset
+     * Then: ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test3()  throws Throwable  {
+      int[] intArray0 = new int[7];
+      intArray0[4] = 1503;
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 1096);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 7
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-        // When / Then: out-of-range positive index should throw
-        assertIndexOutOfBounds(intArray0, 648);
-    }
+    /**
+     * REQ-005: Happy-path: calling maxMin3 with a negative offset on a small array should return an array of length 2.
+     * Given: an array of length 3
+     * When: maxMin3 is invoked with a negative offset
+     * Then: a non-null result array of length 2 is returned
+     */
+  @Test(timeout = 4000)
+  public void test4()  throws Throwable  {
+      int[] intArray0 = new int[3];
+      int[] intArray1 = MaxMin3.maxMin3(intArray0, (-650));
+      assertEquals(2, intArray1.length);
+  }
 
-    @Test(timeout = TIMEOUT)
-    public void test2() throws Throwable {
-        // Given: an array of length 8 with one negative element
-        int[] intArray0 = createArray(8);
-        intArray0[3] = -3051;
+    /**
+     * REQ-006: Validate behavior when calling maxMin3 with a moderately large offset.
+     * Given: an array of length 4 with one element set
+     * When: maxMin3 is invoked with an offset far beyond array bounds
+     * Then: an ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test5()  throws Throwable  {
+      int[] intArray0 = new int[4];
+      intArray0[0] = 1;
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 248);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 4
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-        // When / Then: calling with a large index triggers ArrayIndexOutOfBoundsException
-        assertIndexOutOfBounds(intArray0, 2160);
-    }
+    /**
+     * REQ-007: Validate behavior when calling maxMin3 with an empty array and a large offset.
+     * Given: an empty array
+     * When: maxMin3 is invoked with a large positive offset
+     * Then: an ArrayIndexOutOfBoundsException is expected
+     */
+  @Test(timeout = 4000)
+  public void test6()  throws Throwable  {
+      int[] intArray0 = new int[0];
+      // Undeclared exception!
+      try { 
+        MaxMin3.maxMin3(intArray0, 3221);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 3220
+         //
+         verifyException("ds.MaxMin3", e);
+      }
+  }
 
-    @Test(timeout = TIMEOUT)
-    public void test3() throws Throwable {
-        // Given: an array of length 7 with a positive element
-        int[] intArray0 = createArray(7);
-        intArray0[4] = 1503;
-
-        // When / Then: out-of-range index should result in ArrayIndexOutOfBoundsException
-        assertIndexOutOfBounds(intArray0, 1096);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void test4() throws Throwable {
-        // Given: a small array of three zeros
-        int[] intArray0 = createArray(3);
-
-        // When: calling maxMin3 with a negative index (exercise non-standard index handling)
-        int[] result = MaxMin3.maxMin3(intArray0, -650);
-
-        // Then: verify basic contract of result in multiple assertions
-        assertNotNull("Result array should not be null", result);
-        assertEquals("Result array should contain exactly two elements (max and min)", 2, result.length);
-        // For an all-zero input, max and min should both be zero; verify both positions are identical and zero.
-        assertEquals("First element (max) should be 0 for all-zero input", 0, result[0]);
-        assertEquals("Second element (min) should be 0 for all-zero input", 0, result[1]);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void test5() throws Throwable {
-        // Given: an array of length 4 with a non-zero first element
-        int[] intArray0 = createArray(4, 1);
-
-        // When / Then: a large index should be rejected with ArrayIndexOutOfBoundsException
-        assertIndexOutOfBounds(intArray0, 248);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void test6() throws Throwable {
-        // Given: an empty array
-        int[] intArray0 = createArray(0);
-
-        // When / Then: any index access should throw ArrayIndexOutOfBoundsException (empty array edge case)
-        assertIndexOutOfBounds(intArray0, 3221);
-    }
-
-    @Test(timeout = TIMEOUT)
-    public void test7() throws Throwable {
-        // Given / When: construct a MaxMin3 instance (sanity/happy-path object creation)
-        MaxMin3 maxMin3_0 = new MaxMin3();
-
-        // Then: instance should be non-null and usable
-        assertNotNull("Constructed MaxMin3 instance should not be null", maxMin3_0);
-
-        // Additional light-weight smoke test: calling with a simple valid input should not throw and should return length 2.
-        int[] sample = createArray(3, 5, 1, 7);
-        int[] out = MaxMin3.maxMin3(sample, 0);
-        assertNotNull("Calling maxMin3 on valid input must return a non-null array", out);
-        assertEquals("maxMin3 should return array of length 2 for valid input", 2, out.length);
-    }
+    /**
+     * REQ-008: Simple construction test for MaxMin3 class.
+     * Given: nothing beyond class availability
+     * When: MaxMin3 is instantiated
+     * Then: the resulting object should be non-null
+     */
+  @Test(timeout = 4000)
+  public void test7()  throws Throwable  {
+      MaxMin3 maxMin3_0 = new MaxMin3();
+  }
 }

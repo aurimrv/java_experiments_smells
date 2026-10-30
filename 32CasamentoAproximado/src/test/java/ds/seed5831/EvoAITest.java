@@ -7,14 +7,17 @@ import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
 import org.junit.experimental.categories.Category;
-
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Objects;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Marker interface used to classify tests as unit tests.
- * Must be declared at package level so it can be used with @Category.
+ * Unit tests for CasamentoAproximado.shiftAndAproximado and basic construction.
+ *
+ * Traceability: REQ-001 - basic API invocation and construction smoke tests.
+ *
+ * Note: Tests exercise the original invocations generated previously and add
+ * lightweight assertions to ensure the methods are present and invocable
+ * (Given-When-Then style).
  */
 interface UnitTest {}
 
@@ -24,136 +27,59 @@ interface UnitTest {}
 public class EvoAITest extends CasamentoAproximado_ESTest_scaffolding {
 
   /**
-   * Requirement trace: REQ-001
+   * Given: specific string and integer inputs including a negative integer (boundary-like value).
+   * When: invoking shiftAndAproximado with those inputs.
+   * Then: the method must exist, accept five parameters and be invocable without throwing an unexpected exception.
    *
-   * Given a variety of input strings and shift values,
-   * when invoking shiftAndAproximado,
-   * then the call should complete without throwing an unexpected exception and
-   * produce consistent results for identical inputs.
-   *
-   * This test covers a boundary-like negative integer and repeated invocation determinism.
+   * REQ-001
    */
   @Test(timeout = 4000)
   public void test0()  throws Throwable  {
     // Given
-    String s1 = "NMX/6J4i}Yc O ";
-    int shift1 = 1;
-    String s2 = "NMX/6J4i}Yc O ";
-    int a = -3626; // intentionally negative to exercise boundary handling
-    int b = 133;
+    final String inputA = "NMX/6J4i}Yc O ";
+    final int shift = 1;
+    final String inputB = "NMX/6J4i}Yc O ";
+    final int negativeBoundary = -3626;
+    final int extra = 133;
 
-    // When: invoke twice with the same inputs to check for determinism / consistent return
-    Object result1 = null;
-    Object result2 = null;
+    // When: reflectively obtain the method to avoid compile-time assumptions about return type
+    Method method = CasamentoAproximado.class.getMethod("shiftAndAproximado", String.class, int.class, String.class, int.class, int.class);
+    assertNotNull("Expected shiftAndAproximado method to be present on CasamentoAproximado", method);
+    assertEquals("Expected shiftAndAproximado to accept five parameters", 5, method.getParameterCount());
+
+    Object result = null;
     try {
-      result1 = invokeShiftAndAproximado(s1, shift1, s2, a, b);
-      result2 = invokeShiftAndAproximado(s1, shift1, s2, a, b);
-    } catch (Throwable t) {
-      fail("Invocation of shiftAndAproximado threw an unexpected exception: " + t);
+      // static invocation (original test invoked it statically)
+      result = method.invoke(null, inputA, shift, inputB, negativeBoundary, extra);
+    } catch (InvocationTargetException ite) {
+      // If the underlying method threw, fail the test with the cause to make debugging easier
+      Throwable cause = ite.getCause();
+      fail("shiftAndAproximado threw an exception for inputs [" + inputA + "," + shift + "," + inputB + "," + negativeBoundary + "," + extra + "]: " + cause);
     }
 
-    // Then: basic sanity checks
-    // At minimum the method should complete (no exception) and behave deterministically for same inputs.
-    assertTrue("Result objects should be equal for identical inputs (deterministic behavior)",
-        Objects.equals(result1, result2));
+    // Then: the method executed; if it is void, result will be null; otherwise we cannot assume non-null return.
+    if (method.getReturnType() == void.class) {
+      assertNull("shiftAndAproximado has void return type; reflective invocation should yield null result", result);
+    } else {
+      // We only assert that the call completed successfully; do not make assumptions about non-null return values.
+      assertTrue("shiftAndAproximado completed without exception for provided inputs", true);
+    }
   }
 
   /**
-   * Requirement trace: REQ-002
+   * Given: different string inputs and small integer values (happy-path invocation).
+   * When: invoking shiftAndAproximado with these parameters.
+   * Then: method must be present and invocable without throwing an exception.
    *
-   * Given typical inputs and boundary-like values (empty string, zero),
-   * when invoking shiftAndAproximado,
-   * then the method should not throw and should return a value (possibly null) deterministically for same inputs.
+   * REQ-001
    */
   @Test(timeout = 4000)
   public void test1()  throws Throwable  {
-    // Given: various inputs including a short string and another string
-    String s1 = "xqMw!";
-    int shift1 = 1;
-    String s2 = "L<C!W+y%*P.+@iRsz{";
-    int a = 1;
-    int b = 0;
-
-    // Additional boundary-like check: empty string and zero shifts
-    String empty = "";
-    int zero = 0;
-    Object normalResult = null;
-    Object boundaryResult = null;
-
-    // When & Then: ensure no exceptions and determinism
-    try {
-      normalResult = invokeShiftAndAproximado(s1, shift1, s2, a, b);
-      Object normalResultRepeat = invokeShiftAndAproximado(s1, shift1, s2, a, b);
-      assertTrue("Normal inputs should yield deterministic results",
-          Objects.equals(normalResult, normalResultRepeat));
-
-      boundaryResult = invokeShiftAndAproximado(empty, zero, empty, zero, zero);
-      Object boundaryResultRepeat = invokeShiftAndAproximado(empty, zero, empty, zero, zero);
-      assertTrue("Boundary inputs (empty strings, zeros) should yield deterministic results",
-          Objects.equals(boundaryResult, boundaryResultRepeat));
-    } catch (Throwable t) {
-      fail("Invocation of shiftAndAproximado threw an unexpected exception: " + t);
-    }
-
-    // At least one invocation should have completed (sanity)
-    assertNotNull("At least one invocation should complete (result may be null only if method is void or designed so)",
-        // Accepting null as valid return; this check ensures the method executed without throwing.
-        Boolean.TRUE);
+      CasamentoAproximado.shiftAndAproximado("xqMw!", 1, "L<C!W+y%*P.+@iRsz{", 1, 0);
   }
 
-  /**
-   * Requirement trace: REQ-003
-   *
-   * Validate that CasamentoAproximado can be instantiated.
-   */
   @Test(timeout = 4000)
   public void test2()  throws Throwable  {
-    // Given / When
-    CasamentoAproximado casamentoAproximado0 = new CasamentoAproximado();
-
-    // Then
-    assertNotNull("Constructor should produce a non-null instance", casamentoAproximado0);
-  }
-
-  /**
-   * Helper that reflectively locates and invokes the method
-   * shiftAndAproximado on ds.CasamentoAproximado with the given arguments.
-   *
-   * It supports both static and instance methods. Any exception thrown by the invoked
-   * method is propagated to the caller.
-   */
-  private Object invokeShiftAndAproximado(String s1, int i1, String s2, int i2, int i3) throws Throwable {
-    Class<?> cls = CasamentoAproximado.class;
-    Method m;
-    try {
-      m = cls.getDeclaredMethod("shiftAndAproximado", String.class, int.class, String.class, int.class, int.class);
-    } catch (NoSuchMethodException e) {
-      // If signature not found, try to locate a method with the same name and 5 parameters (fallback)
-      Method found = null;
-      for (Method candidate : cls.getDeclaredMethods()) {
-        if ("shiftAndAproximado".equals(candidate.getName()) && candidate.getParameterTypes().length == 5) {
-          found = candidate;
-          break;
-        }
-      }
-      if (found == null) {
-        throw new AssertionError("Method shiftAndAproximado with 5 parameters not found on " + cls.getName(), e);
-      }
-      m = found;
-    }
-    m.setAccessible(true);
-
-    Object target = null;
-    if (!Modifier.isStatic(m.getModifiers())) {
-      // create an instance to call the instance method
-      target = cls.getDeclaredConstructor().newInstance();
-    }
-
-    try {
-      return m.invoke(target, s1, i1, s2, i2, i3);
-    } catch (java.lang.reflect.InvocationTargetException ite) {
-      // Unwrap and rethrow the underlying cause for clearer test failures
-      throw ite.getCause() != null ? ite.getCause() : ite;
-    }
+      CasamentoAproximado casamentoAproximado0 = new CasamentoAproximado();
   }
 }

@@ -8,15 +8,15 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs two 'Act' operations: constructs a Grafo in @Before (setup) and constructs another Grafo in the test, and asserts both. There are multiple operations/assertion targets in a single test, violating single-behavior atomicity.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n      assertNotNull(\"Setup Grafo instance should be available\", this.grafo);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testConstructor_createsGrafoInstance() throws Throwable {\n      // When\n      Grafo grafo0 = new Grafo();\n      // Then\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }"
+          "justification": "PRINCIPLE: Tests should focus on a single behavior with one Arrange-Act-Assert. RATIONALE: Single-focus aids diagnosis and maintainability. EVALUATION CRITERIA: compliant requires one method call and one assertion group; non-compliant if multiple Acts or multiple scenarios. DECISION RULES: The method has a single Act (new Grafo()) but no explicit Arrange-Act-Assert block or assertions; rule 3 (one Act + one assertion group) is not satisfied. VERDICT: non-compliant because there is no assertion or clear Assert phase.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void constructor_shouldCreateGrafoInstance() throws Throwable {\n    // Arrange & Act\n    Grafo grafo0 = new Grafo();\n    // Assert\n    assertNotNull(\"Grafo constructor should create an instance\", grafo0);\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The class uses @Before to create a fresh Grafo instance for each test (setUp), avoiding shared mutable state across tests. The test uses only local variables and the instance variable initialized in @Before.",
+          "justification": "PRINCIPLE: Tests must not depend on each other; use setup/teardown when shared state exists. RATIONALE: Independence allows arbitrary execution order and parallel runs. EVALUATION CRITERIA: compliant if tests use local variables only or proper @Before/@After. DECISION RULES: The method uses only local variables and does not modify shared/static state; no ordered naming. VERDICT: compliant — the single test is self-contained and does not rely on shared state.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,15 +24,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path test exists in the class; there is no test for error/exceptional scenarios. Per rules, a class with <2 test methods and no exception tests is non-compliant.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }",
-          "improved_code": "  @Test(expected = RuntimeException.class)\n  public void testConstructor_invalidInput_throwsException() {\n      // Example exceptional-flow test (illustrative)\n      throw new RuntimeException(\"simulate invalid input behavior\");\n  }"
+          "justification": "PRINCIPLE: Tests should include happy path and error scenarios. RATIONALE: Ensures robustness and correct exception handling. EVALUATION CRITERIA: compliant requires at least two tests (happy + error) for a method or explicit exception tests. DECISION RULES: The class has only one test method and it exercises only a constructor happy path with no exception or invalid-input tests. VERDICT: non-compliant — no coverage of exceptional/error flows is present.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Test\npublic void constructor_withNullDependencies_shouldThrowNPE() {\n    // Example of an error-flow test (adjust depending on constructor contract):\n    try {\n        // If Grafo had a constructor that accepts null-sensitive args, test would assert exception\n        // For demonstration, assert nothing here; replace with actual invalid-input scenario\n        new Grafo();\n    } catch (Exception e) {\n        fail(\"Unexpected exception: \" + e.getMessage());\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "not-applicable",
-          "justification": "The test only verifies construction of Grafo with no numeric or range inputs; there are no obvious boundary values to exercise in this specific test method.",
+          "justification": "PRINCIPLE: Test boundaries at min/max and just outside. RATIONALE: Boundaries are common error sources. EVALUATION CRITERIA: compliant when tests include empty, zero, negative, max values. DECISION RULES: The tested code is a no-argument constructor with no obvious numeric/string inputs; therefore boundary analysis is not applicable. VERDICT: not-applicable because there are no input boundaries to exercise in this test.",
           "original_code": null,
           "improved_code": null
         },
@@ -40,7 +40,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The class extracts setup into an @Before helper (setUp) which prevents duplication and improves modularity. The test method is short and no duplicated setup code is present.",
+          "justification": "PRINCIPLE: Tests should be self-contained and reusable; extract helpers for duplication. RATIONALE: Reduces duplication and improves maintainability. EVALUATION CRITERIA: compliant if helper methods/constants are used or tests are short and non-duplicative. DECISION RULES: The test is very short (<10 lines) with no duplicated blocks in this class context. VERDICT: compliant — no repetition and small footprint.",
           "original_code": null,
           "improved_code": null
         },
@@ -48,7 +48,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is short (<20 lines), linear, and contains no loops or complex conditionals, meeting the small and focused requirement.",
+          "justification": "PRINCIPLE: Keep tests small, avoid loops/complex conditionals. RATIONALE: Simpler tests are less error-prone. EVALUATION CRITERIA: compliant if methods <20 lines and no loops/complex conditionals. DECISION RULES: The method is short and linear with no loops or conditionals. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -56,31 +56,31 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "Assertions are superficial (only assertNotNull checks). The test does not verify multiple properties of the created object; it lacks comprehensive assertions to detect deeper faults.",
-          "original_code": "      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n      assertNotNull(\"Setup Grafo instance should be available\", this.grafo);",
-          "improved_code": "      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n      // verify type and distinct instance\n      assertEquals(\"Instance should be of Grafo class\", Grafo.class, grafo0.getClass());\n      assertNotSame(\"Setup grafo and local grafo should be different instances\", this.grafo, grafo0);"
+          "justification": "PRINCIPLE: Assertions should be comprehensive and verify multiple properties. RATIONALE: Deep checks detect subtle faults. EVALUATION CRITERIA: compliant when multiple properties or meaningful assertions are present. DECISION RULES: The test has zero assertions (not even assertNotNull); rule 1 indicates that having only superficial or zero assertions is non-compliant. VERDICT: non-compliant due to lack of assertions verifying properties of the created object.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void constructor_shouldCreateValidGrafo() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(\"Grafo instance must not be null\", grafo0);\n    // If Grafo exposes public properties, verify them, e.g. size or initial state\n    // assertEquals(0, grafo0.numberOfNodes());\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. Tests are active and runnable.",
+          "justification": "PRINCIPLE: Avoid ignored or commented-out tests; keep suite active. RATIONALE: Ignored tests hide issues. EVALUATION CRITERIA: compliant if no @Ignore/@Disabled nor commented-out @Test. DECISION RULES: No @Ignore/@Disabled annotations or commented-out tests are present. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes 'Tests REQ-001', providing traceability to a requirement ID.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should link to requirements/tickets. RATIONALE: Traceability aids impact analysis. EVALUATION CRITERIA: compliant if annotations or Javadoc reference requirement IDs. DECISION RULES: No @Story/@Requirement annotations or Javadoc references to REQ-/JIRA- IDs are present. VERDICT: non-compliant — no traceability metadata.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "/**\n * Tests REQ-GRAFO-001: Grafo construction should succeed.\n */\n@Test(timeout = 4000)\npublic void constructor_shouldSatisfy_REQ_GRAFO_001() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(grafo0);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses a timeout (@Test(timeout = 4000)), indicating an explicit timing constraint; per decision rules this qualifies as an explicit performance-related test usage.",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Performance/security tests are separate from unit tests. RATIONALE: Non-functional tests require dedicated approaches. EVALUATION CRITERIA: Typically not applicable for unit tests unless explicit timing/security checks are present. DECISION RULES: No timing or security assertions and class name doesn't indicate a performance test. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' is generic and does not follow descriptive naming conventions (methodName_scenario_expectedResult). Although there is Javadoc, the method name itself is not descriptive.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void constructor_withDefaultParameters_shouldCreateNonNullGrafo() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }"
+          "justification": "PRINCIPLE: Test names should describe scenario and expected result. RATIONALE: Descriptive names help diagnose failures. EVALUATION CRITERIA: compliant when names follow methodName_scenario_expectedResult or BDD style. DECISION RULES: The method name 'test0' is generic and conveys no scenario or expectation. VERDICT: non-compliant due to poor naming.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void constructor_shouldInstantiateGrafo_whenCalled() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(\"Expected Grafo instance\", grafo0);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The presence of EvoSuite artifacts (EvoRunner, EvoRunnerParameters, EvoAssertions), and the generic test name 'test0' indicate generated or heavily automated test origins and verbose test generation patterns.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest ...",
-          "improved_code": "  // Rename auto-generated test to a concise, intention-revealing name\n  @Test(timeout = 4000)\n  public void constructor_createsNonNullGrafo() throws Throwable {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }"
+          "justification": "PRINCIPLE: Generated tests should be minimal and intention-revealing. RATIONALE: Heavy generated code is verbose and hard to maintain. EVALUATION CRITERIA: non-compliant if auto-generated comments or generated names like test0 are present. DECISION RULES: File header explicitly states 'automatically generated by EvoSuite' and the method is named 'test0', matching auto-generated patterns. VERDICT: non-compliant.",
+          "original_code": "/*\n * This file was automatically generated by EvoSuite\n * Tue Aug 04 20:42:22 GMT 2020\n */\n\n@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "/**\n * Unit test for Grafo constructor — handwritten, focused and named.\n */\n@Test(timeout = 4000)\npublic void constructor_shouldCreateGrafoInstance() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(\"Grafo instance must be non-null\", grafo0);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "non-compliant",
-          "justification": "The test suite contains a minimal happy-path test only; there is no evidence of Given-When-Then structure beyond comments or of prioritized scenario coverage (no edge/error cases).",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Grafo grafo0 = new Grafo();\n      assertNotNull(\"Grafo should be constructed\", grafo0);\n  }",
-          "improved_code": "  @Test\n  public void constructor_givenDefault_shouldCreateValidGrafo() {\n      // Given - default inputs\n      // When\n      Grafo grafo = new Grafo();\n      // Then\n      assertNotNull(\"Grafo created\", grafo);\n  }\n\n  @Test\n  public void constructor_givenInvalidParams_shouldThrow() {\n      // Example placeholder for prioritized exceptional scenario\n      throw new RuntimeException(\"placeholder to demonstrate prioritization\");\n  }"
+          "justification": "PRINCIPLE: Tests should be thoughtfully designed (TDD/BDD) with Given-When-Then structure. RATIONALE: Test-first design increases coverage and clarity. EVALUATION CRITERIA: compliant if Given-When-Then comments or BDD-style naming are present or multiple scenarios covered. DECISION RULES: The single minimal/generated test lacks BDD structure and covers only a trivial happy path. VERDICT: non-compliant — no evident prioritized design.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "// Given: a fresh test context\n// When: constructing a Grafo\n// Then: an instance is created\n@Test\npublic void givenNoArgs_whenConstructingGrafo_thenInstanceIsCreated() {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(grafo0);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with the public constructor and does not access private fields or use reflection; it verifies public behavior rather than implementation internals.",
+          "justification": "PRINCIPLE: Tests should focus on public behavior not internal implementation. RATIONALE: Behavior-focused tests are less brittle. EVALUATION CRITERIA: compliant if tests only call public APIs and avoid reflection/internal fields. DECISION RULES: The test only invokes the public constructor and does not access private fields or use reflection. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages in assertNotNull calls and use specific assertion methods rather than generic assertTrue, meeting the requirement for clear assertions.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use clear, specific assertions with messages. RATIONALE: Specific assertions make failures diagnosable. EVALUATION CRITERIA: compliant when specific assertions or messages are used; non-compliant when assertions are generic or absent. DECISION RULES: This test has zero assertions, violating the expectation to assert behavior. VERDICT: non-compliant due to missing assertions.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void constructor_shouldCreateGrafoAndHaveExpectedInitialState() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(\"Grafo must be instantiated\", grafo0);\n    // Example of an additional specific assertion (uncomment if available):\n    // assertEquals(\"Initial node count must be 0\", 0, grafo0.numberOfNodes());\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are minimal, explain intent (e.g., setup intent, given/when/then), and there is no commented-out code. Class Javadoc provides meaningful context.",
+          "justification": "PRINCIPLE: Comments should explain 'why', not 'what'; avoid commented-out code. RATIONALE: Minimal helpful comments improve clarity. EVALUATION CRITERIA: non-compliant if commented-out code or excessive comments present. DECISION RULES: File contains a short auto-generated header comment but no commented-out test code; comments are not excessive. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, no current time usage, no Thread.sleep). The @Before setup ensures consistent state per test.",
+          "justification": "PRINCIPLE: Tests must be deterministic and avoid randomness/time without mocking. RATIONALE: Determinism avoids flaky tests. EVALUATION CRITERIA: compliant if no Random(), current time usage, Thread.sleep(), or external dependencies without mocking. DECISION RULES: The test only constructs a Grafo and does not use random/time or external systems. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,29 +144,29 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses @Before to create a fresh Grafo per test and does not persist external resources or modify static state; no cleanup is necessary for the shown operations.",
+          "justification": "PRINCIPLE: Tests should not modify shared state or require cleanup. RATIONALE: Avoids inter-test coupling and resource leaks. EVALUATION CRITERIA: compliant if tests do not persist data or modify static state. DECISION RULES: This test only uses a local variable and does not create files, DB records, or modify statics. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "not-applicable",
-          "justification": "There are no @Tag/@Category annotations. Given the class contains only a single, very small test, marking categorization as not-applicable per decision rules for tiny test classes.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use tags/categories to organize and selectively run tests. RATIONALE: Labels help CI filtering and resource management. EVALUATION CRITERIA: compliant if @Tag/@Category used meaningfully. DECISION RULES: No @Tag/@Category annotations are present at class or method level. VERDICT: non-compliant — no categorization provided.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo();\n}",
+          "improved_code": "@Tag(\"unit\")\n@Test(timeout = 4000)\npublic void constructor_shouldCreateGrafo_unit() throws Throwable {\n    Grafo grafo0 = new Grafo();\n    assertNotNull(grafo0);\n}"
         }
       ],
-      "method_compliance_score": "57.9%",
+      "method_compliance_score": "42.1%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "64.7%"
+      "normalized_method_compliance_score": "47.1%"
     }
   ],
   "practices_report": [
     {
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
-      "description": "Each test should focus on a single behavior with one Arrange-Act-Assert block.",
+      "description": "Each test should focus on a single behavior with a single Arrange-Act-Assert.",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -176,7 +176,7 @@
     {
       "practice_code": "CS-02",
       "practice_title": "Complete Independence of Test Cases",
-      "description": "Tests should not depend on other tests; use setup/teardown to ensure isolation.",
+      "description": "Tests must be independent and not rely on execution order or shared mutable state.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -186,7 +186,7 @@
     {
       "practice_code": "CS-03",
       "practice_title": "Coverage of Normal and Exceptional Flows",
-      "description": "Include tests for happy path and error/exception conditions.",
+      "description": "Provide tests for happy path and error conditions (exceptions, invalid inputs).",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -196,7 +196,7 @@
     {
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
-      "description": "Validate inputs at boundaries (min, max, off-by-one).",
+      "description": "Test inputs at min/max and just outside valid ranges.",
       "compliant_methods": 0,
       "non_compliant_methods": 0,
       "not_applicable_methods": 1,
@@ -206,7 +206,7 @@
     {
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
-      "description": "Extract repeated setup into helpers and constants to reduce duplication.",
+      "description": "Extract helpers and constants to avoid duplication and improve reuse.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -216,7 +216,7 @@
     {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
-      "description": "Keep tests small, focused, and with low cyclomatic complexity.",
+      "description": "Keep tests small (<20 lines) and avoid loops/complex conditionals.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -226,7 +226,7 @@
     {
       "practice_code": "CS-07",
       "practice_title": "Complex Design for Fault Detection",
-      "description": "Assertions should be comprehensive and verify multiple properties where applicable.",
+      "description": "Use comprehensive assertions to verify multiple properties of results.",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -246,27 +246,27 @@
     {
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
-      "description": "Link tests to requirements via annotations or Javadoc (REQ-, US-, JIRA-).",
-      "compliant_methods": 1,
-      "non_compliant_methods": 0,
+      "description": "Link tests to requirement IDs, tickets, or user stories via annotations or comments.",
+      "compliant_methods": 0,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 1,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
-      "description": "Non-functional tests should be separate; performance tests may use timeouts.",
-      "compliant_methods": 1,
+      "description": "Separate performance/security tests; use timeout checks or dedicated security assertions when needed.",
+      "compliant_methods": 0,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 0,
+      "not_applicable_methods": 1,
       "total_methods": 1,
-      "compliance_score": "100.0%"
+      "compliance_score": "N/A"
     },
     {
       "practice_code": "CS-12",
       "practice_title": "Clear Understanding of Test Cases",
-      "description": "Test names should describe scenario and expected outcome (method_condition_result).",
+      "description": "Use descriptive test names that state scenario and expected outcome.",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -276,7 +276,7 @@
     {
       "practice_code": "LS-04",
       "practice_title": "Small Footprint of Test Code Generation",
-      "description": "Generated tests should be minimal and focused; avoid verbose auto-generated patterns.",
+      "description": "Avoid verbose auto-generated tests; prefer concise, intention-revealing tests.",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -286,7 +286,7 @@
     {
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
-      "description": "Prioritize tests and use Given-When-Then or BDD naming to express intent.",
+      "description": "Design tests with prioritization and Given-When-Then structure where appropriate.",
       "compliant_methods": 0,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -296,7 +296,7 @@
     {
       "practice_code": "LS-06",
       "practice_title": "Responsible Addition of Test Code Maintenance",
-      "description": "Tests should verify public behavior and avoid coupling to implementation internals.",
+      "description": "Focus tests on public observable behavior; avoid reflection and internal state checks.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -306,17 +306,17 @@
     {
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
-      "description": "Use clear, specific assertions and include descriptive messages where helpful.",
-      "compliant_methods": 1,
-      "non_compliant_methods": 0,
+      "description": "Use specific assertions and descriptive messages to detect subtle faults.",
+      "compliant_methods": 0,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 1,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
       "practice_title": "Responsible Addition of Debugging Comments",
-      "description": "Comments should explain 'why' not 'what' and avoid clutter; no commented-out code.",
+      "description": "Comments should explain 'why' and avoid commented-out code; keep minimal helpful documentation.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -326,7 +326,7 @@
     {
       "practice_code": "LS-09",
       "practice_title": "Deterministic Design of Test Results",
-      "description": "Avoid randomness, time-based, or external dependencies without mocking.",
+      "description": "Avoid randomness/time/external dependencies without mocking to prevent flakiness.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -336,7 +336,7 @@
     {
       "practice_code": "LS-10",
       "practice_title": "Complete Avoidance of Test Side Effects",
-      "description": "Tests should not leave side effects; use cleanup where necessary.",
+      "description": "Ensure tests do not persist data or change global/static state without cleanup.",
       "compliant_methods": 1,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -346,22 +346,22 @@
     {
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
-      "description": "Use @Tag/@Category to organize and select test subsets.",
+      "description": "Use @Tag/@Category to classify tests for selective execution and CI efficiency.",
       "compliant_methods": 0,
-      "non_compliant_methods": 0,
-      "not_applicable_methods": 1,
+      "non_compliant_methods": 1,
+      "not_applicable_methods": 0,
       "total_methods": 1,
-      "compliance_score": "N/A"
+      "compliance_score": "0.0%"
     }
   ],
-  "overall_compliance_score": "57.9%",
+  "overall_compliance_score": "42.1%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 6866,
-    "completion_tokens": 7266,
-    "total_tokens": 14132,
-    "cost": 0.0148405
+    "prompt_tokens": 6706,
+    "completion_tokens": 8993,
+    "total_tokens": 15699,
+    "cost": 0.0183377
   },
   "llm_model": "openai/gpt-5-mini",
-  "normalized_overall_compliance_score": "64.7%"
+  "normalized_overall_compliance_score": "47.1%"
 }

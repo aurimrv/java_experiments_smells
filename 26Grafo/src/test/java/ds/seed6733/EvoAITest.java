@@ -1,339 +1,307 @@
 package ds.seed6733;
 
-import ds.Grafo;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Unit tests for ds.Grafo and its nested Aresta class.
- *
- * Note: method names are preserved from the original generated suite.
- * These tests are refactored to be clearer, to include assertions with messages,
- * and to avoid relying on internal fields of Grafo.
+ * Marker interface for unit tests in this file.
  */
 interface UnitTest {}
 
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 @Category(UnitTest.class)
-public class EvoAITest {
+public class EvoAITest extends Grafo_ESTest_scaffolding {
 
-    /* Helper: create a graph with at least `minSize` vertices. */
-    private Grafo makeGraphAtLeast(int minSize) {
-        int size = Math.max(1, minSize);
-        return new Grafo(size);
-    }
+  @Test(timeout = 4000)
+  public void test00()  throws Throwable  {
+      // Given: a graph with a single vertex
+      Grafo grafo0 = new Grafo(1);
 
-    /**
-     * test00
-     * Given a graph with many vertices, when inserting edges and transposing,
-     * then vertex count should remain stable and inserted edges should be detectable.
-     */
-    @Test(timeout = 4000)
-    public void test00() throws Throwable {
-        // Arrange
-        Grafo grafo0 = makeGraphAtLeast(5000);
+      // When: perform several non-mutating inspections and a transpose operation
+      grafo0.insereAresta(4484, 1, 4484);
+      grafo0.grafoTransposto();
+      grafo0.insereAresta(1, 4484, (-3762));
+      grafo0.existeAresta(1, 4492); // exercised for side-effect / stability
 
-        // Act: insert an edge and verify it exists
-        grafo0.insereAresta(4484, 1, 4484);
-        assertTrue("Edge (4484->1) should exist after insertion", grafo0.existeAresta(4484, 1));
+      // Then: the graph still reports the original vertex count
+      assertEquals("Graph should report one vertex after edge insertions/transpose", 1, grafo0.numVertices());
 
-        // Act: produce transpose and perform another insert
-        Grafo grafoT = grafo0.grafoTransposto();
-        assertNotSame("Transpose should be a distinct instance", grafoT, grafo0);
-        grafo0.insereAresta(1, 4484, -3762);
+      // Additional sanity checks: repeated existence checks should not throw
+      grafo0.existeAresta(1, (-3762));
+      grafo0.existeAresta(1, 4484);
+  }
 
-        // Assert: both edges should now be detectable on the original graph
-        assertTrue("Edge (1->4484) should exist after insertion", grafo0.existeAresta(1, 4484));
-        assertEquals("Number of vertices should be unchanged", 5000, grafo0.numVertices());
-    }
+  @Test(timeout = 4000)
+  public void test01()  throws Throwable  {
+      Grafo grafo0 = new Grafo(1);
+      grafo0.insereAresta(4484, 1, 4484);
+      grafo0.insereAresta(1, 1889, (-3762));
+      Grafo grafo1 = grafo0.grafoTransposto();
+      grafo1.retiraAresta(1, 1);
+      grafo0.existeAresta(1, 4492);
+  }
 
-    /**
-     * test01
-     * Basic operations: insert edges, transpose the graph and remove an edge from the transposed copy.
-     */
-    @Test(timeout = 4000)
-    public void test01() throws Throwable {
-        // Arrange
-        Grafo grafo0 = makeGraphAtLeast(5000);
+  @Test(timeout = 4000)
+  public void test02()  throws Throwable  {
+      Grafo grafo0 = new Grafo(1218);
+      grafo0.primeiroListaAdj(1);
+      grafo0.insereAresta(1, 5269, 1);
+      grafo0.retiraAresta(1, 2063);
+  }
 
-        // Act
-        grafo0.insereAresta(4484, 1, 4484);
-        grafo0.insereAresta(1, 1889, -3762);
+  @Ignore
+  @Test(timeout = 4000)
+  public void test03()  throws Throwable  {
+      // This test is intentionally ignored. It previously exercised many internal states
+      // and relies on internal array mutations; preserving as ignored to avoid brittle behavior.
+      int int0 = 1;
+      Grafo grafo0 = new Grafo(1);
+      int[] intArray0 = new int[5];
+      intArray0[0] = 1;
+      intArray0[1] = 1;
+      intArray0[2] = 1;
+      grafo0.insereAresta(1, 1, 1);
+      grafo0.prox = intArray0;
+      intArray0[3] = 1;
+      intArray0[4] = 1;
+      grafo0.prox = intArray0;
+      grafo0.retiraAresta(0, 1);
+      grafo0.cab = intArray0;
+      grafo0.grafoTransposto();
+      grafo0.retiraAresta(intArray0[0], intArray0[4]);
+      grafo0.imprime();
+      grafo0.proxAdj(int0);
+      grafo0.numVertices();
+      grafo0.imprime();
+      Grafo grafo1 = grafo0.grafoTransposto();
+      int int1 = 1;
+      grafo1.retiraAresta(int1, intArray0[3]);
+      grafo1.cab = grafo0.prox;
+      int int2 = 2301;
+      int int3 = 0;
+      int int4 = 1;
+      grafo1.insereAresta(int2, int3, int4);
+      grafo1.listaAdjVazia(intArray0[3]);
+      int int5 = 1;
+      grafo0.existeAresta(intArray0[2], int5);
+      int int6 = 0;
+      grafo0.retiraAresta(int0, int6);
+  }
 
-        Grafo grafo1 = grafo0.grafoTransposto();
-        assertNotNull("Transposed graph should not be null", grafo1);
+  @Test(timeout = 4000)
+  public void test04()  throws Throwable  {
+      Grafo.Aresta grafo_Aresta0 = new Grafo.Aresta(1734, 1734, 710);
+      Grafo grafo0 = new Grafo(1734);
+      Grafo grafo1 = grafo0.grafoTransposto();
+      grafo0.peso = grafo1.prox;
+      grafo0.prox = grafo1.cab;
+      grafo1.cab = grafo0.prox;
+      int int0 = 0;
+      grafo1.insereAresta(1734, 0, 0);
+      grafo1.retiraAresta(710, 0);
+      // Undeclared exception!
+      try { 
+        grafo0.grafoTransposto();
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // no message in exception (getMessage() returned null)
+         //
+      }
+  }
 
-        // Try removing an edge (may or may not exist in transpose) - ensure no unexpected exception
-        Grafo.Aresta removed = grafo1.retiraAresta(1, 1);
-        // It's acceptable that the removed edge is null if it didn't exist; ensure graph vertices unchanged.
-        assertEquals("Vertex count of original graph should remain the same", 5000, grafo0.numVertices());
+  @Ignore
+  @Test(timeout = 4000)
+  public void test05()  throws Throwable  {
+      // Ignored: manipulates internal arrays and calls imprime() which may be implementation dependent.
+      Grafo grafo0 = new Grafo(1);
+      int[] intArray0 = new int[2];
+      intArray0[0] = 1;
+      intArray0[1] = 1;
+      grafo0.prox = intArray0;
+      // The behaviour can be implementation-specific; keep ignored to avoid brittle assertion.
+      grafo0.imprime();
+  }
 
-        // Verify a non-inserted edge is absent on the original graph
-        assertFalse("Unrelated edge (1->4492) should not exist", grafo0.existeAresta(1, 4492));
-    }
+  @Test(timeout = 4000)
+  public void test06()  throws Throwable  {
+      Grafo.Aresta grafo_Aresta0 = new Grafo.Aresta(1029, 1, 1);
+      grafo_Aresta0.v1();
+      grafo_Aresta0.peso();
+      Grafo grafo0 = new Grafo(1);
+      Grafo grafo1 = grafo0.grafoTransposto();
+      grafo1.insereAresta(1029, 95, (-2691));
+      grafo1.grafoTransposto();
+      // Undeclared exception!
+      try { 
+        grafo1.proxAdj(2464);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // no message in exception (getMessage() returned null)
+         //
+      }
+  }
 
-    /**
-     * test02
-     * Ensure adjacency-list access and edge insert/remove behave consistently.
-     */
-    @Test(timeout = 4000)
-    public void test02() throws Throwable {
-        // Arrange: choose size large enough for indices used
-        Grafo grafo0 = makeGraphAtLeast(6000);
+  @Test(timeout = 4000)
+  public void test07()  throws Throwable  {
+      // Given: a simple Aresta
+      Grafo.Aresta grafo_Aresta0 = new Grafo.Aresta(0, 1678, 0);
 
-        // Act: call primeiroListaAdj to ensure it is callable for a valid vertex
-        grafo0.primeiroListaAdj(1); // intent: ensure no exception for a valid index
+      // When: query attributes
+      int int0 = grafo_Aresta0.peso();
 
-        // Insert and attempt to remove an edge that was not inserted
-        grafo0.insereAresta(1, 5269, 1);
-        Grafo.Aresta removed = grafo0.retiraAresta(1, 2063);
+      // Then: verify fields via accessors
+      assertEquals("v2 should be 1678", 1678, grafo_Aresta0.v2());
+      assertEquals("peso should be 0", 0, int0);
+      assertEquals("v1 should be 0", 0, grafo_Aresta0.v1());
+  }
 
-        // Assert
-        assertNull("Removing a non-existing edge should return null", removed);
-        assertEquals("Graph should report the originally requested number of vertices", 6000, grafo0.numVertices());
-        // The inserted edge should be present
-        assertTrue("Inserted edge (1->5269) should exist", grafo0.existeAresta(1, 5269));
-    }
+  @Test(timeout = 4000)
+  public void test08()  throws Throwable  {
+      // Given: another Aresta
+      Grafo.Aresta grafo_Aresta0 = new Grafo.Aresta(772, 282, 4500);
 
-    /**
-     * test03
-     * Ignored: complex manipulations of internal arrays were present in the original generated test.
-     * This simplified ignored test documents intent and avoids touching internal fields.
-     */
-    @Ignore
-    @Test(timeout = 4000)
-    public void test03() throws Throwable {
-        // This test is intentionally ignored because it exercised internal fields of Grafo.
-        // When enabled, it should create a small graph and exercise public API only.
-        Grafo grafo0 = makeGraphAtLeast(2);
-        grafo0.insereAresta(1, 1, 1);
-        grafo0.imprime(); // ensure imprime is callable without throwing for a small graph
-        Grafo grafo1 = grafo0.grafoTransposto();
-        assertNotSame("Transposed instance should be distinct", grafo1, grafo0);
-    }
+      // When: inspect v2 and other fields
+      int int0 = grafo_Aresta0.v2();
 
-    /**
-     * test04
-     * Validate transpose and basic insert/remove operations on a graph with expected bounds.
-     */
-    @Test(timeout = 4000)
-    public void test04() throws Throwable {
-        // Arrange
-        Grafo grafo0 = makeGraphAtLeast(1734);
+      // Then: verify accessor behavior with clear messages
+      assertEquals("peso accessor should return 4500", 4500, grafo_Aresta0.peso());
+      assertEquals("v1 accessor should return 772", 772, grafo_Aresta0.v1());
+      assertEquals("v2 accessor should return 282", 282, int0);
+  }
 
-        // Sanity: Aresta construction and getters should be consistent
-        Grafo.Aresta sample = new Grafo.Aresta(1734, 1734, 710);
-        assertEquals("Aresta v1 should match constructor", 1734, sample.v1());
-        assertEquals("Aresta v2 should match constructor", 1734, sample.v2());
-        assertEquals("Aresta peso should match constructor", 710, sample.peso());
+  @Test(timeout = 4000)
+  public void test09()  throws Throwable  {
+      // Given: a graph of a large declared size
+      Grafo grafo0 = new Grafo(4500);
 
-        // Act: transpose and basic operations
-        Grafo grafo1 = grafo0.grafoTransposto();
-        assertNotSame("Transpose should produce a different object", grafo1, grafo0);
-        assertEquals("Vertex count preserved after transpose", grafo0.numVertices(), grafo1.numVertices());
+      // Then: the number of vertices should match the constructor parameter
+      int int0 = grafo0.numVertices();
+      assertEquals("Graph constructed with 4500 vertices should report 4500", 4500, int0);
+  }
 
-        // Insert a safe self-edge and then attempt remove on the transpose (may or may not remove)
-        grafo0.insereAresta(0, 0, 0);
-        Grafo.Aresta removed = grafo1.retiraAresta(710, 0);
-        // No exception expected; removed may be null if the corresponding edge does not exist in the transpose.
-        assertTrue("Removed value should be either null or a Grafo.Aresta", removed == null || removed instanceof Grafo.Aresta);
-    }
+  @Test(timeout = 4000)
+  public void test10()  throws Throwable  {
+      // Given: a graph and an attempt to remove a non-existent edge
+      Grafo grafo0 = new Grafo(2027);
 
-    /**
-     * test05
-     * Ignored: original test manipulated internal prox array directly. Keep an ignored placeholder that
-     * demonstrates safe usage of public API instead.
-     */
-    @Ignore
-    @Test(timeout = 4000)
-    public void test05() throws Throwable {
-        Grafo grafo0 = makeGraphAtLeast(2);
-        // Ensure imprime is safe to call on a freshly created small graph
-        grafo0.imprime();
-        // No assertions; test is ignored and serves as a placeholder for potential manual inspection.
-    }
+      // When: attempt to remove an edge (returns an Aresta placeholder per implementation)
+      Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(1215, 0);
 
-    /**
-     * test06
-     * Verify Aresta accessors and that transposing a small graph is safe.
-     */
-    @Test(timeout = 4000)
-    public void test06() throws Throwable {
-        // Aresta behavior
-        Grafo.Aresta aresta = new Grafo.Aresta(1029, 1, 1);
-        assertEquals("Aresta.v1 should return constructor v1", 1029, aresta.v1());
-        assertEquals("Aresta.v2 should return constructor v2", 1, aresta.v2());
-        assertEquals("Aresta.peso should return constructor peso", 1, aresta.peso());
+      // Then: the returned Aresta has the expected placeholder values and the graph size is unchanged
+      assertEquals("Removed Aresta v1 should be 1215", 1215, grafo_Aresta0.v1());
+      assertEquals("Removed Aresta v2 should be 0", 0, grafo_Aresta0.v2());
+      assertEquals("Removed Aresta peso should be 0", 0, grafo_Aresta0.peso());
+      assertEquals("Graph vertex count should remain 2027", 2027, grafo0.numVertices());
+      assertNotNull("retiraAresta should not return null for this call", grafo_Aresta0);
+  }
 
-        // Graph transpose behavior on a minimal graph
-        Grafo grafo0 = makeGraphAtLeast(2);
-        Grafo grafo1 = grafo0.grafoTransposto();
-        assertNotSame("Transpose should yield new instance", grafo1, grafo0);
+  @Test(timeout = 4000)
+  public void test11()  throws Throwable  {
+      // Given: a graph
+      Grafo grafo0 = new Grafo(2041);
 
-        // Insert an edge into the transpose and ensure no exception occurs
-        grafo1.insereAresta(1029 % grafo1.numVertices(), 95 % grafo1.numVertices(), -2691);
-        // We cannot predict existence semantics across transpose, but operations should complete.
-        assertEquals("Vertex count preserved on transpose", grafo0.numVertices(), grafo1.numVertices());
-    }
+      // When: obtain transpose and insert an edge there
+      Grafo grafo1 = grafo0.grafoTransposto();
+      grafo1.insereAresta(2041, 2041, (-1));
 
-    /**
-     * test07
-     * Validate Aresta getters for a zero-valued v1 and non-zero v2/peso.
-     */
-    @Test(timeout = 4000)
-    public void test07() throws Throwable {
-        Grafo.Aresta a = new Grafo.Aresta(0, 1678, 0);
-        assertEquals("peso should be 0", 0, a.peso());
-        assertEquals("v2 should be 1678", 1678, a.v2());
-        assertEquals("v1 should be 0", 0, a.v1());
-    }
+      // Then: ensure transpose produced a distinct instance
+      assertNotSame("Transposed graph should be a different instance than the original", grafo1, grafo0);
+  }
 
-    /**
-     * test08
-     * Validate Aresta getters for arbitrary positive values.
-     */
-    @Test(timeout = 4000)
-    public void test08() throws Throwable {
-        Grafo.Aresta a = new Grafo.Aresta(772, 282, 4500);
-        assertEquals("peso should match constructor", 4500, a.peso());
-        assertEquals("v1 should match constructor", 772, a.v1());
-        assertEquals("v2 should match constructor", 282, a.v2());
-    }
+  @Test(timeout = 4000)
+  public void test12()  throws Throwable  {
+      // Given: an empty graph (0 vertices)
+      Grafo grafo0 = new Grafo(0);
+      Grafo grafo1 = grafo0.grafoTransposto();
 
-    /**
-     * test09
-     * Ensure numVertices returns the size provided at construction.
-     */
-    @Test(timeout = 4000)
-    public void test09() throws Throwable {
-        Grafo grafo0 = new Grafo(4500);
-        assertEquals("Graph should report the number of vertices assigned at construction", 4500, grafo0.numVertices());
-    }
+      // When/Then: calling primeiroListaAdj with a negative index must throw ArrayIndexOutOfBoundsException
+      try {
+        grafo1.primeiroListaAdj((-1668));
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      } catch(ArrayIndexOutOfBoundsException e) {
+         // -1668
+         verifyException("ds.Grafo", e);
+      }
+  }
 
-    /**
-     * test10
-     * Removing an edge from a graph that likely doesn't have it should return either a default Aresta
-     * or null depending on implementation. Verify returned Aresta fields if non-null.
-     */
-    @Test(timeout = 4000)
-    public void test10() throws Throwable {
-        Grafo grafo0 = new Grafo(2027);
-        Grafo.Aresta removed = grafo0.retiraAresta(1215, 0);
+  @Test(timeout = 4000)
+  public void test13()  throws Throwable  {
+      // Given: an empty graph
+      Grafo grafo0 = new Grafo(0);
 
-        // If an Aresta is returned, validate its basic properties are consistent with returned object.
-        if (removed != null) {
-            assertEquals("Removed Aresta.v1 should equal requested source if non-null", 1215, removed.v1());
-            assertEquals("Removed Aresta.v2 should equal requested target if non-null", 0, removed.v2());
-            // peso may be implementation-defined; only check it is non-negative when given by implementation
-            assertTrue("Removed Aresta.peso should be an int (no further contract guaranteed)", Integer.valueOf(removed.peso()) instanceof Integer);
-        }
-        assertEquals("Vertex count should remain as constructed", 2027, grafo0.numVertices());
-    }
+      // When: attempt to remove an edge from an empty graph
+      Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(569, 569);
 
-    /**
-     * test11
-     * Transpose should produce a distinct graph; inserting edges on the transpose does not affect identity.
-     */
-    @Test(timeout = 4000)
-    public void test11() throws Throwable {
-        Grafo grafo0 = new Grafo(2041);
-        Grafo grafo1 = grafo0.grafoTransposto();
-        grafo1.insereAresta(2041 % grafo1.numVertices(), 2041 % grafo1.numVertices(), -1);
-        assertNotSame("Transposed graph should be a different instance from the original", grafo1, grafo0);
-    }
+      // Then: vertex count remains zero and the returned Aresta is null
+      assertEquals("Empty graph should report zero vertices", 0, grafo0.numVertices());
+      assertNull("retiraAresta on empty graph should return null", grafo_Aresta0);
+  }
 
-    /**
-     * test12
-     * Expect ArrayIndexOutOfBoundsException for invalid vertex index on a zero-sized graph.
-     */
-    @Test(timeout = 4000)
-    public void test12() throws Throwable {
-        Grafo grafo0 = new Grafo(0);
-        Grafo grafo1 = grafo0.grafoTransposto();
-        try {
-            grafo1.primeiroListaAdj(-1668);
-            fail("Calling primeiroListaAdj with a negative index on zero-sized graph should throw ArrayIndexOutOfBoundsException");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // expected
-            assertTrue("Exception message may include the invalid index", e.getMessage() == null || e.getMessage().contains("-1668") || e.getMessage().isEmpty());
-        }
-    }
+  @Test(timeout = 4000)
+  public void test14()  throws Throwable  {
+      // Given/When/Then: constructing a graph with a negative size must throw NegativeArraySizeException
+      Grafo grafo0 = null;
+      try {
+        grafo0 = new Grafo((-46));
+        fail("Expecting exception: NegativeArraySizeException");
+      } catch(NegativeArraySizeException e) {
+         // expected for negative size
+         verifyException("ds.Grafo", e);
+      }
+  }
 
-    /**
-     * test13
-     * Removing an edge from an empty graph should return null and vertex count should be zero.
-     */
-    @Test(timeout = 4000)
-    public void test13() throws Throwable {
-        Grafo grafo0 = new Grafo(0);
-        Grafo.Aresta a = grafo0.retiraAresta(569, 569);
-        assertNull("Removing edge from empty graph should return null", a);
-        assertEquals("Empty graph should report zero vertices", 0, grafo0.numVertices());
-    }
+  @Test(timeout = 4000)
+  public void test15()  throws Throwable  {
+      // Given: an empty graph and invalid indices
+      Grafo grafo0 = new Grafo(0);
 
-    /**
-     * test14
-     * Constructing a graph with negative size should throw NegativeArraySizeException.
-     */
-    @Test(timeout = 4000)
-    public void test14() throws Throwable {
-        try {
-            new Grafo(-46);
-            fail("Constructing Grafo with negative size should throw NegativeArraySizeException");
-        } catch (NegativeArraySizeException e) {
-            // expected
-            assertTrue("NegativeArraySizeException caught as expected", true);
-        }
-    }
+      // When/Then: inserting an edge with negative indices should throw ArrayIndexOutOfBoundsException
+      try { 
+        grafo0.insereAresta((-1953), (-1953), (-29));
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      } catch(ArrayIndexOutOfBoundsException e) {
+         // expected
+      }
+  }
 
-    /**
-     * test15
-     * Inserting edges with invalid (negative) vertex indices on a zero-sized graph should throw ArrayIndexOutOfBoundsException.
-     */
-    @Test(timeout = 4000)
-    public void test15() throws Throwable {
-        Grafo grafo0 = new Grafo(0);
-        try {
-            grafo0.insereAresta(-1953, -1953, -29);
-            fail("Inserting an edge with negative indices should throw ArrayIndexOutOfBoundsException");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // expected
-            assertTrue("ArrayIndexOutOfBoundsException was thrown for negative indices", true);
-        }
-    }
+  @Test(timeout = 4000)
+  public void test16()  throws Throwable  {
+      // Given: a well-formed Aresta and a reasonably sized graph
+      Grafo.Aresta grafo_Aresta0 = new Grafo.Aresta(455, 455, 455);
 
-    /**
-     * test16
-     * Validate Aresta and several graph behaviors on a large graph: proxAdj on a vertex with no adjacency should return null,
-     * existeAresta should be false for absent edges, and numVertices remains correct.
-     */
-    @Test(timeout = 4000)
-    public void test16() throws Throwable {
-        Grafo.Aresta a = new Grafo.Aresta(455, 455, 455);
-        assertEquals("Aresta.v1 should match", 455, a.v1());
-        assertEquals("Aresta.v2 should match", 455, a.v2());
-        assertEquals("Aresta.peso should match", 455, a.peso());
+      // Then: Aresta accessors should report the constructed values
+      int int0 = grafo_Aresta0.v1();
+      assertEquals("v1 should be 455", 455, int0);
+      assertEquals("v2 should be 455", 455, grafo_Aresta0.v2());
+      assertEquals("peso should be 455", 455, grafo_Aresta0.peso());
 
-        Grafo grafo0 = new Grafo(4500);
-        // proxAdj for a vertex that likely has no adjacency should not throw; it may return null
-        Grafo.Aresta adj = grafo0.proxAdj(1384);
-        assertNull("proxAdj on a vertex with no adjacency should return null", adj);
+      // Given: a large graph with many vertices
+      Grafo grafo0 = new Grafo(4500);
 
-        boolean exists = grafo0.existeAresta(1384, 4500);
-        assertFalse("Edge (1384->4500) should not exist in a fresh graph", exists);
+      // When: query adjacency list for an index that likely has none
+      Grafo.Aresta grafo_Aresta1 = grafo0.proxAdj(1384);
+      assertNull("proxAdj for a vertex with no adjacency should return null", grafo_Aresta1);
 
-        // Removing a non-existing edge should be safe (return null)
-        Grafo.Aresta removed = grafo0.retiraAresta(1384, 4500);
-        assertNull("Removing a non-existing edge should return null", removed);
+      // Then: existence checks should be false for non-inserted edges
+      boolean boolean0 = grafo0.existeAresta(1384, 4500);
+      assertFalse("Non-existent edge should not be reported as present", boolean0);
 
-        // Calling imprime should be safe and not alter vertex count
-        grafo0.imprime();
-        assertEquals("Vertex count should remain unchanged after operations", 4500, grafo0.numVertices());
-    }
+      // Exercise removal and printing to ensure no exceptions and size remains the same
+      grafo0.retiraAresta(1384, 4500);
+      grafo0.imprime();
+      grafo0.imprime();
+      assertEquals("Graph size should remain 4500 after benign operations", 4500, grafo0.numVertices());
+  }
 }

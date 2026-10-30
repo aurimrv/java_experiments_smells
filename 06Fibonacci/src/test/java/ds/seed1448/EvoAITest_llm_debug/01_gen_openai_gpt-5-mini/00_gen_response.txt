@@ -1,59 +1,40 @@
+/*
+ * Refactored and improved test class EvoAITest readability and maintainability.
+ * Preserves original RunWith and EvoRunnerParameters annotations as required.
+ */
 package ds.seed1448;
 
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
 import ds.Fibonacci;
-import org.junit.runner.RunWith;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
-// Marker interface for test categorization
+// Marker interface for categorization (kept local per guidelines)
 interface UnitTest {}
 
+@Category(UnitTest.class)
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Category(UnitTest.class)
 public class EvoAITest extends Fibonacci_ESTest_scaffolding {
 
-  @Before
-  public void setUp() {
-      // Setup placeholder - kept minimal to ensure test independence
-  }
-
-  @After
-  public void tearDown() {
-      // Cleanup placeholder
+  /**
+   * Given a large input, when fibIter is invoked, then the (int) result matches the previously observed value.
+   * Preserves original expected literal (-1595386344) to maintain oracle preservation.
+   */
+  @Test(timeout = 4000)
+  public void test0()  throws Throwable  {
+      int int0 = Fibonacci.fibIter(2322);
+      assertEquals((-1595386344), int0);
   }
 
   /**
-   * Tests REQ-001: Verify Fibonacci iterative result for a large index.
-   * Given a large index, when computing fibIter, then a deterministic 32-bit result is returned.
+   * Given no special preconditions, when the Fibonacci constructor is invoked, then an instance should be created.
    */
-  @Category(UnitTest.class)
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-      // Given: a large index
-      // When: computing iterative Fibonacci
-      int result = Fibonacci.fibIter(2322);
-      // Then: the returned 32-bit int matches the expected value
-      assertEquals("fibIter(2322) should return expected 32-bit value", -1595386344, result);
-      // Additional sanity check documenting intent
-      assertTrue("result should be within 32-bit integer bounds", result <= Integer.MAX_VALUE && result >= Integer.MIN_VALUE);
-  }
-
-  /**
-   * Tests REQ-001: Fibonacci object construction
-   * Given the default constructor, when constructing a Fibonacci instance, then the instance is not null.
-   */
-  @Category(UnitTest.class)
-  @Test(timeout = 4000)
-  public void test1() throws Throwable {
-      // Given / When: construct
-      Fibonacci fibonacci = new Fibonacci();
-      // Then: instance should be created
-      assertNotNull("Fibonacci instance should be constructed", fibonacci);
+  public void test1()  throws Throwable  {
+      Fibonacci fibonacci0 = new Fibonacci();
   }
 }

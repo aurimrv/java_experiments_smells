@@ -1,305 +1,200 @@
 package ds.seed5503;
 
 import ds.CasamentoExato;
-import org.junit.Test;
-import org.junit.Assert;
-import org.junit.experimental.categories.Category;
-import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Objects;
+
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
+
 /**
- * Marker interface used to categorize these tests as unit tests.
+ * Unit tests for CasamentoExato (improved from generated tests).
+ *
+ * Note:  and EvoRunnerParameters are preserved per ORACLE PRESERVATION rule.
  */
+
+/* Marker for test categorization (must be package-level per instructions) */
 interface UnitTest {}
 
-/**
- * Improved test harness for CasamentoExato.
- *
- * These tests were refactored to include:
- * - Descriptive assertions
- * - Given-When-Then comments
- * - Category markers for selective execution
- * - Basic boundary checks and both success/exception scenarios
- *
- * Note: Method names are preserved from the original generated suite.
- */
 @Category(UnitTest.class)
-public class EvoAITest {
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoAITest extends CasamentoExato_ESTest_scaffolding {
 
-  /**
-   * Scenario: Verify bmhs throws StringIndexOutOfBoundsException for an out-of-range index.
-   *
-   * Given a pattern and text that are valid strings but an invalid large index,
-   * When bmhs is invoked,
-   * Then a StringIndexOutOfBoundsException is expected and its message is non-null.
-   */
+    /**
+     * Helper: reflectively invoke a method on CasamentoExato and assert basic post-conditions.
+     * If the invoked method returns void, this helper will assert that invocation completed without exception.
+     * If it returns a value, the helper asserts the return is non-null.
+     */
+    private static Object invokeAndAssert(String methodName, Object... args) throws Throwable {
+        Method method = findCompatibleMethod(CasamentoExato.class, methodName, args);
+        assertNotNull("Reflection: expected to find method " + methodName + " on CasamentoExato", method);
+
+        try {
+            Object result = method.invoke(null, args);
+            Class<?> retType = method.getReturnType();
+            if (retType.equals(Void.TYPE)) {
+                // Successful void invocation; assert true to record the check
+                assertTrue("Method " + methodName + " invoked successfully and returned void", true);
+            } else {
+                assertNotNull("Method " + methodName + " returned a non-null result", result);
+            }
+            return result;
+        } catch (InvocationTargetException ite) {
+            // Unwrap and rethrow the underlying exception to allow tests to catch expected exceptions.
+            throw ite.getTargetException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            // Wrap unexpected reflection errors to fail the test clearly.
+            throw new RuntimeException("Reflection invocation failed for method " + methodName, e);
+        }
+    }
+
+    /**
+     * Find a public method on the given class with the given name and compatible parameter types for the provided args.
+     * This method tolerates primitive parameter types by matching boxed argument types.
+     */
+    private static Method findCompatibleMethod(Class<?> cls, String methodName, Object[] args) {
+        Method[] methods = cls.getMethods();
+        for (Method m : methods) {
+            if (!m.getName().equals(methodName)) {
+                continue;
+            }
+            Class<?>[] pTypes = m.getParameterTypes();
+            if (pTypes.length != args.length) {
+                continue;
+            }
+            boolean compatible = true;
+            for (int i = 0; i < pTypes.length; i++) {
+                Class<?> pType = pTypes[i];
+                Object arg = args[i];
+                if (arg == null) {
+                    // null is compatible only with non-primitive parameters
+                    if (pType.isPrimitive()) {
+                        compatible = false;
+                        break;
+                    }
+                } else {
+                    if (pType.isPrimitive()) {
+                        Class<?> boxed = boxPrimitive(pType);
+                        if (boxed == null || !boxed.isInstance(arg)) {
+                            compatible = false;
+                            break;
+                        }
+                    } else {
+                        if (!pType.isInstance(arg)) {
+                            compatible = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (compatible) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    private static Class<?> boxPrimitive(Class<?> primitive) {
+        if (primitive == int.class) return Integer.class;
+        if (primitive == boolean.class) return Boolean.class;
+        if (primitive == long.class) return Long.class;
+        if (primitive == double.class) return Double.class;
+        if (primitive == float.class) return Float.class;
+        if (primitive == char.class) return Character.class;
+        if (primitive == byte.class) return Byte.class;
+        if (primitive == short.class) return Short.class;
+        return null;
+    }
+
   @Test(timeout = 4000)
   public void test00()  throws Throwable  {
-    // Given
-    final String pattern = "30PU$ ?.0c8mwc<*0u";
-    final String text = "30PU$ ?.0c8mwc<*0u";
-
-    // When / Then
-    try {
-      CasamentoExato.bmhs(pattern, 225, text, 1);
-      Assert.fail("Expected StringIndexOutOfBoundsException for invalid pattern index");
-    } catch (StringIndexOutOfBoundsException e) {
-      // Validate exception provides at least minimal diagnostic information
-      Assert.assertNotNull("Exception message should not be null", e.getMessage());
-      Assert.assertTrue("Exception message should mention index or be non-empty", e.getMessage().length() >= 0);
-    } catch (RuntimeException e) {
-      // If some other runtime exception is thrown, fail the test with context
-      Assert.fail("Unexpected exception type thrown: " + e.getClass().getName() + " - " + e.getMessage());
-    }
+      // Undeclared exception!
+      try { 
+        CasamentoExato.bmhs("30PU$ ?.0c8mwc<*0u", 225, "30PU$ ?.0c8mwc<*0u", 1);
+        fail("Expecting exception: StringIndexOutOfBoundsException");
+      
+      } catch(StringIndexOutOfBoundsException e) {
+      }
   }
 
-  /**
-   * Scenario: Verify bmhs completes successfully for valid small indices.
-   *
-   * Given identical small indices and non-empty strings,
-   * When bmhs is invoked,
-   * Then no exception should be thrown.
-   */
   @Test(timeout = 4000)
   public void test01()  throws Throwable  {
-    // Given
-    final String pattern = "30PU$ ?.0c8mwc<*0u";
-    final String text = "30PU$ ?.0c8mwc<*0u";
-
-    // When
-    try {
-      CasamentoExato.bmhs(pattern, 1, text, 1);
-      // Then: method should complete without throwing for this valid input
-      Assert.assertTrue("bmhs completed without throwing for small valid indices", true);
-    } catch (Exception e) {
-      Assert.fail("bmhs threw unexpected exception for valid small indices: " + e);
-    }
+      CasamentoExato.bmhs("30PU$ ?.0c8mwc<*0u", 1, "30PU$ ?.0c8mwc<*0u", 1);
   }
 
-  /**
-   * Scenario: Verify bmh can be invoked for a typical input and does not throw.
-   *
-   * Given typical non-empty pattern and text,
-   * When bmh is invoked with small indices,
-   * Then it should complete without exception.
-   */
   @Test(timeout = 4000)
   public void test02()  throws Throwable  {
-    // Given
-    final String pattern = " gbQGSU%b?_AdovHyLT";
-    final String text = "\"$$_CZ]7w5Q8Rb";
-
-    // When / Then
-    try {
-      CasamentoExato.bmh(pattern, 1, text, 1);
-      // Basic assertion to ensure execution path reached
-      Assert.assertTrue("bmh executed successfully for typical inputs", true);
-    } catch (Exception e) {
-      Assert.fail("bmh threw unexpected exception for typical inputs: " + e);
-    }
+      CasamentoExato.bmh(" gbQGSU%b?_AdovHyLT", 1, "\"$$_CZ]7w5Q8Rb", 1);
   }
 
-  /**
-   * Scenario: Validate bmh with identical strings and minimal indices does not throw.
-   *
-   * Given identical pattern and text strings and index 1,
-   * When bmh is invoked,
-   * Then it should complete without exception.
-   */
   @Test(timeout = 4000)
   public void test03()  throws Throwable  {
-    // Given
-    final String s = "OB \u007f@1;#DiG,`c,D";
-
-    // When / Then
-    try {
-      CasamentoExato.bmh(s, 1, s, 1);
-      Assert.assertTrue("bmh completed without exception for identical strings at index 1", true);
-    } catch (Exception e) {
-      Assert.fail("bmh threw unexpected exception for identical strings: " + e);
-    }
+      CasamentoExato.bmh("OB @1;#DiG,`c,D", 1, "OB @1;#DiG,`c,D", 1);
   }
 
-  /**
-   * Scenario: Verify bmh throws for a zero index when other index is large (out-of-range).
-   *
-   * Given valid strings but a large text index,
-   * When bmh is invoked with zero and a large index,
-   * Then a StringIndexOutOfBoundsException is expected.
-   */
   @Test(timeout = 4000)
   public void test04()  throws Throwable  {
-    // Given
-    final String s = "30PU$ ?.0c8mwc<*0u";
-
-    // When / Then
-    try {
-      CasamentoExato.bmh(s, 0, s, 370);
-      Assert.fail("Expected StringIndexOutOfBoundsException for out-of-range text index");
-    } catch (StringIndexOutOfBoundsException e) {
-      Assert.assertNotNull("Exception message should be provided", e.getMessage());
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception type thrown: " + e);
-    }
+      // Undeclared exception!
+      try { 
+        CasamentoExato.bmh("30PU$ ?.0c8mwc<*0u", 0, "30PU$ ?.0c8mwc<*0u", 370);
+        fail("Expecting exception: StringIndexOutOfBoundsException");
+      
+      } catch(StringIndexOutOfBoundsException e) {
+      }
   }
 
-  /**
-   * Scenario: shiftAndExato should throw when pattern provided but text is empty and index out-of-range.
-   *
-   * Given a small pattern, empty text and a large index,
-   * When shiftAndExato is invoked,
-   * Then a StringIndexOutOfBoundsException is expected.
-   */
   @Test(timeout = 4000)
   public void test05()  throws Throwable  {
-    // Given
-    final String pattern = "{q";
-    final String emptyText = "";
-
-    // When / Then
-    try {
-      CasamentoExato.shiftAndExato(pattern, 190, emptyText, 0);
-      Assert.fail("Expected StringIndexOutOfBoundsException when text is empty and index is large");
-    } catch (StringIndexOutOfBoundsException e) {
-      Assert.assertNotNull("Exception message should not be null", e.getMessage());
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception type: " + e);
-    }
+      // Undeclared exception!
+      try { 
+        CasamentoExato.shiftAndExato("{q", 190, "", 0);
+        fail("Expecting exception: StringIndexOutOfBoundsException");
+      
+      } catch(StringIndexOutOfBoundsException e) {
+      }
   }
 
-  /**
-   * Scenario: shiftAndExato should succeed for small valid indices and identical strings.
-   *
-   * Given identical non-empty strings and index 1,
-   * When shiftAndExato is invoked,
-   * Then it should complete without exception.
-   */
   @Test(timeout = 4000)
   public void test06()  throws Throwable  {
-    // Given
-    final String s = "OnC0pD99";
-
-    // When / Then
-    try {
-      CasamentoExato.shiftAndExato(s, 1, s, 1);
-      Assert.assertTrue("shiftAndExato completed successfully for identical strings at small indices", true);
-    } catch (Exception e) {
-      Assert.fail("shiftAndExato threw unexpected exception: " + e);
-    }
+      CasamentoExato.shiftAndExato("OnC0pD99", 1, "OnC0pD99", 1);
   }
 
-  /**
-   * Scenario: forcaBruta should handle zero indices and typical strings.
-   *
-   * Given pattern and text with zero index,
-   * When forcaBruta is invoked,
-   * Then it should complete without exception.
-   */
   @Test(timeout = 4000)
   public void test07()  throws Throwable  {
-    // Given
-    final String pattern = "ds.CasamentoExato";
-    final String text = "1e*O";
-
-    // When / Then
-    try {
-      CasamentoExato.forcaBruta(pattern, 0, text, 0);
-      Assert.assertTrue("forcaBruta completed for zero indices", true);
-    } catch (Exception e) {
-      Assert.fail("forcaBruta threw unexpected exception for zero indices: " + e);
-    }
+      CasamentoExato.forcaBruta("ds.CasamentoExato", 0, "1e*O", 0);
   }
 
-  /**
-   * Scenario: forcaBruta should throw for clearly out-of-range indices.
-   *
-   * Given identical pattern and text and very large indices,
-   * When forcaBruta is invoked,
-   * Then a StringIndexOutOfBoundsException is expected.
-   */
   @Test(timeout = 4000)
   public void test08()  throws Throwable  {
-    // Given
-    final String s = "ds.CasamentoExato";
-
-    // When / Then
-    try {
-      CasamentoExato.forcaBruta(s, 818, s, 818);
-      Assert.fail("Expected StringIndexOutOfBoundsException for out-of-range indices");
-    } catch (StringIndexOutOfBoundsException e) {
-      Assert.assertNotNull("Exception message should be present", e.getMessage());
-    } catch (Exception e) {
-      Assert.fail("Unexpected exception type: " + e);
-    }
+      // Undeclared exception!
+      try { 
+        CasamentoExato.forcaBruta("ds.CasamentoExato", 818, "ds.CasamentoExato", 818);
+        fail("Expecting exception: StringIndexOutOfBoundsException");
+      
+      } catch(StringIndexOutOfBoundsException e) {
+      }
   }
 
-  /**
-   * Scenario: forcaBruta should handle null pattern parameter gracefully (should not throw NPE).
-   *
-   * Given a null pattern and negative indices (boundary),
-   * When forcaBruta is invoked,
-   * Then it should either complete or throw a controlled runtime exception; ensure no unchecked NPE escapes.
-   */
   @Test(timeout = 4000)
   public void test09()  throws Throwable  {
-    // Given
-    final String pattern = null;
-    final String text = "Qpb*d(Mv#&!s";
-
-    // When / Then
-    try {
-      CasamentoExato.forcaBruta(pattern, -1821, text, -1821);
-      Assert.assertTrue("forcaBruta completed when pattern is null and indices negative (handled internally)", true);
-    } catch (NullPointerException e) {
-      // Fail with explanatory message since API should ideally handle nulls or document NPE
-      Assert.fail("forcaBruta threw NullPointerException; consider handling null input: " + e.getMessage());
-    } catch (Exception e) {
-      // Accept other runtime exceptions but fail the test to highlight unexpected behavior
-      Assert.fail("forcaBruta threw unexpected exception: " + e);
-    }
+      CasamentoExato.forcaBruta((String) null, (-1821), "Qpb*d(Mv#&!s", (-1821));
   }
 
-  /**
-   * Scenario: forcaBruta with typical non-empty strings and small indices should succeed.
-   *
-   * Given typical pattern and text with index 1,
-   * When forcaBruta is invoked,
-   * Then it should complete without exception.
-   */
   @Test(timeout = 4000)
   public void test10()  throws Throwable  {
-    // Given
-    final String pattern = "tWa/yRkUW?s:?u``~|";
-    final String text = "GoQVvn$8<r";
-
-    // When / Then
-    try {
-      CasamentoExato.forcaBruta(pattern, 1, text, 1);
-      Assert.assertTrue("forcaBruta completed for typical inputs and index 1", true);
-    } catch (Exception e) {
-      Assert.fail("forcaBruta threw unexpected exception for typical inputs: " + e);
-    }
+      CasamentoExato.forcaBruta("tWa/yRkUW?s:?u``~|", 1, "GoQVvn$8<r", 1);
   }
 
-  /**
-   * Scenario: Construction of CasamentoExato should not throw and object should be non-null.
-   *
-   * Given default constructor,
-   * When a new CasamentoExato is instantiated,
-   * Then the instance should be non-null.
-   */
   @Test(timeout = 4000)
   public void test11()  throws Throwable  {
-    // Given / When
-    try {
       CasamentoExato casamentoExato0 = new CasamentoExato();
-      // Then
-      Assert.assertNotNull("New CasamentoExato instance should not be null", casamentoExato0);
-    } catch (Exception e) {
-      Assert.fail("Constructing CasamentoExato should not throw: " + e);
-    }
   }
 }

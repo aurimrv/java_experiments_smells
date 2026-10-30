@@ -2,21 +2,21 @@
   "test_class_name": "EvoAITest",
   "test_methods": [
     {
-      "test_method_name": "test2",
+      "test_method_name": "test1",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method performs multiple distinct actions under test: it verifies constructor behavior (assertNotNull, assertNotSame) and separately calls Max.max(...) to check behavior for N=0. There are effectively multiple Arrange-Act-Assert concerns in one test (multiple 'Act' operations), violating atomicity.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n      assertNotNull(\"Max instance should be constructible\", max0);\n      Max another = new Max();\n      assertNotSame(\"Multiple constructions should yield distinct instances\", max0, another);\n      Item[] items = createNullFilledArray(1);\n      try {\n          Item r = Max.max(items, 0);",
-          "improved_code": "  @Test\n  public void constructor_shouldCreateDistinctInstances() {\n      Max a = new Max();\n      Max b = new Max();\n      assertNotNull(\"Max should be constructible\", a);\n      assertNotSame(\"Multiple constructions should yield distinct instances\", a, b);\n  }\n\n  @Test\n  public void max_withZeroElements_shouldReturnNullOrThrow() {\n      Item[] items = createNullFilledArray(1);\n      try {\n          Item r = Max.max(items, 0);\n          assertTrue(\"Result for N=0 should be null or an Item\", r == null || r instanceof Item);\n      } catch (RuntimeException e) {\n          // acceptable behavior for edge case\n      }\n  }"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test should focus on a single behavior. EVALUATION: The method performs one Arrange (create array), one Act (Max.max(...)) and one Assert (assertNull). DECISION: Only one distinct method call is exercised and a single assertion group exists. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on other test methods or shared mutable state. No @Before/@After are required given local-only state use; no static/instance variables are modified in the method.",
+          "justification": "PRINCIPLE: Tests must not share mutable state / rely on order. EVALUATION: The test uses only local variables and no class-level mutable state; no @Before/@After shown but the method is self-contained. DECISION: Using only local variables implies independence. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,23 +24,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single test method is present in the class; although it accepts an exception in a try/catch, there is no separate explicit test for the happy path and no dedicated test asserting an expected exception. Per rules, the class lacks distinct tests covering both normal and error flows.",
-          "original_code": "      Item[] items = createNullFilledArray(1);\n      try {\n          Item r = Max.max(items, 0);\n          assertTrue(\"Result for N=0 should be null or an Item\", r == null || r instanceof Item);\n      } catch (Exception e) {\n          assertTrue(\"Exception thrown is acceptable for edge case after construction\", e instanceof RuntimeException);\n      }",
-          "improved_code": "  @Test\n  public void max_happyPath_returnsExpectedItem() {\n      Item[] items = new Item[] { new MeuItem(1), new MeuItem(2) };\n      Item result = Max.max(items, 2);\n      assertNotNull(\"Expected a non-null result for valid inputs\", result);\n  }\n\n  @Test(expected = RuntimeException.class)\n  public void max_invalidN_throwsRuntimeException() {\n      Item[] items = createNullFilledArray(1);\n      // Passing an out-of-range N should throw in implementations that validate N\n      Max.max(items, -1);\n  }"
+          "justification": "PRINCIPLE: Provide at least one happy path and one error scenario per method. EVALUATION: Only a single test method exists in the class and it only covers one scenario (assertNull). DECISION: Class has < 2 test methods and there is no exception/error test. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_nullInput_throwsNPE() throws Throwable {\n    // error scenario: null input\n    Item[] itemArray0 = null;\n    try {\n        Max.max(itemArray0, 0);\n        fail(\"Expected NullPointerException\");\n    } catch (NullPointerException expected) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test explicitly exercises a boundary case: N=0 and uses a null-filled array of length 1, which addresses empty/no-element edge behavior rather than only middle-range values.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should validate boundary values. EVALUATION: The test only uses a moderate-size array and index 0; no checks for empty, negative, max index or off-by-one values. DECISION: No boundary inputs or names indicating boundary coverage. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_indexBoundaries() throws Throwable {\n    // test negative index\n    Item[] items = new Item[2];\n    try {\n        Max.max(items, -1);\n        fail(\"Expected IllegalArgumentException or similar for negative index\");\n    } catch (Exception e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test uses a helper method createNullFilledArray(...) (presumably provided by scaffolding) rather than duplicating array-creation logic inline, indicating use of modular utilities to reduce duplication.",
+          "justification": "PRINCIPLE: Tests should be self-contained and avoid duplication. EVALUATION: The class contains a single short test and no duplicated setup is visible; no helper methods required. DECISION: Short test (<10 lines) with no repetition -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -48,39 +48,39 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is short (well under 30 lines) and contains no loops or complex conditionals; its control flow is linear (simple try/catch), meeting the low complexity guideline.",
+          "justification": "PRINCIPLE: Keep tests small and simple. EVALUATION: The test is under 20 lines, contains no loops or conditionals and follows linear Arrange-Act-Assert. DECISION: Meets low complexity criteria. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The method includes multiple assertions verifying different aspects (construction non-null, distinct instances, behavior of Max.max for N=0), which increases the chance of detecting faults beyond a single superficial assertion.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should verify multiple relevant properties. EVALUATION: The test issues only a single superficial assertion (assertNull). DECISION: Only one assertion present and it is shallow; does not verify multiple properties. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_assertMultipleProperties() throws Throwable {\n    Item[] itemArray0 = new Item[6];\n    // ARRANGE: verify preconditions\n    assertEquals(6, itemArray0.length);\n    // ACT\n    Item item0 = Max.max(itemArray0, 0);\n    // ASSERT: check multiple properties (length + result null)\n    assertNull(\"Expected null when all elements are null\", item0);\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations are present and there are no commented-out test methods in the provided snippet; the test is active and runnable.",
+          "justification": "PRINCIPLE: Avoid @Ignore/@Disabled and commented-out tests. EVALUATION: No @Ignore/@Disabled annotations or commented-out @Test methods are present in the visible code. DECISION: All test code appears active. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class-level Javadoc explicitly contains a 'Requirement trace: REQ-1234' entry linking the tests to a requirement, providing traceability.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should link to requirements. EVALUATION: No @Story/@Requirement annotations or Javadoc referencing requirement IDs are present for the test method. DECISION: No traceability information found. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "/**\n * Tests REQ-001: Max should return null when all array elements are null\n */\n@Test(timeout = 4000)\npublic void test1_req001_returnsNullForAllNullElements() throws Throwable {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "This is a unit test without any explicit performance or security testing concerns and contains no timing/security-specific assertions. Per rules, this practice is generally not applicable to standard unit tests.",
+          "justification": "PRINCIPLE: Performance/security tests are separate concerns. EVALUATION: This is a simple unit test and no performance/security annotations or timing checks are expected. DECISION: Per guidance, mark as not-applicable for unit test. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test2' is generic and does not follow descriptive naming conventions such as methodName_scenario_expectedResult. The name does not communicate the purpose or expected outcome.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given / When: instantiate Max\n      Max max0 = new Max();",
-          "improved_code": "  @Test\n  public void max_withZeroElements_shouldReturnNullOrThrow() throws Throwable {\n      Max max0 = new Max();\n      Item[] items = createNullFilledArray(1);\n      try {\n          Item r = Max.max(items, 0);\n          assertTrue(\"Result for N=0 should be null or an Item\", r == null || r instanceof Item);\n      } catch (RuntimeException e) {\n          // acceptable\n      }\n  }"
+          "justification": "PRINCIPLE: Test names should describe scenario and expected outcome. EVALUATION: The method name 'test1' is generic and does not describe intent. DECISION: Generic naming found -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void max_withAllNullElements_returnsNull() throws Throwable {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The method name 'test2' and the use of EvoSuite runner indicate auto-generated style naming / tooling. There are signs of generated patterns rather than intention-revealing names; no explicit 'Auto-generated' comment is present but the generic method name is a common generated pattern.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      // Given / When: instantiate Max\n      Max max0 = new Max();\n      // Then: basic sanity assertions",
-          "improved_code": "  @Test\n  public void max_constructor_createsDistinctInstances() {\n      Max a = new Max();\n      Max b = new Max();\n      assertNotNull(\"Max should be constructible\", a);\n      assertNotSame(\"Distinct instances expected\", a, b);\n  }"
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. EVALUATION: The class contains EvoSuite artifacts (EvoRunner, EvoAssertions) and a generic name 'test1' suggesting generated code. DECISION: Presence of EvoSuite-specific imports/annotations and generic method name indicate heavy generation. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void max_allNulls_shouldReturnNull() throws Throwable {\n    // concise, intention-revealing name and minimal assertions\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(\"Max should return null when all elements are null\", item0);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The class-level Javadoc includes Given-When-Then notes and a requirement trace, indicating deliberate test design and intent rather than ad-hoc tests, which aligns with prioritized and designed test cases.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then, BDD). EVALUATION: The test is minimal with no Given-When-Then comments or evidence of test-first design. DECISION: Minimal single happy-path style -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "// Given: an array of null elements\n// When: calling Max.max on the array\n// Then: the result should be null\n@Test(timeout = 4000)\npublic void givenAllNull_whenMax_thenReturnNull() throws Throwable {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises public API (Max constructor and Max.max). It does not access private internals or use reflection; it verifies behavior through public methods, which improves maintainability.",
+          "justification": "PRINCIPLE: Tests should verify public behavior, not internals. EVALUATION: The test exercises public API Max.max and inspects returned Item via public assertions; no reflection or private-state checks are used. DECISION: Tests interact via public API only. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages (e.g., assertNotNull(\"Max instance should be constructible\", ...)), and specific assertion methods are used rather than only generic assertTrue; most assertions include messages.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use specific assertions with descriptive messages. EVALUATION: The test uses a single assertNull without a descriptive failure message; only one assertion present. DECISION: Lack of messages and minimal assertion count -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(item0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_assertionWithMessage() throws Throwable {\n    Item[] itemArray0 = new Item[6];\n    Item item0 = Max.max(itemArray0, 0);\n    assertNull(\"Expected null when all elements of the array are null\", item0);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test contains helpful high-level Given/When/Then comments and no commented-out code. Comments explain intent rather than restating obvious code, matching the guidance.",
+          "justification": "PRINCIPLE: Comments should add value and explain 'why'. EVALUATION: There are no excessive or commented-out lines inside the test; class Javadoc exists and comments explain purpose. DECISION: No problematic commented-out code and comments are reasonable. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, current time usage, sleeps, or external dependency calls). It relies on local deterministic operations, making results deterministic.",
+          "justification": "PRINCIPLE: Tests must avoid randomness and time dependence. EVALUATION: The test uses no Random, time functions, sleeps, or external systems; execution is deterministic. DECISION: Deterministic constructs only. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not create files, database entries, or modify static state; there is no cleanup required and no side effects visible in the snippet.",
+          "justification": "PRINCIPLE: Tests must not persist or modify shared state. EVALUATION: The test uses only local variables and does not create files or modify static state; no cleanup required. DECISION: Side-effect-free. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -152,14 +152,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization of this test as a unit test, which enables selective execution.",
+          "justification": "PRINCIPLE: Use tags/categories to organize tests. EVALUATION: The class is annotated with @Category(UnitTest.class) providing categorization. DECISION: Meaningful label present at class level. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "73.7%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "77.8%"
+      "normalized_method_compliance_score": "55.6%"
     },
     {
       "test_method_name": "test0",
@@ -167,16 +167,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test contains two distinct 'Act' operations: one that verifies an exception for an oversized N and another that verifies a successful return for a valid N. This constitutes multiple Arrange-Act-Assert blocks in a single test method.",
-          "original_code": "try {\n    Max.max(itemArray0, 1323);\n    fail(\"Expected an exception when requesting more elements than array length (should throw NPE or AIOOBE).\");\n} catch (Exception e) {\n    assertTrue(\"Unexpected exception type: \" + e.getClass(),\n               (e instanceof NullPointerException) || (e instanceof ArrayIndexOutOfBoundsException));\n}\nItem result = Max.max(itemArray0, 3);",
-          "improved_code": "@Test(expected = Exception.class, timeout = 4000)\npublic void testMax_throwsWhenNExceedsLength() throws Throwable {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = meuItem0;\n    itemArray0[1] = meuItem0;\n    itemArray0[2] = new MeuItem(3780);\n    Max.max(itemArray0, 1323);\n}\n\n@Test(timeout = 4000)\npublic void testMax_returnsNonNullForValidN() {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = meuItem0;\n    itemArray0[1] = meuItem0;\n    itemArray0[2] = new MeuItem(3780);\n    Item result = Max.max(itemArray0, 3);\n    assertNotNull(\"When considering existing elements, result should not be null\", result);\n}\n"
+          "status": "compliant",
+          "justification": "The method performs a single Act operation (Max.max) within a single Arrange-Act-Assert pattern (array setup, call, expect exception). No multiple unrelated method calls are present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared mutable state. There are no @Before/@After methods required for this single test to be independent.",
+          "justification": "The test uses only local variables and does not rely on or modify shared/static state. No setup/teardown is required based on the visible code.",
           "original_code": null,
           "improved_code": null
         },
@@ -184,63 +184,63 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Although the method checks both an exceptional and a normal scenario, they are combined in one test. The class contains only one test method; per criteria there should be at least two separate test methods covering happy path and error case.",
-          "original_code": "try {\n    Max.max(itemArray0, 1323);\n    fail(\"Expected an exception when requesting more elements than array length (should throw NPE or AIOOBE).\");\n} catch (Exception e) {\n    assertTrue(\"Unexpected exception type: \" + e.getClass(),\n               (e instanceof NullPointerException) || (e instanceof ArrayIndexOutOfBoundsException));\n}\nItem result = Max.max(itemArray0, 3);",
-          "improved_code": "@Test(expected = Exception.class, timeout = 4000)\npublic void testMax_throwsWhenNExceedsLength() throws Throwable {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = meuItem0; itemArray0[1] = meuItem0; itemArray0[2] = new MeuItem(3780);\n    Max.max(itemArray0, 1323);\n}\n\n@Test(timeout = 4000)\npublic void testMax_returnsNonNullForValidN() {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = meuItem0; itemArray0[1] = meuItem0; itemArray0[2] = new MeuItem(3780);\n    Item result = Max.max(itemArray0, 3);\n    assertNotNull(result);\n}\n"
+          "justification": "The class (visible snippet) contains only a single test method that targets an exceptional flow (expects NullPointerException). There is no corresponding happy-path test in the provided code.",
+          "original_code": "Item[] itemArray0 = new Item[7];\nMeuItem meuItem0 = new MeuItem(1323);\nitemArray0[0] = (Item) meuItem0;\n// Undeclared exception!\nMax.max(itemArray0, 1323);",
+          "improved_code": "@Test\npublic void test0_happyPath() {\n    Item[] items = new Item[3];\n    items[0] = new MeuItem(1);\n    items[1] = new MeuItem(2);\n    items[2] = new MeuItem(3);\n    // exercise Normal (happy) path: expect execution without exception\n    Max.max(items, 3);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test exercises an out-of-range large N (1323) and a small valid N (3), covering an error boundary and a normal boundary for the prefix length.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Test data uses a large numeric literal (1323) and typical object instances; there are no explicit boundary tests (empty array, zero, negative, max values) in the method.",
+          "original_code": "MeuItem meuItem0 = new MeuItem(1323);\nitemArray0[0] = (Item) meuItem0;\nitemArray0[1] = (Item) meuItem0;\nMeuItem meuItem1 = new MeuItem(3780);\nitemArray0[2] = (Item) meuItem1;",
+          "improved_code": "@Test\npublic void test0_boundaryValues() {\n    // empty array boundary\n    Item[] empty = new Item[0];\n    Max.max(empty, 0);\n    // single-element boundary\n    Item[] single = new Item[1];\n    single[0] = new MeuItem(0);\n    Max.max(single, 0);\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "There is repeated inline setup inside the single long test and no helper methods or constants to encapsulate the setup (e.g., createTestArray). The method is relatively long and would benefit from extraction of setup logic into helpers.",
-          "original_code": "Item[] itemArray0 = new Item[7];\nMeuItem meuItem0 = new MeuItem(1323);\nitemArray0[0] = meuItem0;\nitemArray0[1] = meuItem0;\nMeuItem meuItem1 = new MeuItem(3780);\nitemArray0[2] = meuItem1;",
-          "improved_code": "private Item[] createSampleArray() {\n    Item[] arr = new Item[7];\n    MeuItem m0 = new MeuItem(1323);\n    arr[0] = m0; arr[1] = m0; arr[2] = new MeuItem(3780);\n    return arr;\n}\n\n@Test(timeout = 4000)\npublic void testMax_returnsNonNullForValidN() {\n    Item[] itemArray0 = createSampleArray();\n    Item result = Max.max(itemArray0, 3);\n    assertNotNull(result);\n}\n"
+          "status": "compliant",
+          "justification": "The test is short and self-contained (< 15 lines) and does not repeat code across multiple methods in the provided snippet. No helper extraction is required for this single short test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test contains multiple control flows (try/catch) and multiple verification blocks in one method, increasing complexity and mixing concerns. It would be clearer as two smaller test methods without branching.",
-          "original_code": "try {\n    Max.max(itemArray0, 1323);\n    fail(\"Expected an exception when requesting more elements than array length (should throw NPE or AIOOBE).\");\n} catch (Exception e) {\n    assertTrue(\"Unexpected exception type: \" + e.getClass(),\n               (e instanceof NullPointerException) || (e instanceof ArrayIndexOutOfBoundsException));\n}\n// ... later\nItem result = Max.max(itemArray0, 3);\nassertNotNull(\"When considering existing elements, result should not be null\", result);",
-          "improved_code": "@Test(expected = Exception.class, timeout = 4000)\npublic void testMax_throwsWhenNExceedsLength() throws Throwable {\n    Item[] itemArray0 = createSampleArray();\n    Max.max(itemArray0, 1323);\n}\n\n@Test(timeout = 4000)\npublic void testMax_returnsNonNullForValidN() {\n    Item[] itemArray0 = createSampleArray();\n    Item result = Max.max(itemArray0, 3);\n    assertNotNull(result);\n}\n"
+          "status": "compliant",
+          "justification": "The test method is small (simple linear flow, no loops or nested conditionals) and follows a straightforward Arrange-Act-Assert pattern.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test checks multiple properties: it asserts the exception type for the failure case and for the normal case it asserts non-null and that the result is one of the expected instances, which verifies multiple aspects of returned value.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test only asserts an exception occurrence (via fail in try/catch) and does not verify multiple properties of any returned object or multiple aspects of the result; assertions are superficial for deep fault detection.",
+          "original_code": "try { \n  Max.max(itemArray0, 1323);\n  fail(\"Expecting exception: NullPointerException\");\n\n} catch(NullPointerException e) {",
+          "improved_code": "@Test\npublic void test0_verifyProperties() {\n    Item[] items = new Item[3];\n    MeuItem m0 = new MeuItem(10);\n    items[0]=m0;\n    items[1]=new MeuItem(5);\n    items[2]=new MeuItem(2);\n    Item result = Max.max(items, 3);\n    assertNotNull(\"Max result should not be null\", result);\n    assertEquals(\"First item should remain unchanged\", m0, items[0]);\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out test methods; tests are active and have meaningful assertions.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are visible in the provided snippet; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "The class-level Javadoc contains a requirement trace 'REQ-1234', directly linking this test class to the requirement.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no annotations, Javadoc comments, or inline comments linking this test to a requirement ID, ticket, or user story in the provided method.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      Item[] itemArray0 = new Item[7];",
+          "improved_code": "/** Tests REQ-001: Max should handle arrays with null elements by throwing NPE when appropriate */\n@Test(timeout = 4000)\npublic void testMax_withNulls_throwsNPE() throws Throwable {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = (Item) meuItem0;\n    Max.max(itemArray0, 1323);\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test of Max.max and does not contain explicit performance or security tests; per rules this practice is usually not applicable for such unit tests.",
+          "status": "compliant",
+          "justification": "The test method includes an explicit timeout (@Test(timeout = 4000)), which indicates an explicit performance-related constraint in the test annotation; therefore the presence of a timing constraint makes this practice applicable and satisfied.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +248,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' is generic and does not describe the scenario or expected outcome; it fails the recommended descriptive naming convention.",
-          "original_code": "public void test0()  throws Throwable  {\n    // Given\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void max_withNExceedingLength_throwsException() throws Throwable {\n    Item[] itemArray0 = createSampleArray();\n    Max.max(itemArray0, 1323);\n}\n\n@Test(timeout = 4000)\npublic void max_withValidN_returnsElementFromPrefix() {\n    Item[] itemArray0 = createSampleArray();\n    Item result = Max.max(itemArray0, 3);\n    assertNotNull(result);\n}\n"
+          "justification": "The test method name is generic ('test0') and does not describe the scenario or expected outcome; it does not follow descriptive naming conventions like methodName_scenario_expectedResult.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {",
+          "improved_code": "@Test(timeout = 4000)\npublic void max_withNullElements_throwsNullPointerException() throws Throwable {\n    Item[] itemArray0 = new Item[7];\n    MeuItem meuItem0 = new MeuItem(1323);\n    itemArray0[0] = (Item) meuItem0;\n    Max.max(itemArray0, 1323);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The presence of EvoSuite runner annotations and a generated-style test name 'test0' indicate automated generation and verbose test naming patterns, a sign of heavy code generation.",
-          "original_code": "@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Max_ESTest_scaffolding {\n\n  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {",
-          "improved_code": "@RunWith(EvoRunner.class)\n@Category(UnitTest.class)\npublic class EvoAITest extends Max_ESTest_scaffolding {\n\n  @Test(timeout = 4000)\n  public void max_withValidPrefix_returnsExpectedElement() throws Throwable {\n      Item[] itemArray0 = createSampleArray();\n      Item result = Max.max(itemArray0, 3);\n      assertNotNull(result);\n  }\n"
+          "justification": "The test has an auto-generated style (method name 'test0') and the class uses EvoSuite runner annotations, which are indicators of generated tests rather than minimal, intention-revealing hand-written tests.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {\n      // Undeclared exception!",
+          "improved_code": "@Test(timeout = 4000)\npublic void max_withNulls_throwsNPE_generatedReduced() throws Throwable {\n    // Intention-revealing, reduced test replacing auto-generated name\n    Item[] itemArray0 = new Item[7];\n    itemArray0[0] = new MeuItem(1323);\n    Max.max(itemArray0, 1323);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The class Javadoc includes Given-When-Then style notes and the test body contains 'Given' comments, indicating a designed intent and some BDD-style structure.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains only a single minimal/exploratory scenario and lacks BDD/Given-When-Then structure or evidence of designed, prioritized test coverage; no multiple scenarios or design comments are present.",
+          "original_code": "itemArray0[0] = (Item) meuItem0;\nitemArray0[1] = (Item) meuItem0;\nMeuItem meuItem1 = new MeuItem(3780);\nitemArray0[2] = (Item) meuItem1;",
+          "improved_code": "@Test\npublic void givenArrayWithNulls_whenMaxCalled_thenNullPointerExceptionIsThrown() {\n    // Given\n    Item[] itemArray0 = new Item[7];\n    itemArray0[0] = new MeuItem(1323);\n    // When / Then\n    try {\n        Max.max(itemArray0, 1323);\n        fail(\"Expecting NullPointerException\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts with public API (Max.max) and does not access private internals or use reflection; it validates behavior through public contract.",
+          "justification": "The test interacts with public constructors and a public static method (Max.max) only; it does not use reflection or access private fields, so it targets public behavior rather than implementation internals.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive messages (fail, assertNotNull and the final assertTrue include messages) and specific checks rather than generic unlabeled asserts, supporting diagnosable failures.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions in the test are limited to fail() within a try/catch pattern for exception expectation; there are no descriptive assertion messages on checks nor multiple specific assertions (assertEquals/assertThat) to clarify failures.",
+          "original_code": "try { \n  Max.max(itemArray0, 1323);\n  fail(\"Expecting exception: NullPointerException\");\n\n} catch(NullPointerException e) {",
+          "improved_code": "@Test\npublic void test0_withAssertionsWithMessages() {\n    Item[] items = new Item[2];\n    items[0] = new MeuItem(1);\n    items[1] = new MeuItem(2);\n    Item result = Max.max(items, 2);\n    assertNotNull(\"Max should return a non-null Item for non-empty input\", result);\n    assertEquals(\"Array length should remain 2\", 2, items.length);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are minimal and explain rationale (Given/When/Then), no commented-out code is present; comments add value without cluttering.",
+          "justification": "Comments present are minimal and not commented-out code; class-level Javadoc exists and inline comments are sparse (the 'Undeclared exception!' note is explanatory). No excessive or commented-out code is visible.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +296,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use random values, current time, sleeps, or external dependencies; it uses deterministic inputs and local setup.",
+          "justification": "The test contains no sources of non-determinism (no Random, no current time usage, no Thread.sleep); it uses fixed data and local variables only, which supports deterministic outcomes.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,7 +304,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only uses local variables and does not modify static state, files, or databases; no cleanup is necessary.",
+          "justification": "The test uses local variables and does not create files, modify static state, or persist data; no cleanup is required based on visible code, so side effects are not present.",
           "original_code": null,
           "improved_code": null
         },
@@ -312,31 +312,31 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The test class uses @Category(UnitTest.class) to label the tests, enabling selective execution and categorization.",
+          "justification": "The class is annotated with @Category(UnitTest.class) (seen at class level), providing categorization for selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "66.7%"
+      "normalized_method_compliance_score": "57.9%"
     },
     {
-      "test_method_name": "test1",
+      "test_method_name": "test2",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method contains multiple distinct Arrange-Act-Assert scenarios: three separate calls to Max.max (nulls, empty, repeated) each with their own assertions. Decision rule: count of distinct 'Act' operations >1 => non-compliant.",
-          "original_code": "Item[] nulls = createNullFilledArray(6);\nItem resNulls = Max.max(nulls, 0);\n...\nItem[] empty = createNullFilledArray(0);\nItem resEmpty = Max.max(empty, 0);\n...\nItem result = Max.max(repeatedArr, 2);",
-          "improved_code": "@Test(timeout = 4000)\npublic void testMax_withNoElements_returnsNull() throws Throwable {\n    // Given: array with only nulls and N = 0\n    Item[] nulls = createNullFilledArray(6);\n    // When\n    Item resNulls = Max.max(nulls, 0);\n    // Then\n    assertNull(\"With N=0 (no elements considered), result should be null\", resNulls);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: A test should focus on a single behavior. RATIONALE: Single responsibility helps isolate failures. EVALUATION CRITERIA: Check number of distinct Act operations and Arrange-Act-Assert blocks. DECISION RULES: The method contains a single constructor call (one Act) and does not invoke multiple unrelated operations. VERDICT: compliant — the test performs exactly one operation (new Max()) and does not test multiple scenarios.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not reference or modify static/instance state. No setup/teardown annotations are required for the visible code; decision rule 4 applies (local variables only) => compliant.",
+          "justification": "PRINCIPLE: Tests must not depend on each other. RATIONALE: Independence allows arbitrary execution order. EVALUATION CRITERIA: Look for setup/teardown annotations or shared mutable state. DECISION RULES: No @Before/@After annotations are present but the test uses only local variables and no shared static/instance mutable state. VERDICT: compliant — the test uses only local state and does not share mutable state across tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -344,15 +344,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Although the single method exercises both normal and error behaviors in-line, the decision rules require at least two test methods (happy path and error case) per method under test; this class has only one test method => non-compliant.",
-          "original_code": "Item[] empty = createNullFilledArray(0);\ntry {\n    Item resEmpty = Max.max(empty, 0);\n    assertNull(\"Empty array with N=0 should return null or throw; returned non-null: \" + resEmpty, resEmpty);\n} catch (IndexOutOfBoundsException e) {\n    assertNotNull(\"IndexOutOfBoundsException thrown as expected for empty array\", e);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void testMax_happyPath_repeatedReference_returnsSame() throws Throwable {\n    MeuItem repeated = new MeuItem(42);\n    Item[] repeatedArr = createRepeatedMeuItemArray(repeated, 2);\n    Item result = Max.max(repeatedArr, 2);\n    assertSame(\"When all considered elements are the same reference, that reference should be returned as max\", repeated, result);\n}\n\n@Test(expected = IndexOutOfBoundsException.class, timeout = 4000)\npublic void testMax_emptyArray_throwsIndexOutOfBounds() throws Throwable {\n    Item[] empty = createNullFilledArray(0);\n    Max.max(empty, 0);\n}"
+          "justification": "PRINCIPLE: Tests should cover happy path and error scenarios. RATIONALE: Ensures robustness across normal and exceptional inputs. EVALUATION CRITERIA: There should be at least two test methods per behavior: happy path and error scenario (assertThrows or expected). DECISION RULES: The class contains only this single test method which only constructs Max and does not exercise any error conditions or use assertThrows/@Test(expected=...). VERDICT: non-compliant — only a happy-path construction exists and no error/exception case is tested.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITestFixed {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n  }\n\n  @Test(expected = NullPointerException.class)\n  public void invokingMethod_onNullReference_throwsNPE() {\n    Max m = null;\n    m.toString();\n  }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test explicitly exercises boundary/edge values: N=0, an empty array (length 0), and N equal to the count. These are clear boundary cases (zero, empty), satisfying the criteria.",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Tests should validate min/max and off-by-one inputs. RATIONALE: Boundaries are common bug sources. EVALUATION CRITERIA: Look for empty strings, zero, negative, max values. DECISION RULES: The test only constructs an object and does not exercise input domains with numeric/string boundaries. VERDICT: not-applicable — no input domain or boundary values are present in this test method.",
           "original_code": null,
           "improved_code": null
         },
@@ -360,47 +360,47 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test reuses helper routines (createNullFilledArray, createRepeatedMeuItemArray) instead of inlining object creation; this indicates modularity and avoidance of duplication in the method code.",
+          "justification": "PRINCIPLE: Tests should be modular and reuse helpers. RATIONALE: Reduces duplication and improves maintainability. EVALUATION CRITERIA: Look for helper methods, constants, or repeated blocks. DECISION RULES: The class has a single very short test and no duplicated blocks across multiple tests. VERDICT: compliant — no duplication is present and test is self-contained.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is moderately long (~27 lines) and contains multiple independent scenario blocks which increase complexity. Decision rules: not >30 lines, but method is not short/single linear Arrange-Act-Assert; choose non-compliant when doubtful.",
-          "original_code": " // Given-When-Then #1: array with only nulls and N = 0 (no elements considered)\n Item[] nulls = createNullFilledArray(6);\n Item resNulls = Max.max(nulls, 0);\n assertNull(..., resNulls);\n // Given-When-Then #2: empty array (edge case)\n Item[] empty = createNullFilledArray(0);\n try { ... } catch (...) { ... }\n // Given-When-Then #3: array with actual MeuItem references repeated; N equals count",
-          "improved_code": "@Test(timeout = 4000)\npublic void testMax_withEmptyArray_returnsNullOrThrows() throws Throwable {\n    Item[] empty = createNullFilledArray(0);\n    try {\n        Item resEmpty = Max.max(empty, 0);\n        assertNull(\"Empty array with N=0 should return null or throw; returned non-null: \" + resEmpty, resEmpty);\n    } catch (IndexOutOfBoundsException | NullPointerException e) {\n        // acceptable implementations\n        assertNotNull(e);\n    }\n}\n\n@Test(timeout = 4000)\npublic void testMax_withRepeatedReference_returnsSame() throws Throwable {\n    MeuItem repeated = new MeuItem(42);\n    Item[] repeatedArr = createRepeatedMeuItemArray(repeated, 2);\n    Item result = Max.max(repeatedArr, 2);\n    assertSame(\"When all considered elements are the same reference, that reference should be returned as max\", repeated, result);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and low complexity. RATIONALE: Simpler tests are easier to maintain and less likely to contain errors. EVALUATION CRITERIA: Count lines, look for loops/conditionals. DECISION RULES: The test method is short (<20 lines) and contains no loops or conditional logic. VERDICT: compliant — the test is small and has simple linear flow.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "Assertions are adequate but not comprehensive for object results: the test primarily uses single checks per scenario (assertNull or assertSame). Decision rules: not verifying multiple properties of returned objects => non-compliant.",
-          "original_code": "Item result = Max.max(repeatedArr, 2);\n// Expect the algorithm to return a reference to one of provided items; since both are same reference, expect that one.\nassertSame(\"When all considered elements are the same reference, that reference should be returned as max\", repeated, result);",
-          "improved_code": "@Test(timeout = 4000)\npublic void testMax_withRepeatedReference_verifiesMultipleProperties() throws Throwable {\n    MeuItem repeated = new MeuItem(42);\n    Item[] repeatedArr = createRepeatedMeuItemArray(repeated, 2);\n    Item result = Max.max(repeatedArr, 2);\n    assertNotNull(\"Result should not be null\", result);\n    assertSame(\"Result should be same reference as provided repeated item\", repeated, result);\n    assertTrue(\"Result should be instance of MeuItem\", result instanceof MeuItem);\n}"
+          "justification": "PRINCIPLE: Assertions should be comprehensive to detect faults. RATIONALE: Superficial assertions may miss incorrect behavior. EVALUATION CRITERIA: Tests should verify multiple properties (>=2 assertions) for objects/collections. DECISION RULES: This test has NO assertions at all, so it cannot verify multiple properties. VERDICT: non-compliant — the test only constructs an object without any assertions to check properties.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITestFixed {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n    assertEquals(\"Instance should be of type Max\", Max.class, max0.getClass());\n  }\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the shown method/class. All tests appear active and runnable, matching the criteria.",
+          "justification": "PRINCIPLE: Avoid ignored or commented-out tests. RATIONALE: Ignored tests hide issues and reduce trust. EVALUATION CRITERIA: Search for @Ignore/@Disabled or commented-out @Test. DECISION RULES: No @Ignore/@Disabled annotations or commented-out tests are present. VERDICT: compliant — the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes a requirement trace 'REQ-1234', which provides traceability to the requirement. Decision rule 2 (requirement IDs in Javadoc) applies => compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should reference requirements or tickets. RATIONALE: Improves traceability and maintenance. EVALUATION CRITERIA: Look for @Story/@Requirement annotations or Javadoc with REQ-/US-/JIRA- IDs. DECISION RULES: The test method and class contain no requirement annotations or Javadoc linking to requirement IDs. VERDICT: non-compliant — no traceability information is provided.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\n/**\n * Tests REQ-001: Max constructor and basic behavior.\n */\npublic class EvoAITestFixed {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n  }\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "This is a unit test for functional behavior with no performance/security assertions. Per decision rules for unit tests, this practice is not-applicable unless explicit performance/security checks are present.",
+          "justification": "PRINCIPLE: Performance/security tests are separate concerns. RATIONALE: Non-functional tests differ from unit tests. EVALUATION CRITERIA: Look for @Test(timeout=...) or explicit performance/security assertions. DECISION RULES: Although a timeout attribute exists on @Test, this is a unit test class and no explicit performance or security logic is present; per rules, usually not-applicable for unit tests. VERDICT: not-applicable — no dedicated performance or security tests are present or required here.",
           "original_code": null,
           "improved_code": null
         },
@@ -408,47 +408,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test1' is generic and does not describe scenario or expected outcome. Decision rule 2: generic name => non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    // ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void max_givenOnlyNullsAndNZero_returnsNull() throws Throwable {\n    Item[] nulls = createNullFilledArray(6);\n    Item resNulls = Max.max(nulls, 0);\n    assertNull(\"With N=0 (no elements considered), result should be null\", resNulls);\n}"
+          "justification": "PRINCIPLE: Test names should describe scenario and expected outcome. RATIONALE: Descriptive names make tests self-documenting. EVALUATION CRITERIA: Names should follow methodName_condition_result patterns. DECISION RULES: The method name 'test2' is generic and does not describe behavior or expected result. VERDICT: non-compliant — the test name is not descriptive.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITestFixed {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n  }\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "Class uses EvoSuite runner and class Javadoc states 'improved from generated baseline', which are signs of generated-origin tests. Per decision rule 1 (auto-generated comments/presence of test-generation artifacts) => non-compliant.",
-          "original_code": "/**\n * Test class for Max behavior (improved from generated baseline).\n *\n * Requirement trace: REQ-1234 - Determine maximum Item among first N entries of an array.\n */",
-          "improved_code": "/**\n * Unit tests for Max behavior focused and hand-authored.\n * Requirement trace: REQ-1234 - Determine maximum Item among first N entries of an array.\n */\n@RunWith(EvoRunner.class)\n@Category(UnitTest.class)\npublic class EvoAITest extends Max_ESTest_scaffolding { /* ... */ }"
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated tests can be verbose and hard to maintain. EVALUATION CRITERIA: Look for auto-generated comments, EvoSuite markers, or repetitive names like test0/test1. DECISION RULES: The class includes EvoSuite imports, EvoRunner annotation and a generic name 'test2', which are indicators of auto-generated tests. VERDICT: non-compliant — signs of heavy code generation (EvoSuite artifacts and generic test name) are present.",
+          "original_code": "package ds.seed5311;\n\n  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\n// Clean, hand-written focused tests without EvoSuite artifacts\npublic class EvoAITestClean {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The class-level Javadoc includes Given-When-Then style notes and the method itself contains Given-When-Then comments, indicating thoughtful design intent and BDD style documentation => compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show thoughtful design (Given-When-Then or BDD). RATIONALE: Test-first design and clear structure lead to better coverage. EVALUATION CRITERIA: Look for Given-When-Then comments, BDD naming, or coverage of multiple scenarios. DECISION RULES: The test is minimal and appears to be a single autogenerated happy-path case without BDD structure or multiple scenarios. VERDICT: non-compliant — there is no evident design intent (Given-When-Then) or multiple scenario coverage.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITestFixed {\n  // Given a default Max, When constructed, Then it should be non-null and of the correct type\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n    assertEquals(\"Instance should be of type Max\", Max.class, max0.getClass());\n  }\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises public APIs (Max.max, MeuItem constructor) and does not use reflection or access private internals. No brittle internal state checks are present => compliant.",
+          "justification": "PRINCIPLE: Tests should target public behavior and avoid implementation details. RATIONALE: Behavioral tests are less brittle. EVALUATION CRITERIA: Look for reflection or access to private fields. DECISION RULES: The test only calls the public constructor and does not use reflection or check private state. VERDICT: compliant — the test exercises public API and does not rely on internal implementation details.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive messages (assertNull/assertSame with messages). They use specific assertions rather than only generic assertTrue, and a majority of assertions include messages => compliant per decision rule 1.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use clear and specific assertions with messages. RATIONALE: Specific assertions make failures easier to diagnose. EVALUATION CRITERIA: Assertions should be specific (assertEquals) and include messages where useful. DECISION RULES: The test contains NO assertions, therefore it fails to use assertions adequately. VERDICT: non-compliant — there are no assertions to verify behavior or provide diagnostics.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Max max0 = new Max();\n  }",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITestFixed {\n  @Test\n  public void constructor_whenInvoked_thenInstanceCreated() {\n    Max max0 = new Max();\n    assertNotNull(\"Max instance should not be null\", max0);\n    assertEquals(\"Instance should be of type Max\", Max.class, max0.getClass());\n  }\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are concise Given-When-Then notes that explain test intent (the 'why'), no excessive or commented-out code is present, and inline comments add value => compliant.",
+          "justification": "PRINCIPLE: Comments should explain why, not what. RATIONALE: Minimal useful comments improve readability. EVALUATION CRITERIA: Look for excessive comments or commented-out code. DECISION RULES: There is class-level Javadoc but no commented-out test code or excessive inline comments. VERDICT: compliant — comments are minimal and there's no commented-out code.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +456,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use Random(), time-based calls, Thread.sleep(), or external dependencies; it uses deterministic inputs and local state => compliant.",
+          "justification": "PRINCIPLE: Tests should be deterministic and avoid randomness/time dependencies. RATIONALE: Deterministic tests avoid flakiness. EVALUATION CRITERIA: Look for Random(), System.currentTimeMillis(), Thread.sleep(), or external dependencies. DECISION RULES: The test contains no randomness, time-based calls, sleeps, or external dependencies. VERDICT: compliant — the test is deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,7 +464,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test creates local arrays and objects and does not persist data, modify static variables, or leave resources open. There is no cleanup required for the visible operations => compliant.",
+          "justification": "PRINCIPLE: Tests must not modify shared state or leave resources open. RATIONALE: Side effects lead to inter-test dependencies and flakiness. EVALUATION CRITERIA: Look for file/database creation or static modifications without cleanup. DECISION RULES: The test only constructs an object in local scope and performs no persistence or static state changes. VERDICT: compliant — there are no side effects.",
           "original_code": null,
           "improved_code": null
         },
@@ -472,14 +472,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class uses @Category(UnitTest.class) at the class level, providing categorization for selective execution per decision rule 1 => compliant.",
+          "justification": "PRINCIPLE: Use labels/tags to organize tests. RATIONALE: Enables selective execution of subsets. EVALUATION CRITERIA: Look for @Tag/@Category annotations. DECISION RULES: The class is annotated with @Category(UnitTest.class). VERDICT: compliant — the test class is categorized as a unit test.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "66.7%"
+      "normalized_method_compliance_score": "58.8%"
     }
   ],
   "practices_report": [
@@ -487,11 +487,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 3,
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "0.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-02",
@@ -517,6 +517,16 @@
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
       "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 2,
+      "not_applicable_methods": 1,
+      "total_methods": 3,
+      "compliance_score": "0.0%"
+    },
+    {
+      "practice_code": "CS-05",
+      "practice_title": "Complete Modularity of Test Cases",
+      "description": "",
       "compliant_methods": 3,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
@@ -524,34 +534,24 @@
       "compliance_score": "100.0%"
     },
     {
-      "practice_code": "CS-05",
-      "practice_title": "Complete Modularity of Test Cases",
-      "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 1,
-      "not_applicable_methods": 0,
-      "total_methods": 3,
-      "compliance_score": "66.7%"
-    },
-    {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 2,
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "33.3%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-07",
       "practice_title": "Complex Design for Fault Detection",
       "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 1,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "66.7%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-08",
@@ -567,21 +567,21 @@
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 0,
+      "compliant_methods": 1,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 3,
+      "not_applicable_methods": 2,
       "total_methods": 3,
-      "compliance_score": "N/A"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-12",
@@ -607,11 +607,11 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-06",
@@ -627,11 +627,11 @@
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
@@ -674,13 +674,13 @@
       "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "66.7%",
+  "overall_compliance_score": "54.4%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 21353,
-    "completion_tokens": 23818,
-    "total_tokens": 45171,
-    "cost": 0.04874065
+    "prompt_tokens": 20399,
+    "completion_tokens": 26758,
+    "total_tokens": 47157,
+    "cost": 0.05449735
   },
-  "normalized_overall_compliance_score": "70.4%"
+  "normalized_overall_compliance_score": "57.4%"
 }

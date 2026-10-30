@@ -1,138 +1,126 @@
 package ds.seed5831;
 
-import ds.Lista;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Lista;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Unit tests for ds.Lista exercising basic public behaviours.
- *
- * Requirement traceability:
- * - REQ-001: Basic list operations (vazia, insere, imprime) must behave without throwing for normal inputs.
- *
- * Notes:
- * - Tests exercise public API only (no internal field manipulation).
- * - Tests follow Given-When-Then style comments for clarity.
+ * Marker interface for categorizing unit tests in this file.
  */
 interface UnitTest {}
 
-@Category(UnitTest.class)
-public class EvoAITest {
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
+public class EvoAITest extends Lista_ESTest_scaffolding {
 
+  /**
+   * Requirement: LIST-REQ-001
+   * Scenario: Attempting to print a list with an invalid 'primeiro' index should raise ArrayIndexOutOfBoundsException.
+   *
+   * Given an empty Lista instance with an invalid primeiro index,
+   * When imprime() is invoked,
+   * Then an ArrayIndexOutOfBoundsException is thrown and the internal indices remain unchanged.
+   */
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-    // Given: a newly created list
-    Lista lista = new Lista();
-
-    // When: we inspect its emptiness and attempt to print its contents
-    boolean initiallyEmpty = lista.vazia();
-    try {
-      lista.imprime(); // Should be a no-op or print nothing but must not throw for an empty list
-    } catch (RuntimeException e) {
-      // Then: fail with a clear message indicating imprime() should be safe on an empty list
-      fail("imprime() on a newly created empty Lista should not throw, but it threw: " + e);
-    }
-
-    // Then: the list reports it is empty
-    assertTrue("A newly created Lista should report vazia() == true", initiallyEmpty);
+  public void test0()  throws Throwable  {
+      Lista lista0 = new Lista();
+      lista0.primeiro = (-1);
+      // Undeclared exception!
+      try { 
+        lista0.imprime();
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // -1
+         //
+         verifyException("ds.Lista", e);
+      }
   }
 
+  /**
+   * Requirement: LIST-REQ-002
+   * Scenario: Newly constructed Lista should have expected default positions.
+   *
+   * Given a new Lista,
+   * When no operations have been performed,
+   * Then pos is -1 and ultimo is 0.
+   */
   @Test(timeout = 4000)
-  public void test1() throws Throwable {
-    // Given: a new list
-    Lista lista = new Lista();
-
-    // When: we insert a single element
-    String element = "element-1";
-    try {
-      lista.insere(element);
-    } catch (Exception e) {
-      fail("insere(element) should succeed for a single element insertion, but threw: " + e);
-    }
-
-    // Then: the list should no longer be empty and printing should not throw
-    assertFalse("After inserting one element, vazia() should be false", lista.vazia());
-    try {
-      lista.imprime();
-    } catch (RuntimeException e) {
-      fail("imprime() after inserting one element should not throw, but threw: " + e);
-    }
+  public void test1()  throws Throwable  {
+      Lista lista0 = new Lista();
+      lista0.imprime();
+      assertEquals((-1), lista0.pos);
+      assertEquals(0, lista0.ultimo);
   }
 
+  /**
+   * Requirement: LIST-REQ-003
+   * Scenario: Mutating indices and verifying vazia() behavior.
+   *
+   * Given a Lista where indices are set to specific values,
+   * When vazia() is invoked,
+   * Then it reports true if logical conditions represent an empty list.
+   */
   @Test(timeout = 4000)
-  public void test2() throws Throwable {
-    // Given: a new list
-    Lista lista = new Lista();
-
-    // When: we insert two distinct elements (simple growth scenario)
-    Object first = "first";
-    Object second = "second";
-    try {
-      lista.insere(first);
-      lista.insere(second);
-    } catch (Exception e) {
-      fail("Inserting two elements in succession should not throw for a normally sized Lista, but threw: " + e);
-    }
-
-    // Then: the list remains non-empty
-    assertFalse("Lista should be non-empty after two insertions", lista.vazia());
-
-    // And printing the list should be safe
-    try {
-      lista.imprime();
-    } catch (RuntimeException e) {
-      fail("imprime() after two insertions should not throw, but threw: " + e);
-    }
+  public void test2()  throws Throwable  {
+      Lista lista0 = new Lista();
+      assertEquals(0, lista0.primeiro);
+      
+      lista0.primeiro = (-1);
+      lista0.ultimo = 0;
+      lista0.ultimo = 179;
+      lista0.primeiro = 179;
+      boolean boolean0 = lista0.vazia();
+      assertTrue(boolean0);
   }
 
+  /**
+   * Requirement: LIST-REQ-004
+   * Scenario: Inserting into a full underlying array should raise an Exception indicating the list is full.
+   *
+   * Given a Lista with a small backing array and ultimo set to indicate fullness,
+   * When insere() is invoked,
+   * Then an Exception is thrown with the expected origin.
+   */
   @Test(timeout = 4000)
-  public void test3() throws Throwable {
-    // Given: a new list
-    Lista lista = new Lista();
-
-    // When: inserting the list object into itself (self-referential insertion)
-    // This checks that insere accepts arbitrary objects and does not immediately cause a failure.
-    try {
-      lista.insere(lista);
-    } catch (Exception e) {
-      fail("insere(self) should not throw an unexpected exception; caught: " + e);
-    }
-
-    // Then: the list reports non-empty and can be printed without throwing
-    assertFalse("After inserting the list into itself, vazia() should be false", lista.vazia());
-    try {
-      lista.imprime();
-    } catch (RuntimeException e) {
-      fail("imprime() after self-insertion should not throw, but threw: " + e);
-    }
+  public void test3()  throws Throwable  {
+      Lista lista0 = new Lista();
+      Object[] objectArray0 = new Object[2];
+      lista0.item = objectArray0;
+      lista0.ultimo = 0;
+      lista0.ultimo = 179;
+      try { 
+        lista0.insere(lista0);
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: A lista esta cheia
+         //
+         verifyException("ds.Lista", e);
+      }
   }
 
+  /**
+   * Requirement: LIST-REQ-005
+   * Scenario: Inserting a single element into an empty list updates ultimo and vazia().
+   *
+   * Given an empty Lista,
+   * When insere() is called with the list itself as an element,
+   * Then ultimo increments to 1 and vazia() becomes false.
+   */
   @Test(timeout = 4000)
-  public void test4() throws Throwable {
-    // Given: a fresh list
-    Lista lista = new Lista();
-
-    // When: perform a sequence of operations that represent a typical usage scenario
-    try {
-      lista.insere("alpha");
-      lista.insere("beta");
-      lista.insere("gamma");
-    } catch (Exception e) {
-      fail("Typical multiple insertions should not throw for a functioning Lista implementation, but threw: " + e);
-    }
-
-    // Then: the list should not be empty and printing should be successful
-    assertFalse("Lista should not be empty after multiple insertions", lista.vazia());
-    try {
-      lista.imprime();
-    } catch (RuntimeException e) {
-      fail("imprime() after multiple insertions should not throw, but threw: " + e);
-    }
+  public void test4()  throws Throwable  {
+      Lista lista0 = new Lista();
+      lista0.insere(lista0);
+      boolean boolean0 = lista0.vazia();
+      assertEquals(1, lista0.ultimo);
+      assertFalse(boolean0);
   }
 }

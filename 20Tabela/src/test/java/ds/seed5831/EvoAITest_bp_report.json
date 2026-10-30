@@ -8,15 +8,15 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple 'Act' operations: two insere(...) calls and a binaria(...) call, and asserts on both insertion count and search result. It therefore tests multiple behaviors in one method rather than a single, atomic behavior.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem itemNeg = new MeuItem(-399);\n    tabela0.insere(itemNeg);\n    tabela0.insere(itemNeg);\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(2, tabela0.n);\n    assertEquals(0, position);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testBinarySearch_returnsZeroForSmallerItem() throws Throwable {\n    // Given\n    Tabela tabela0 = new Tabela();\n    MeuItem itemNeg = new MeuItem(-399);\n    tabela0.insere(itemNeg);\n    // When: search for an item smaller than existing one\n    int position = tabela0.binaria(new MeuItem(-10));\n    // Then: verify only the binary search result (single responsibility)\n    assertEquals(\"Binary search for a smaller item should return index 0\", 0, position);\n  }"
+          "justification": "The test performs the same 'insere' operation twice (two act operations) and then performs an unrelated binary search; multiple 'Act' operations exist in one test, violating atomicity.",
+          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem meuItem0 = new MeuItem((-399));\n// When: inserting the same item twice (duplicate insertion scenario)\ntabela0.insere(meuItem0);\ntabela0.insere(meuItem0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void insertOnce_increasesCountToOne() throws Throwable {\n    // Given\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(-399);\n    // When\n    tabela.insere(item);\n    // Then\n    assertEquals(\"n should be 1 after single insert\", 1, tabela.n);\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "Test uses only local variables and does not rely on shared static or instance state. No @Before/@After required for this single, self-contained test.",
+          "justification": "The test uses only local variables and does not reference or modify static/instance test state; no @Before/@After are required for this simple, self-contained test.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,183 +24,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path test is present. There are no tests for error conditions or exceptions (no assertThrows or @Test(expected=...)).",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem itemNeg = new MeuItem(-399);\n    tabela0.insere(itemNeg);\n    tabela0.insere(itemNeg);\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(2, tabela0.n);\n    assertEquals(0, position);\n  }",
-          "improved_code": "  @Test(expected = NullPointerException.class)\n  public void testBinarySearch_withNull_throws() throws Throwable {\n    // Given\n    Tabela tabela0 = new Tabela();\n    // When/Then: calling binaria with null should throw (example exceptional flow)\n    tabela0.binaria(null);\n  }"
+          "justification": "Only a single test method is present and it exercises normal behavior (duplicate insert and search-not-found). There are no tests for error conditions or exceptions (no @Test(expected=...) or assertThrows usage).",
+          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem meuItem0 = new MeuItem((-399));\ntabela0.insere(meuItem0);\ntabela0.insere(meuItem0);",
+          "improved_code": "@Test(expected = NullPointerException.class)\npublic void insertNull_throwsNullPointerException() throws Throwable {\n    // Given\n    Tabela tabela = new Tabela();\n    // When\n    tabela.insere(null);\n    // Then - exception expected\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test uses negative numeric values (e.g., -399 and -10), demonstrating consideration of non-trivial inputs including negatives which are boundary-like cases rather than only typical/middle-range values.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
           "status": "non-compliant",
-          "justification": "No helper methods or constants are used despite repeated setup steps; test contains magic numbers and no extraction of shared logic. There is opportunity to extract setup into helpers/constants.",
-          "original_code": "    Tabela tabela0 = new Tabela();\n    MeuItem itemNeg = new MeuItem(-399);\n    tabela0.insere(itemNeg);\n    tabela0.insere(itemNeg);",
-          "improved_code": "  private static final int TEST_ITEM_VALUE = -399;\n  private Tabela createTabelaWithItem(int value) {\n    Tabela t = new Tabela();\n    t.insere(new MeuItem(value));\n    return t;\n  }\n\n  @Test(timeout = 4000)\n  public void test0_modularSetup() throws Throwable {\n    Tabela tabela0 = createTabelaWithItem(TEST_ITEM_VALUE);\n    tabela0.insere(new MeuItem(TEST_ITEM_VALUE));\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(0, position);\n  }"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test is short (< 20 lines), linear, and contains no loops or complex conditionals, adhering to low cyclomatic complexity and a straightforward Arrange-Act-Assert flow.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test makes multiple specific assertions (checks both the internal count and the binary search position), verifying more than one property of behavior which increases fault-detection capability.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods; the test is active and runnable.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No annotations, Javadoc tags, or comments link this test to a requirement ID, ticket, or user story; no traceability information is present.",
-          "original_code": "/**\n * Improved and refactored tests for Tabela.\n */\n @Test(timeout = 4000)\n public void test0() throws Throwable { ... }",
-          "improved_code": "/**\n * Tests REQ-TBL-001: binary search behavior for items smaller than the existing item.\n * Requirement: REQ-TBL-001\n */\n @Test(timeout = 4000)\n public void testBinarySearch_returnsZeroForSmallerItem() throws Throwable {\n   Tabela tabela0 = new Tabela();\n   tabela0.insere(new MeuItem(-399));\n   int position = tabela0.binaria(new MeuItem(-10));\n   assertEquals(0, position);\n }"
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test declares an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related check (timing guard), satisfying the presence of a performance assertion.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method name is generic ('test0') and does not describe the scenario or expected outcome; it fails the descriptive naming convention requirement.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test0() throws Throwable {\n    // ...\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void binaria_whenItemIsSmaller_returnsIndexZero() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    tabela0.insere(new MeuItem(-399));\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(\"Binary search should return 0 for a smaller item\", 0, position);\n  }"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "Presence of a generated-style test name 'test0' and EvoSuite-related imports suggests generated or heavily templated code; the test name pattern is indicative of auto-generation rather than focused, intention-revealing naming.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n// ...\n@Test(timeout = 4000)\npublic void test0() throws Throwable { ... }",
-          "improved_code": "  // Remove auto-generated artifacts and use clear naming\n  @Test(timeout = 4000)\n  public void binaria_returnsZeroForSmallerItem_cleaned() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    tabela0.insere(new MeuItem(-399));\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(0, position);\n  }"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test shows Given-When-Then comments and BDD-style structure in the method body, indicating deliberate test design and intent.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test reads the internal field tabela0.n directly, which couples the test to internal implementation details rather than relying solely on public behavior, making the test brittle to refactoring.",
-          "original_code": "    tabela0.insere(itemNeg);\n    tabela0.insere(itemNeg);\n    assertEquals(\"After two insertions, tabela.n should be 2\", 2, tabela0.n);",
-          "improved_code": "  @Test(timeout = 4000)\n  public void binaria_and_publicBehavior_onlyUsePublicApi() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem itemNeg = new MeuItem(-399);\n    tabela0.insere(itemNeg);\n    tabela0.insere(itemNeg);\n    // Verify behavior via public API (binary search result) instead of internal field access\n    int position = tabela0.binaria(new MeuItem(-10));\n    assertEquals(0, position);\n  }"
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertEquals) and include descriptive failure messages for at least one assertion, using targeted assertion methods rather than generic assertTrue/assertFalse.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test contains concise Given-When-Then comments explaining intent; there is no excessive or commented-out code and comments explain 'why' the steps exist.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "No sources of non-determinism are used (no Random, time-based calls, sleeps, or external dependencies); test uses local objects leading to deterministic behavior.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "Test only manipulates locally created objects and does not persist data or modify global/static state; no cleanup is required and no side effects are visible outside the test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization at the class level which supports selective execution.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "63.2%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "63.2%"
-    },
-    {
-      "test_method_name": "test1",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The method performs a single Act (tabela0.binaria(probe)) and then asserts outcomes related to that single behavior (position and table size). There is one clear Arrange-Act-Assert flow.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared mutable state or test ordering. No @Before/@After are required for this simple test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single happy-path test is present in this class. No tests exercise error conditions or exceptions (no assertThrows or @Test(expected=...)). The class contains fewer than two test methods, indicating no coverage of exceptional flows.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}",
-          "improved_code": "@Test(timeout = 4000, expected = IllegalArgumentException.class)\npublic void test1_nullProbe_throws() {\n  Tabela tabela0 = new Tabela();\n  // Act: pass null to verify exceptional behavior is handled\n  tabela0.binaria(null);\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test explicitly exercises the empty-table case (boundary condition). It uses an empty structure which is a relevant boundary for binary search/insertion index.",
-          "original_code": null,
-          "improved_code": null
+          "justification": "The test uses negative keys but does not check typical boundary values (zero, negative-to-positive edge, Integer.MAX_VALUE). No explicit boundary tests are present.",
+          "original_code": "MeuItem meuItem0 = new MeuItem((-399));\nMeuItem meuItem1 = new MeuItem((-10));\nint int0 = tabela0.binaria(meuItem1);",
+          "improved_code": "@Test(timeout = 4000)\npublic void search_onBoundaryValues_behavesAsExpected() throws Throwable {\n    Tabela t = new Tabela();\n    MeuItem minKey = new MeuItem(Integer.MIN_VALUE);\n    MeuItem zeroKey = new MeuItem(0);\n    MeuItem maxKey = new MeuItem(Integer.MAX_VALUE);\n    t.insere(zeroKey);\n    assertEquals(\"search for zero should find inserted item or return non-zero indicator\", 1, t.binaria(zeroKey));\n    assertEquals(\"search for absent maxKey should return 0\", 0, t.binaria(maxKey));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short, self-contained, and does not duplicate setup across multiple tests (there is only one method). No helper methods are necessary for this simple case.",
+          "justification": "The test is short and self-contained; there is no duplicated code across multiple tests (only one test present). The Arrange-Act-Assert structure is clear via comments.",
           "original_code": null,
           "improved_code": null
         },
@@ -208,7 +48,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (<20 lines), linear, and contains no loops or complex conditionals. Cyclomatic complexity is low.",
+          "justification": "The method is small (well under 20 lines) and contains no loops or complex conditionals; cyclomatic complexity is low.",
           "original_code": null,
           "improved_code": null
         },
@@ -216,7 +56,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple meaningful assertions: it verifies the returned insertion index and also the table's size (two properties), increasing the chance of detecting faults.",
+          "justification": "The test makes two specific assertions checking both the table size (n) and the result of binary search; it verifies multiple properties of the state and outcome.",
           "original_code": null,
           "improved_code": null
         },
@@ -224,207 +64,47 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods. The test is active and runnable (annotated with @Test).",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No requirement identifiers, @Story, @Requirement, @Ticket annotations or Javadoc referencing requirement IDs are present for this test method or class; traceability information is missing.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  // Given\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  // When\n  int position = tabela0.binaria(probe);\n  // Then\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}",
-          "improved_code": "/**\n * Tests REQ-001: binary-search returns insertion index for an empty table\n */\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}"
+          "status": "compliant",
+          "justification": "Class Javadoc contains explicit traceability references (RQ-001 and RQ-002), linking tests to requirements.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test includes a timeout parameter (@Test(timeout = 4000)), which is an explicit performance-related assertion mechanism. This satisfies the presence of a simple performance guard in a unit test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name is generic ('test1') and does not follow descriptive naming conventions (methodName_scenario_expectedResult). The name does not communicate the scenario or expected outcome despite inline comments.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void binaria_emptyTable_returnsInsertionIndex() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "The class imports EvoSuite runtime packages and uses a generic test name 'test1' which are indicators of auto-generated tests or generation-influenced naming. There are signals of generated-style naming patterns.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void binaria_emptyTable_returnsInsertionIndex() throws Throwable {\n  // Clear, intention-revealing name and minimal, focused test body\n  Tabela tabela0 = new Tabela();\n  MeuItem probe = new MeuItem(0);\n  int position = tabela0.binaria(probe);\n  assertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments and shows thoughtful design intent for the scenario being tested. BDD-style comments are present.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test examines the field tabela0.n directly to verify the table size, which couples the test to the class's internal state rather than only verifying observable behavior via public APIs. This can make tests brittle to implementation changes.",
-          "original_code": "int position = tabela0.binaria(probe);\nassertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\nassertEquals(\"Empty table should have n == 0 after search\", 0, tabela0.n);",
-          "improved_code": "int position = tabela0.binaria(probe);\nassertEquals(\"Binary search on an empty table should return 0 (insertion index)\", 0, position);\n// Prefer verifying behavior via public API; avoid asserting internal fields\n// e.g., if Tabela had a public size() method:\n// assertEquals(\"Empty table should have size 0 after search\", 0, tabela0.size());"
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use assertEquals with descriptive failure messages rather than generic assertTrue/assertFalse; messages help diagnose failures.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The test includes concise Given-When-Then comments which document the test's intent without clutter. There is no commented-out code or excessive commentary.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "No sources of non-determinism (Random, time-based calls, Thread.sleep, or external dependencies) are present. The test uses deterministic inputs and local objects.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test does not persist data or modify global/static state and uses only local variables. No cleanup is necessary for this test.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class uses @Category(UnitTest.class) to label the tests, enabling selective execution by category.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "73.7%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "73.7%"
-    },
-    {
-      "test_method_name": "test2",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs two distinct 'Act' operations: tabela0.insere(inserted) and tabela0.binaria(inserted). Decision rule 1: >1 Act operations -> non-compliant.",
-          "original_code": "// When\nTabela tabela0 = new Tabela();\nMeuItem inserted = new MeuItem(-399);\n// When\ntabela0.insere(inserted);\nint pos = tabela0.binaria(inserted);\n// Then\nassertEquals(\"After inserting one item, tabela.n should be 1\", 1, tabela0.n);\nassertEquals(\"Binary search for the inserted item should return its position (1)\", 1, pos);",
-          "improved_code": "@Test(timeout = 4000)\npublic void test2_insertion_incrementsCount() {\n    Tabela tabela0 = new Tabela();\n    MeuItem inserted = new MeuItem(-399);\n    tabela0.insere(inserted);\n    assertEquals(\"After inserting one item, tabela.n should be 1\", 1, tabela0.n);\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "Test uses only local variables and no shared mutable state; no @Before/@After needed for a single short test. Decision rule 4: only local variables -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only one test method present and it covers the happy path; no tests for error/exceptional flows or assertThrows/@Test(expected=...). Decision rule 4: class has <2 tests covering both happy and error cases -> non-compliant.",
-          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem inserted = new MeuItem(-399);\ntabela0.insere(inserted);\nint pos = tabela0.binaria(inserted);\nassertEquals(\"After inserting one item, tabela.n should be 1\", 1, tabela0.n);",
-          "improved_code": "@Test(timeout = 4000)\npublic void test2_insertion_null_throws() {\n    Tabela tabela0 = new Tabela();\n    try {\n        tabela0.insere(null);\n        fail(\"Expected IllegalArgumentException when inserting null\");\n    } catch (IllegalArgumentException e) {\n        // expected\n    }\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "Test only uses a single negative value (-399). No zero, empty, max/min or just-outside-boundary values are tested. Decision rule 3: uses typical single value -> non-compliant.",
-          "original_code": "MeuItem inserted = new MeuItem(-399);\ntabela0.insere(inserted);\nint pos = tabela0.binaria(inserted);\nassertEquals(\"Binary search for the inserted item should return its position (1)\", 1, pos);",
-          "improved_code": "@Test(timeout = 4000)\npublic void test2_boundary_values() {\n    Tabela tabela0 = new Tabela();\n    MeuItem zero = new MeuItem(0);\n    MeuItem max = new MeuItem(Integer.MAX_VALUE);\n    tabela0.insere(zero);\n    tabela0.insere(max);\n    assertEquals(\"Two items inserted should set n to 2\", 2, tabela0.n);\n}"
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "compliant",
-          "justification": "Single short test with no repeated code; although no helpers/constants exist, there is no duplication to refactor. Decision rule 4: very short single test and no repetition -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "Method is small, linear, contains no loops or complex conditionals and is under 20 lines. Decision rules 1-3 indicate low complexity -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "Test makes multiple substantive assertions (checks tabela.n and the returned position). Decision rule 2: >=2 properties verified -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations and no commented-out @Test lines; test is active and runnable. Decision rule 3 -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No annotations or Javadoc linking the test to requirement IDs, tickets, or stories. Decision rules 1-3 find no traceability metadata -> non-compliant.",
-          "original_code": "/**\n * Improved and refactored tests for Tabela.\n */\n@Test(timeout = 4000)\npublic void test2() throws Throwable {\n    Tabela tabela0 = new Tabela();",
-          "improved_code": "/** REQ-001: Inserting an item should increase count and allow binary search */\n@Test(timeout = 4000)\npublic void test2() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem inserted = new MeuItem(-399);\n    tabela0.insere(inserted);\n    int pos = tabela0.binaria(inserted);\n    assertEquals(1, tabela0.n);\n    assertEquals(1, pos);\n}"
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test declares @Test(timeout = 4000), an explicit timing-related attribute; per decision rule 2 this qualifies as an explicit performance constraint -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "Method name 'test2' is generic and does not describe scenario or expected result. Decision rule 2: generic name -> non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test2() throws Throwable {\n    // Given\n    Tabela tabela0 = new Tabela();\n    MeuItem inserted = new MeuItem(-399);",
-          "improved_code": "@Test(timeout = 4000)\npublic void insertItem_thenBinarySearch_returnsPosition() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem inserted = new MeuItem(-399);\n    tabela0.insere(inserted);\n    int pos = tabela0.binaria(inserted);\n    assertEquals(\"After inserting one item, tabela.n should be 1\", 1, tabela0.n);\n    assertEquals(\"Binary search for the inserted item should return its position (1)\", 1, pos);\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
           "status": "not-applicable",
-          "justification": "No clear signs of heavy auto-generated code (no auto-generated banner comments or repetitive auto names). Decision rules 1-3 -> not-applicable.",
+          "justification": "No performance or security tests are expected in this unit test; there are no explicit timing or security assertions, and per guidance this is usually not-applicable for unit tests.",
           "original_code": null,
           "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "Method name is 'test0', which is generic and does not describe scenario or expected outcome; violates descriptive naming guidelines.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    // Given: a fresh table and an item with a negative key",
+          "improved_code": "@Test(timeout = 4000)\npublic void insertDuplicate_thenSizeIsTwo_andSearchForAbsentKeyReturnsZero() throws Throwable {\n    // Given\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(-399);\n    // When\n    tabela.insere(item);\n    tabela.insere(item);\n    int result = tabela.binaria(new MeuItem(-10));\n    // Then\n    assertEquals(2, tabela.n);\n    assertEquals(0, result);\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "Indicators of heavy test-generation are present: use of EvoRunner/EvoAssertions and a generic method name 'test0' suggest auto-generated tests rather than focused, intention-revealing tests.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest ... {\n  @Test(timeout = 4000)\n  public void test0()  throws Throwable  {",
+          "improved_code": "@Category(UnitTest.class)\npublic class EvoAITest extends Tabela_ESTest_scaffolding {\n  @Test(timeout = 4000)\n  public void insertDuplicate_thenSizeIsTwo_andSearchForAbsentKeyReturnsZero() throws Throwable {\n      Tabela tabela = new Tabela();\n      MeuItem item = new MeuItem(-399);\n      tabela.insere(item);\n      tabela.insere(item);\n      assertEquals(2, tabela.n);\n      assertEquals(0, tabela.binaria(new MeuItem(-10)));\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "Test includes Given-When-Then comments and BDD-like structure in comments, indicating thoughtful design intent. Decision rule 1 -> compliant.",
+          "justification": "The test contains Given-When-Then comments and structured assertions, indicating some deliberate design intent and prioritization.",
           "original_code": null,
           "improved_code": null
         },
@@ -432,7 +112,7 @@
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "Test interacts via public API methods (insere, binaria) and does not use reflection or access private internals. Decision rules 1-3 -> compliant.",
+          "justification": "The test exercises public APIs (Tabela.insere, Tabela.binaria) and does not access private internals or use reflection; it verifies observable behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -440,7 +120,7 @@
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use assertEquals for specific comparisons rather than generic assertTrue; decision rule 1 satisfied -> compliant.",
+          "justification": "Assertions are specific (assertEquals) and include descriptive failure messages for the first assertion, using specific assertion methods rather than generic assertTrue.",
           "original_code": null,
           "improved_code": null
         },
@@ -448,7 +128,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Class-level Javadoc and inline Given-When-Then comments add value; no commented-out code present. Decision rule 3 -> compliant.",
+          "justification": "The test uses concise Given-When-Then comments that explain test intent; no excessive or commented-out code is present.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "Test avoids randomness, current time, Thread.sleep, and external dependencies; deterministic local state only. Decision rules 1-3 -> compliant.",
+          "justification": "No non-deterministic constructs (Random, current time, Thread.sleep) are used in the method; test uses local deterministic operations.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "Test uses only local objects and does not persist data or modify static/global state; no cleanup required. Decision rule 3 -> compliant.",
+          "justification": "Test manipulates only local objects and does not modify static/shared state or external resources; no cleanup required.",
           "original_code": null,
           "improved_code": null
         },
@@ -472,7 +152,7 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "Class is annotated with @Category(UnitTest.class), providing classification for selective execution. Decision rule 1 -> compliant.",
+          "justification": "Class-level @Category(UnitTest.class) is present, providing categorization for selective execution.",
           "original_code": null,
           "improved_code": null
         }
@@ -482,21 +162,21 @@
       "normalized_method_compliance_score": "72.2%"
     },
     {
-      "test_method_name": "test3",
+      "test_method_name": "test2",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple 'Act' operations inside a for-loop (repeated tabela0.insere calls). Decision rule 1: more than one distinct Act -> non-compliant.",
-          "original_code": "for (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    tabela0.insere(new MeuItem(i));\n    inserted++;\n  } catch (Exception e) {",
-          "improved_code": "@Test\npublic void test3_singleInsert() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  // Single act\n  tabela0.insere(new MeuItem(1));\n  // Single clear assertion\n  assertEquals(\"Tabela should have one item after single insert\", 1, tabela0.n);\n} "
+          "justification": "The test performs two distinct 'Act' operations: tabela0.insere(meuItem0) and tabela0.binaria(meuItem0). Decision rule 1: more than one distinct method call being tested => non-compliant.",
+          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem meuItem0 = new MeuItem((-399));\n\n// When: inserting the item once and searching for that same item\ntabela0.insere(meuItem0);\nint int0 = tabela0.binaria(meuItem0);",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  @Test\n  public void insert_increasesSize() {\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(-399);\n    tabela.insere(item);\n    assertEquals(1, tabela.n);\n  }\n\n  @Test\n  public void binaria_findsInsertedItem() {\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(-399);\n    tabela.insere(item);\n    assertEquals(1, tabela.binaria(item));\n  }\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared mutable state or test-order naming. No @Before/@After required for this single method; Decision rule 4 applies.",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or numbered test names. There are no static fields or ordering hints; Rule 4 applies.",
           "original_code": null,
           "improved_code": null
         },
@@ -504,39 +184,39 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Although this test attempts to observe both successful insertions and an exception path in a single method, the class contains only one test method. Decision rule 4: class has < 2 test methods, mark as non-compliant for lacking separate explicit happy-path and error-case tests.",
-          "original_code": "for (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    tabela0.insere(new MeuItem(i));\n    inserted++;\n  } catch (Exception e) {",
-          "improved_code": "@Test\npublic void testInsert_happyPath() throws Throwable {\n  Tabela tabela = new Tabela();\n  tabela.insere(new MeuItem(1));\n  assertEquals(\"Happy path: one item inserted\", 1, tabela.n);\n}\n\n@Test(expected = Exception.class)\npublic void testInsert_whenFull_throwsException() throws Throwable {\n  Tabela tabela = new Tabela();\n  // attempt many inserts to trigger full-table behavior\n  for (int i = 0; i < 1024; i++) {\n    tabela.insere(new MeuItem(i));\n  }\n} "
+          "justification": "Only a single happy-path scenario is present and there are no tests for exceptional or error flows (no @Test(expected=...) or assertThrows). Decision rule 1 and 4 indicate non-compliance.",
+          "original_code": "tabela0.insere(meuItem0);\nint int0 = tabela0.binaria(meuItem0);\n\n// Then: table size should be 1 and binary search should return 1 (found at position 1)\nassertEquals(\"After inserting one item, tabela.n should be 1\", 1, tabela0.n);",
+          "improved_code": "@Test(expected = NullPointerException.class)\npublic void binaria_withNull_throwsNPE() {\n  Tabela tabela = new Tabela();\n  // exercise exceptional flow: calling binaria with null should throw NPE\n  tabela.binaria(null);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test exercises successive inserts up to a runtime-detected full condition but does not explicitly verify documented boundary values (e.g., zero, one, maximum capacity) or explicit just-inside/just-outside cases. Decision rules 1-3 -> non-compliant.",
-          "original_code": "final int MAX_ATTEMPTS = 1024; // defensive upper bound to avoid infinite loops\nfor (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    tabela0.insere(new MeuItem(i));",
-          "improved_code": "@Test\npublic void testEmptyAndSingleBoundary() throws Throwable {\n  Tabela tabela = new Tabela();\n  // boundary: empty table\n  assertEquals(\"New table should start empty\", 0, tabela.n);\n  // boundary: single insert\n  tabela.insere(new MeuItem(0));\n  assertEquals(\"After one insert the count should be 1\", 1, tabela.n);\n} "
+          "justification": "Test uses a single typical value (-399) and does not exercise boundary inputs (empty, zero, negative extremes, Integer.MAX_VALUE). Decision rules 1 and 3 indicate non-compliance.",
+          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem meuItem0 = new MeuItem((-399));\n\ntabela0.insere(meuItem0);\nint int0 = tabela0.binaria(meuItem0);",
+          "improved_code": "@Test\npublic void insert_withBoundaryValues() {\n  Tabela t = new Tabela();\n  t.insere(new MeuItem(0));\n  t.insere(new MeuItem(-1));\n  t.insere(new MeuItem(Integer.MAX_VALUE));\n  assertEquals(3, t.n);\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or class-level constants are used; setup/insert logic is inlined in the test method (loop with inline constant MAX_ATTEMPTS). Decision rules 1-3 -> non-compliant.",
-          "original_code": "final int MAX_ATTEMPTS = 1024; // defensive upper bound to avoid infinite loops\nfor (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    tabela0.insere(new MeuItem(i));",
-          "improved_code": "private int insertUntil(Tabela tabela, int maxAttempts) throws Exception {\n  int count = 0;\n  for (int i = 0; i < maxAttempts; i++) {\n    tabela.insere(new MeuItem(i));\n    count++;\n  }\n  return count;\n}\n\n@Test\npublic void testInsertUsingHelper() throws Throwable {\n  Tabela tabela = new Tabela();\n  int inserted = insertUntil(tabela, 10);\n  assertTrue(\"Should insert at least one item using helper\", inserted > 0);\n} "
+          "status": "compliant",
+          "justification": "The test is short and self-contained with no repeated code across methods (only one method present). Decision rule 4: very short test (<10-15 lines) and no duplication => compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test contains a loop and try/catch control flow increasing cyclomatic complexity (presence of for loop). Decision rule 2: loops -> non-compliant.",
-          "original_code": "boolean threw = false;\nint inserted = 0;\nfor (int i = 0; i < MAX_ATTEMPTS; i++) {\n  try {\n    tabela0.insere(new MeuItem(i));\n    inserted++;",
-          "improved_code": "@Test\npublic void testSimpleInsert_noComplexity() throws Throwable {\n  Tabela tabela = new Tabela();\n  tabela.insere(new MeuItem(1));\n  assertEquals(\"Single insert should increment count\", 1, tabela.n);\n} "
+          "status": "compliant",
+          "justification": "The method is small, linear, contains no loops or complex conditionals and is well under the line limits. Decision rules 1 and 3 indicate compliance.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple, meaningful assertions: it checks exception message content in error case, asserts that at least one insertion occurred or an exception was thrown, and verifies consistency of tabela0.n with inserted count. Multiple properties are validated.",
+          "justification": "The test asserts two properties (table size and search return) verifying multiple aspects of the state, meeting the requirement to assert multiple properties.",
           "original_code": null,
           "improved_code": null
         },
@@ -544,23 +224,23 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. The test is active and runnable (timeout is used but not as an ignore).",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; tests appear active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No requirement/story/issue annotations or Javadoc tags linking this test to a specific requirement are present. Decision rules 1-3 -> non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test3() throws Throwable {\n  // Given\n  Tabela tabela0 = new Tabela();",
-          "improved_code": "/**\n * Tests REQ-001: insertion behavior for Tabela\n */\n@Test(timeout = 4000)\npublic void test3_requirement_REQ_001() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  tabela0.insere(new MeuItem(1));\n  assertEquals(1, tabela0.n);\n} "
+          "status": "compliant",
+          "justification": "Class Javadoc includes 'Traceability: RQ-001, RQ-002' which links the tests to requirement IDs per decision rule 2.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "This is a unit test focusing on functional behavior; no explicit performance or security tests are expected. The presence of a timeout attribute is not a performance test per the decision rules, so mark as not-applicable.",
+          "justification": "This is a unit test without any performance/security-specific code; per decision rules this practice is usually not-applicable for unit tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -568,39 +248,39 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name is generic ('test3') and does not describe scenario or expected outcome. Decision rule 2: generic naming -> non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test3() throws Throwable {",
-          "improved_code": "/** Tests insertion until table full or until at least one insertion succeeds */\n@Test(timeout = 4000)\npublic void insertItems_untilFull_orAtLeastOneInserted() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  tabela0.insere(new MeuItem(0));\n  assertTrue(tabela0.n > 0);\n} "
+          "justification": "The method name 'test2' is generic and does not describe scenario or expected outcome. Decision rule 2 triggers non-compliance for generic naming.",
+          "original_code": "@Test(timeout = 4000)\npublic void test2()  throws Throwable  {\n    // Given: a fresh table and an item\n    Tabela tabela0 = new Tabela();\n    MeuItem meuItem0 = new MeuItem((-399));",
+          "improved_code": "@Test(timeout = 4000)\npublic void insertSingleItem_then_binariaReturnsPositionOne() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem meuItem0 = new MeuItem(-399);\n  tabela0.insere(meuItem0);\n  assertEquals(1, tabela0.n);\n  assertEquals(1, tabela0.binaria(meuItem0));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "Source references and imports include EvoSuite runtime classes and EvoAssertions indicating generated-orchestrated tests (org.evosuite.runtime.*). Decision rule 1-2 triggered -> signs of automated generation present.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;",
-          "improved_code": "// Removed EvoSuite-specific imports to keep test minimal and maintainable\nimport static org.junit.Assert.*;\n\n@Test\npublic void test3_without_evosuite_dependencies() throws Throwable {\n  Tabela tabela = new Tabela();\n  tabela.insere(new MeuItem(1));\n  assertEquals(1, tabela.n);\n} "
+          "justification": "The class imports EvoSuite runtime types (EvoRunner, EvoAssertions) and test method naming (test2) and scaffolding inheritance indicate use of a code generation tool; per decision rule 2 (generated-like names) this signals heavy generation and thus non-compliance.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@RunWith(EvoRunner.class) @EvoRunnerParameters(...)\npublic class EvoAITest extends Tabela_ESTest_scaffolding {",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class EvoAITest {\n  @Test\n  public void insert_and_search_singleItem() {\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(-399);\n    tabela.insere(item);\n    assertEquals(1, tabela.n);\n    assertEquals(1, tabela.binaria(item));\n  }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The test method includes Given-When-Then comments and class-level Javadoc states tests follow Given-When-Then; this shows evidence of thoughtful design and BDD-style structure. Decision rule 1 -> compliant.",
+          "justification": "The test uses Given-When-Then comments and exhibits BDD-style structure, indicating thoughtful design intent (decision rule 1).",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test reads tabela0.n directly to verify internal counter consistency which is checking implementation detail rather than only public behavior. Decision rule 2 -> non-compliant.",
-          "original_code": "// Final assertions:\n// Either we observed a full-table exception, or we successfully inserted at least one item (dynamic growth).\nassertTrue(\"Either an insertion should succeed or the table should eventually report full\", threw || inserted > 0);\n// Validate internal counter consistency if available\nassertEquals(\"Tabela.n should equal number of successful insertions\", inserted, tabela0.n);",
-          "improved_code": "// Prefer observable behavior via public API; avoid checking internal fields directly\nassertTrue(\"Either an insertion should succeed or the table should eventually report full\", threw || inserted > 0);\n// Removed direct check of tabela0.n to avoid coupling to internal implementation\n// If a public API exists (e.g., tabela0.size()), prefer: assertEquals(inserted, tabela0.size()); "
+          "status": "compliant",
+          "justification": "The test exercises public API methods only and does not use reflection or access private fields; per decision rule 3 this is compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions include descriptive failure messages (e.g., messages in assertTrue/assertEquals) and use specific assertion methods (assertEquals), not only generic assertTrue. Decision rules satisfied.",
+          "justification": "Assertions are specific (assertEquals) and include descriptive messages for at least one assertion, satisfying the guidance to prefer specific assertions and include messages.",
           "original_code": null,
           "improved_code": null
         },
@@ -608,7 +288,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test uses concise Given-When-Then inline comments that explain intent (why), and there are no commented-out code blocks; comments add value without clutter.",
+          "justification": "The method contains concise Given-When-Then comments explaining the scenario (comments explain 'why'), with no commented-out code — compliant per decision rules.",
           "original_code": null,
           "improved_code": null
         },
@@ -616,7 +296,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "No sources of non-determinism (Random, current time, Thread.sleep, external services) are used. The test deterministically iterates with a fixed MAX_ATTEMPTS bound and uses local state; Decision rules satisfied.",
+          "justification": "No use of Random(), time APIs, Thread.sleep(), or external dependencies is visible. The test uses only local state and deterministic inputs.",
           "original_code": null,
           "improved_code": null
         },
@@ -624,7 +304,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only mutates a local Tabela instance and does not persist external resources or modify static/global state. No cleanup is required. Decision rule 3 -> compliant.",
+          "justification": "The test uses local variables only and does not persist data or modify static/global state; no cleanup needed — decision rule 3 applies.",
           "original_code": null,
           "improved_code": null
         },
@@ -632,14 +312,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization. Decision rule 1 satisfied.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful classification per decision rule 1.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "47.4%",
+      "method_compliance_score": "68.4%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "50.0%"
+      "normalized_method_compliance_score": "72.2%"
     },
     {
       "test_method_name": "test4",
@@ -648,15 +328,15 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs two distinct verifications of different behaviors: it asserts internal state (tabela0.n == 1) and also verifies pesquisa(probe) == 0. This effectively exercises insertion and search behaviors in the same test (multiple 'Act' operations/behavior checks).",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(\"After one insertion, tabela.n should be 1\", 1, tabela0.n);\n  assertEquals(\"Searching for a different item should return 0 to indicate 'not found'\", 0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  // setup only\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  // Act: search for missing item\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  // Assert only the search behavior to keep test atomic\n  assertEquals(\"Searching for a different item should return 0 to indicate 'not found'\", 0, result);\n}"
+          "justification": "The test performs two distinct 'Act' operations: tabela0.insere(...) and tabela0.pesquisa(...). Decision rule 1: >1 Act operations => non-compliant. The assertions verify both size and search result in one method rather than a single focused Arrange-Act-Assert.",
+          "original_code": "Tabela tabela0 = new Tabela();\nMeuItem meuItem0 = new MeuItem((-1869));\n// When: inserting one item and then searching for a different, non-present key\ntabela0.insere(meuItem0);\nMeuItem meuItem1 = new MeuItem(1614);\nint int0 = tabela0.pesquisa(meuItem1);",
+          "improved_code": "@Test\npublic void testPesquisaForMissingKeyReturnsZero() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    MeuItem meuItem0 = new MeuItem(-1869);\n    tabela0.insere(meuItem0);\n    MeuItem meuItem1 = new MeuItem(1614);\n    int result = tabela0.pesquisa(meuItem1);\n    assertEquals(\"Pesquisa should return 0 when searching for a key that was not inserted\", 0, result);\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and creates fresh objects within the method. There are no shared mutable static/instance variables in the method and no reliance on test execution order or special naming.",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or test ordering. No @Before/@After is required given local-only state.",
           "original_code": null,
           "improved_code": null
         },
@@ -664,23 +344,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path scenario is present; there are no tests or assertions covering exceptional cases (no assertThrows or try/catch for expected exceptions).",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(\"Searching for a different item should return 0 to indicate 'not found'\", 0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  // Exceptional scenario: searching for null should throw NullPointerException\n  try {\n    tabela0.pesquisa(null);\n    fail(\"Expected NullPointerException when searching for null\");\n  } catch (NullPointerException e) {\n    // expected\n  }\n}"
+          "justification": "Only a single happy-path-like scenario is present (search for non-present key). No test for exception or error conditions is present and there is only one test method in the class, so negative/error flows are not covered.",
+          "original_code": "tabela0.insere(meuItem0);\nMeuItem meuItem1 = new MeuItem(1614);\nint int0 = tabela0.pesquisa(meuItem1);\nassertEquals(\"Pesquisa should return 0 when searching for a key that was not inserted\", 0, int0);",
+          "improved_code": "@Test(expected = NullPointerException.class)\npublic void testPesquisaWithNullThrows() throws Throwable {\n    Tabela tabela = new Tabela();\n    tabela.pesquisa(null); // assert that invalid input produces an exception\n}\n\n@Test\npublic void testPesquisaForMissingKeyReturnsZero() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    tabela0.insere(new MeuItem(-1869));\n    assertEquals(0, tabela0.pesquisa(new MeuItem(1614)));\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "Test data uses typical arbitrary integers (-1869 and 1614) with no explicit boundary values (0, negative/positive edges, Integer.MAX_VALUE/MIN_VALUE or empty-equivalents).",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  // boundary: zero\n  MeuItem zero = new MeuItem(0);\n  tabela0.insere(zero);\n  assertEquals(\"After inserting zero, size should be at least 1\", 1, tabela0.n);\n  // boundary: very large value\n  MeuItem max = new MeuItem(Integer.MAX_VALUE);\n  tabela0.insere(max);\n  assertEquals(\"Searching for the zero item should find it\", 1, tabela0.pesquisa(zero));\n}"
+          "justification": "The test uses a negative and a positive key, but does not explicitly exercise recognized boundary values such as 0, -1, Integer.MAX_VALUE, empty or max-length inputs. No edge/boundary cases are tested.",
+          "original_code": "MeuItem meuItem0 = new MeuItem((-1869));\n...\nMeuItem meuItem1 = new MeuItem(1614);\nint int0 = tabela0.pesquisa(meuItem1);",
+          "improved_code": "@Test\npublic void testInsertBoundaryValues() throws Throwable {\n    Tabela tabela = new Tabela();\n    tabela.insere(new MeuItem(0));\n    tabela.insere(new MeuItem(Integer.MAX_VALUE));\n    assertEquals(\"Two boundary items should be inserted\", 2, tabela.n);\n}\n\n@Test\npublic void testPesquisaWithZeroKey() throws Throwable {\n    Tabela tabela = new Tabela();\n    tabela.insere(new MeuItem(0));\n    assertEquals(1, tabela.pesquisa(new MeuItem(0)));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained, using no repeated logic across multiple methods. There are no helper methods required given the single short test, and no duplicated code in this class.",
+          "justification": "The test is short and self-contained; there is no visible duplicated logic and no need for helper extraction in this single short test. It follows a clear Arrange-Act-Assert flow.",
           "original_code": null,
           "improved_code": null
         },
@@ -688,7 +368,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is small (< 20 lines), linear, and contains no loops or nested conditionals, indicating low cyclomatic complexity.",
+          "justification": "The method is short (<20 lines) and contains no loops or conditionals; cyclomatic complexity is low and flow is linear.",
           "original_code": null,
           "improved_code": null
         },
@@ -696,7 +376,7 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "compliant",
-          "justification": "The test contains multiple specific assertions (two assertEquals) that check different properties (internal count and search result), providing more than a superficial check.",
+          "justification": "The test asserts two properties (table size and pesquisa result), providing more than a superficial assertion and verifying multiple aspects of behavior.",
           "original_code": null,
           "improved_code": null
         },
@@ -704,23 +384,23 @@
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the provided snippet; the test appears active and runnable.",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods; the test appears active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No annotations or comments link the test to requirements, ticket IDs, or user stories; the class-level notes mention lightweight identifiers but none are present in the method itself.",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  // REQ-001: Verify search returns 0 when item is not present\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  assertEquals(\"REQ-001: missing item should return 0\", 0, tabela0.pesquisa(probe));\n}"
+          "status": "compliant",
+          "justification": "Class-level Javadoc explicitly includes traceability references: 'Traceability: RQ-001 ... RQ-002', satisfying traceability requirement.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The test uses a timeout on @Test(timeout = 4000), which is an explicit timing constraint; per the decision rules this counts as an explicit performance-related test annotation in this unit-test context.",
+          "justification": "The test method uses @Test(timeout = 4000), indicating an explicit performance/time constraint. Per decision rules, this counts as an explicit performance test.",
           "original_code": null,
           "improved_code": null
         },
@@ -728,39 +408,39 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name is generic ('test4') and does not follow descriptive naming conventions indicating scenario and expected result, reducing self-documentation.",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void pesquisa_whenItemMissing_returnsZero() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  assertEquals(\"Searching for a different item should return 0\", 0, tabela0.pesquisa(probe));\n}"
+          "justification": "The test method name 'test4' is generic and does not describe scenario or expected result. Decision rule: generic names => non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    // Given: a fresh table and two items with distinct keys (negative and positive)\n    Tabela tabela0 = new Tabela();\n    ...\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void pesquisa_missingKey_returnsZero() throws Throwable {\n    // Given: a fresh table and one inserted item\n    Tabela tabela0 = new Tabela();\n    tabela0.insere(new MeuItem(-1869));\n    // When: searching for a different key\n    int result = tabela0.pesquisa(new MeuItem(1614));\n    // Then: should return 0\n    assertEquals(\"Pesquisa should return 0 when searching for a key that was not inserted\", 0, result);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test name (test4) and the surrounding imports (EvoSuite-related in the class) indicate generated/test-augment patterns. The method name is generic, consistent with generated tests rather than intention-revealing small hand-written tests.",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  int result = tabela0.pesquisa(probe);\n  assertEquals(0, result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void testPesquisa_missingItem_returnsZero_handwritten() throws Throwable {\n  // Hand-written, intention-revealing test instead of auto-generated pattern\n  Tabela tabela0 = new Tabela();\n  MeuItem negative = new MeuItem(-1869);\n  tabela0.insere(negative);\n  MeuItem probe = new MeuItem(1614);\n  assertEquals(\"Missing item should return 0\", 0, tabela0.pesquisa(probe));\n}"
+          "justification": "The class imports and annotations reference EvoSuite runtime (EvoRunner, EvoRunnerParameters) and the test method name 'test4' matches typical auto-generated naming, indicating heavy code-generation artifacts.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)",
+          "improved_code": "import org.junit.Test;\nimport org.junit.runner.RunWith;\nimport org.junit.runners.JUnit4;\n\n@RunWith(JUnit4.class)\n@Category(UnitTest.class)\npublic class EvoAITest {\n    @Test\n    public void pesquisa_missingKey_returnsZero() throws Throwable {\n        Tabela tabela0 = new Tabela();\n        tabela0.insere(new MeuItem(-1869));\n        assertEquals(0, tabela0.pesquisa(new MeuItem(1614)));\n    }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "compliant",
-          "justification": "The test contains Given-When-Then comments, indicating explicit design intent and structure consistent with BDD-style organization.",
+          "justification": "The test includes Given-When-Then comments and a class-level Category, showing evidence of design intent and classification consistent with prioritization practices.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test asserts the value of tabela0.n, which is an internal field; this couples the test to internal implementation rather than using only public API behavior.",
-          "original_code": "assertEquals(\"After one insertion, tabela.n should be 1\", 1, tabela0.n);",
-          "improved_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n  Tabela tabela0 = new Tabela();\n  MeuItem inserted = new MeuItem(-1869);\n  tabela0.insere(inserted);\n  // Verify observable behavior through public API instead of internal fields\n  assertEquals(\"Inserted item should be found\", 1, tabela0.pesquisa(inserted));\n}"
+          "status": "compliant",
+          "justification": "The test exercises public APIs (insere, pesquisa) and reads a public field tabela0.n; there is no reflection or access to private internals, so it focuses on observable behavior.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions are specific (assertEquals) and include descriptive failure messages which aid diagnosis.",
+          "justification": "Assertions use assertEquals with descriptive failure messages rather than generic assertTrue; messages are present which aids diagnosis.",
           "original_code": null,
           "improved_code": null
         },
@@ -768,7 +448,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test provides Given-When-Then comments which explain the test intent without excessive or redundant comments; no commented-out code is present.",
+          "justification": "The test contains Given-When-Then inline comments and class-level Javadoc; there are no commented-out tests or excessive irrelevant comments.",
           "original_code": null,
           "improved_code": null
         },
@@ -776,7 +456,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test uses fixed data and does not rely on randomness, current time, thread sleeps, or external systems; it should be deterministic.",
+          "justification": "No sources of non-determinism are used in the test (no Random, System.currentTimeMillis, Thread.sleep); the test uses local state only.",
           "original_code": null,
           "improved_code": null
         },
@@ -784,7 +464,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only constructs local objects and does not persist files, modify static/global state, or interact with external resources that require cleanup.",
+          "justification": "The test only manipulates local Tabela instance and does not persist external resources or modify static/global state; no cleanup is necessary.",
           "original_code": null,
           "improved_code": null
         },
@@ -792,14 +472,334 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization at the class level for selective execution.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "73.7%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "63.2%"
+      "normalized_method_compliance_score": "73.7%"
+    },
+    {
+      "test_method_name": "test1",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should focus on a single behavior. RATIONALE: Single responsibility improves failure diagnosis. EVALUATION: The method performs one act (tabela0.binaria(meuItem0)) and one assertion. DECISION: Single act and single assertion -> compliant. VERDICT: The test is atomic and focuses on one behavior.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must not depend on other tests. RATIONALE: Independence allows flexible execution. EVALUATION: The test uses only local variables and no shared mutable state; there are no @Before/@After annotations required. DECISION: Local variables only -> compliant. VERDICT: Independent test using local state.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Both happy path and error scenarios should be tested. RATIONALE: Ensures robustness for exceptional inputs. EVALUATION: The class contains a single test that exercises a happy path only; no tests for exceptions or invalid inputs are present. DECISION: Class has <2 tests and no exception tests -> non-compliant. VERDICT: Only happy-path covered; missing error/exception tests.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);\n      int int0 = tabela0.binaria(meuItem0);\n      assertEquals(0, int0);\n  }",
+          "improved_code": "  @Test(expected = NullPointerException.class)\n  public void test_binaria_withNull_throwsNullPointer() {\n      Tabela tabela = new Tabela();\n      // Act: call with null to assert exceptional behavior\n      tabela.binaria(null);\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Test boundary values (0, -1, max, empty). RATIONALE: Boundaries reveal off-by-one errors. EVALUATION: The test constructs MeuItem with 0 (a boundary value). DECISION: Presence of 0 as input satisfies boundary check -> compliant. VERDICT: Test includes a boundary value (0).",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be self-contained and avoid duplication. RATIONALE: Modular tests improve maintainability. EVALUATION: There is no duplicated setup across multiple tests (only one short test), no helper methods required. DECISION: Short single test with no duplication -> compliant. VERDICT: Modularity is acceptable for this small class.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and simple. RATIONALE: Low complexity reduces test bugs. EVALUATION: Method is short (< 15 lines), contains no loops or conditionals. DECISION: Small, linear flow -> compliant. VERDICT: Test has low cyclomatic complexity.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should verify multiple properties to detect faults. RATIONALE: Superficial assertions may miss defects. EVALUATION: The test has a single assertion (assertEquals(0, int0)); no additional properties are checked. DECISION: Only 1 assertion -> non-compliant. VERDICT: Assertions are superficial; not enough properties verified.",
+          "original_code": "  int int0 = tabela0.binaria(meuItem0);\n  assertEquals(0, int0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test_binaria_withZero_returnsZero_and_nonNegative() {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);\n      int int0 = tabela0.binaria(meuItem0);\n      assertEquals(\"Expected index 0\", 0, int0);\n      assertTrue(\"Returned index should be non-negative\", int0 >= 0);\n  }"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Avoid ignored or commented-out tests. RATIONALE: Ignored tests hide defects. EVALUATION: No @Ignore/@Disabled or commented-out @Test annotations are present. DECISION: All tests active -> compliant. VERDICT: Test code is active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be linked to requirements. RATIONALE: Traceability aids impact analysis. EVALUATION: Class Javadoc contains 'Traceability: RQ-001, RQ-002'. DECISION: Presence of requirement IDs in Javadoc -> compliant. VERDICT: Traceability information is present at class level.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Performance/security tests should be explicit. RATIONALE: Non-functional tests need separate attention. EVALUATION: The test uses @Test(timeout = 4000) which is an explicit timeout-based performance guard. DECISION: Timeout present -> compliant. VERDICT: The test includes a performance-related timeout.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Test names should be descriptive of scenario and expected result. RATIONALE: Good names make tests self-documenting. EVALUATION: Method name is 'test1', which is generic and gives no scenario or expected outcome. DECISION: Generic name -> non-compliant. VERDICT: Test method name is not descriptive.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void binaria_withZeroItem_returnsZeroIndex() throws Throwable {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);\n      int int0 = tabela0.binaria(meuItem0);\n      assertEquals(0, int0);\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated tests can be noisy and hard to maintain. EVALUATION: Presence of EvoSuite runner, EvoAssertions imports and a generic test name 'test1' are signs of generated tests. DECISION: Repetitive/generic naming and EvoSuite artifacts -> non-compliant. VERDICT: Evidence suggests heavy test generation remnants.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n@RunWith(EvoRunner.class) @EvoRunnerParameters(...)\npublic class EvoAITest extends Tabela_ESTest_scaffolding {\n  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {",
+          "improved_code": "import org.junit.Test;\nimport static org.junit.Assert.*;\npublic class TabelaUnitTest {\n  @Test\n  public void binaria_withZeroItem_returnsZeroIndex() {\n      Tabela tabela = new Tabela();\n      MeuItem item = new MeuItem(0);\n      assertEquals(\"index should be 0 for item 0\", 0, tabela.binaria(item));\n  }\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should show deliberate design (Given-When-Then or BDD naming). RATIONALE: Test-first design improves coverage. EVALUATION: The class contains a single minimal happy-path test and lacks Given-When-Then comments or BDD naming in the method. DECISION: Minimal single test -> non-compliant. VERDICT: No evidence of prioritized or structured test design.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);\n      int int0 = tabela0.binaria(meuItem0);\n      assertEquals(0, int0);\n  }",
+          "improved_code": "  @Test\n  public void given_zeroItem_when_binaria_then_returnsZero() {\n      // Given\n      Tabela tabela = new Tabela();\n      MeuItem item = new MeuItem(0);\n      // When\n      int result = tabela.binaria(item);\n      // Then\n      assertEquals(\"Expected index 0 for given zero item\", 0, result);\n  }"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should verify public behavior and avoid implementation details. RATIONALE: Behavior-focused tests are less brittle. EVALUATION: The test calls public constructors and a public method and does not use reflection or inspect private state. DECISION: Only public API used -> compliant. VERDICT: Test focuses on observable behavior via public API.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and include descriptive messages when helpful. RATIONALE: Clear assertions improve failure diagnosis. EVALUATION: The test uses assertEquals without a descriptive message and only a single assertion; no failure messages are present. DECISION: No assertion messages; <50% assertions with messages -> non-compliant. VERDICT: Assertions lack descriptive messages.",
+          "original_code": "  int int0 = tabela0.binaria(meuItem0);\n  assertEquals(0, int0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void binaria_withZeroItem_returnsZeroIndex_withMessage() {\n      Tabela tabela0 = new Tabela();\n      MeuItem meuItem0 = new MeuItem(0);\n      int int0 = tabela0.binaria(meuItem0);\n      assertEquals(\"binaria should return index 0 for MeuItem(0)\", 0, int0);\n  }"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Comments should explain 'why' and be minimal. RATIONALE: Excessive comments can mislead. EVALUATION: The class has concise class-level Javadoc describing intent and no commented-out test code. DECISION: Clean comments and no commented-out code -> compliant. VERDICT: Comments are appropriate and not excessive.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must avoid nondeterministic sources. RATIONALE: Determinism prevents flakiness. EVALUATION: No Random, time calls, or Thread.sleep in the test; EvoRunnerParameters reference is present but test itself is deterministic. DECISION: No nondeterministic constructs used in method -> compliant. VERDICT: Test is deterministic.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should not modify shared persistent state. RATIONALE: Side effects cause inter-test coupling. EVALUATION: Test uses only local objects and does not persist data or modify static state. DECISION: No persistent side effects observed -> compliant. VERDICT: Test is side-effect free.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "PRINCIPLE: Use labels/categories to organize tests. RATIONALE: Enables selective execution. EVALUATION: Class is annotated with @Category(UnitTest.class). DECISION: Category annotation present -> compliant. VERDICT: Tests are categorized appropriately.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "68.4%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "68.4%"
+    },
+    {
+      "test_method_name": "test3",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "The test performs a single act (tabela0.insere(meuItem0)) and verifies one outcome (exception). There is one clear Arrange-Act-Assert flow focused on one behavior (inserting into a full registros array).",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The method uses only local variables and does not rely on other tests or shared mutable state in the visible code. No numbered test names or cross-test dependencies are present in this method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "The class (based on the visible snippet) contains only this single test which covers an exceptional flow. There is no corresponding happy-path test for the same behavior in the provided code.",
+          "original_code": "  // When / Then: inserting should raise an Exception indicating the table is full\n  try { \n    tabela0.insere(meuItem0);\n    fail(\"Expecting Exception when inserting into a table whose registros array is full\");",
+          "improved_code": "  @Test\n  public void test3_happyPath_insertsWhenSpaceAvailable() throws Throwable {\n    Tabela tabela = new Tabela();\n    MeuItem item = new MeuItem(0);\n    tabela.insere(item);\n    assertEquals(\"Item should be stored at index 0\", item, tabela.registros[0]);\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "compliant",
+          "justification": "The test explicitly constructs a registros array of size 1 to exercise the capacity boundary (full table). This is an explicit boundary scenario (table full) rather than only middle-range values.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "non-compliant",
+          "justification": "No helper methods or constants are used to encapsulate setup; the test performs inline setup. Although the test is short, it does not demonstrate extraction of repeated setup or modular helpers.",
+          "original_code": "  Tabela tabela0 = new Tabela();\n  Item[] itemArray0 = new Item[1];\n  MeuItem meuItem0 = new MeuItem(0);\n  tabela0.registros = itemArray0;",
+          "improved_code": "  private Tabela createTabelaWithRegistroSize(int size) {\n    Tabela t = new Tabela();\n    t.registros = new Item[size];\n    return t;\n  }\n\n  @Test\n  public void test3() throws Throwable {\n    Tabela tabela0 = createTabelaWithRegistroSize(1);\n    MeuItem meuItem0 = new MeuItem(0);\n    try { tabela0.insere(meuItem0); fail(\"Expecting Exception\"); } catch(Exception e) { verifyException(\"ds.Tabela\", e); }\n  }"
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is small, contains no loops or complex conditionals (only a try/catch) and follows a straightforward Arrange-Act-Assert pattern. It is not excessively long or complex.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test contains a single assertion (expecting an exception) and does not verify multiple properties of the system state after the failure (only verifies the exception origin). Assertions are superficial for deeper fault detection.",
+          "original_code": "  try { \n    tabela0.insere(meuItem0);\n    fail(\"Expecting Exception when inserting into a table whose registros array is full\");\n  } catch(Exception e) {",
+          "improved_code": "  try {\n    tabela0.insere(meuItem0);\n    fail(\"Expecting Exception when inserting into a table whose registros array is full\");\n  } catch(Exception e) {\n    verifyException(\"ds.Tabela\", e);\n    assertNull(\"registros[0] should remain null after failed insert\", tabela0.registros[0]);\n  }"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out test methods in the shown code. Comments present are purposeful (Given/When/Then), not commented-out tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "The class Javadoc includes traceability references ('Traceability: RQ-001, RQ-002'), providing explicit linkage to requirements.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "This is a unit test focusing on functional behavior; no performance/security checks are expected here and none are present. Per rules, this practice is usually not applicable for unit tests.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test method is named 'test3', which is generic and does not describe the scenario or expected outcome. It fails the descriptive naming requirement.",
+          "original_code": "  public void test3()  throws Throwable  {",
+          "improved_code": "  @Test(timeout = 4000)\n  public void insertIntoFullTabela_throwsException() throws Throwable {\n    Tabela tabela0 = new Tabela();\n    Item[] itemArray0 = new Item[1];\n    tabela0.registros = itemArray0;\n    MeuItem meuItem0 = new MeuItem(0);\n    try { tabela0.insere(meuItem0); fail(\"Expecting Exception\"); } catch(Exception e) { verifyException(\"ds.Tabela\", e); }\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The test shows signs of test-generation framework usage (EvoRunner, EvoAssertions, scaffolding class, and a generic name 'test3'), which indicates heavy code generation and non-minimal generated artifacts.",
+          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\n@RunWith(EvoRunner.class) @EvoRunnerParameters(...)\npublic class EvoAITest extends Tabela_ESTest_scaffolding {",
+          "improved_code": "  @Test\n  public void insertIntoFullTabela_throwsException_minimal() throws Throwable {\n    // minimal, intention-revealing test without generated artifacts\n    Tabela tabela0 = new Tabela();\n    tabela0.registros = new Item[1];\n    MeuItem meuItem0 = new MeuItem(0);\n    try { tabela0.insere(meuItem0); fail(\"Expecting Exception\"); } catch(Exception e) { verifyException(\"ds.Tabela\", e); }\n  }"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "compliant",
+          "justification": "The test uses a Given-When-Then comment structure and the class Javadoc indicates design intent and requirement linkage; these are indicators of thoughtful test design and prioritization.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "non-compliant",
+          "justification": "The test directly manipulates tabela0.registros (an internal field) rather than using only public API. This couples the test to internal implementation details and is brittle to refactoring.",
+          "original_code": "  Item[] itemArray0 = new Item[1];\n  MeuItem meuItem0 = new MeuItem(0);\n  tabela0.registros = itemArray0;",
+          "improved_code": "  @Test(expected = Exception.class)\n  public void insertIntoFullTable_usingPublicApi_throwsException() throws Throwable {\n    Tabela tabela = new Tabela();\n    // fill via public API until insert fails\n    while (true) {\n      tabela.insere(new MeuItem(0));\n    }\n  }"
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive messages and are limited to expecting an exception via fail/verifyException; they do not include clear assertion messages or multiple specific assertions that aid diagnosis.",
+          "original_code": "  try { \n    tabela0.insere(meuItem0);\n    fail(\"Expecting Exception when inserting into a table whose registros array is full\");",
+          "improved_code": "  try {\n    tabela0.insere(meuItem0);\n    fail(\"Expected exception when inserting into a full table\");\n  } catch(Exception e) {\n    verifyException(\"ds.Tabela\", e);\n    assertNull(\"registros[0] should remain null after failed insertion\", tabela0.registros[0]);\n  }"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "Comments present are concise Given/When/Then and useful for understanding intent; there are no excessive or commented-out blocks of code.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use random values, time-based functions, sleeps, or external dependencies in the visible code. It will deterministically exercise the insertion failure when registros is size 1.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test modifies only a newly created Tabela instance and its registros field; it does not persist external state or modify static/global resources. No cleanup is required for visible operations.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), which classifies the test for selective execution and demonstrates labeling usage.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "57.9%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "61.1%"
     }
   ],
   "practices_report": [
@@ -807,11 +807,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 4,
+      "compliant_methods": 2,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 5,
-      "compliance_score": "20.0%"
+      "compliance_score": "40.0%"
     },
     {
       "practice_code": "CS-02",
@@ -847,16 +847,6 @@
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 2,
-      "not_applicable_methods": 0,
-      "total_methods": 5,
-      "compliance_score": "60.0%"
-    },
-    {
-      "practice_code": "CS-06",
-      "practice_title": "Detailed Analysis of Size and Complexity",
-      "description": "",
       "compliant_methods": 4,
       "non_compliant_methods": 1,
       "not_applicable_methods": 0,
@@ -864,14 +854,24 @@
       "compliance_score": "80.0%"
     },
     {
-      "practice_code": "CS-07",
-      "practice_title": "Complex Design for Fault Detection",
+      "practice_code": "CS-06",
+      "practice_title": "Detailed Analysis of Size and Complexity",
       "description": "",
       "compliant_methods": 5,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 5,
       "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-07",
+      "practice_title": "Complex Design for Fault Detection",
+      "description": "",
+      "compliant_methods": 3,
+      "non_compliant_methods": 2,
+      "not_applicable_methods": 0,
+      "total_methods": 5,
+      "compliance_score": "60.0%"
     },
     {
       "practice_code": "CS-08",
@@ -887,19 +887,19 @@
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 5,
+      "compliant_methods": 5,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 5,
-      "compliance_score": "0.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 4,
+      "compliant_methods": 2,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 1,
+      "not_applicable_methods": 3,
       "total_methods": 5,
       "compliance_score": "100.0%"
     },
@@ -918,8 +918,8 @@
       "practice_title": "Small Footprint of Test Code Generation",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 4,
-      "not_applicable_methods": 1,
+      "non_compliant_methods": 5,
+      "not_applicable_methods": 0,
       "total_methods": 5,
       "compliance_score": "0.0%"
     },
@@ -927,31 +927,31 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 5,
-      "non_compliant_methods": 0,
+      "compliant_methods": 4,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 5,
-      "compliance_score": "100.0%"
+      "compliance_score": "80.0%"
     },
     {
       "practice_code": "LS-06",
       "practice_title": "Responsible Addition of Test Code Maintenance",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 4,
+      "compliant_methods": 4,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 5,
-      "compliance_score": "20.0%"
+      "compliance_score": "80.0%"
     },
     {
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 5,
-      "non_compliant_methods": 0,
+      "compliant_methods": 3,
+      "non_compliant_methods": 2,
       "not_applicable_methods": 0,
       "total_methods": 5,
-      "compliance_score": "100.0%"
+      "compliance_score": "60.0%"
     },
     {
       "practice_code": "LS-08",
@@ -994,13 +994,13 @@
       "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "63.2%",
+  "overall_compliance_score": "67.4%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 34513,
-    "completion_tokens": 40418,
-    "total_tokens": 74931,
-    "cost": 0.08240825
+    "prompt_tokens": 34549,
+    "completion_tokens": 37492,
+    "total_tokens": 72041,
+    "cost": 0.07665165
   },
-  "normalized_overall_compliance_score": "64.5%"
+  "normalized_overall_compliance_score": "69.6%"
 }

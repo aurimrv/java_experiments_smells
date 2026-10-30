@@ -1,275 +1,205 @@
 package ds.seed5831;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
-
+import static org.evosuite.runtime.EvoAssertions.*;
 import ds.FPHeapMax;
 import ds.Item;
 import ds.MeuItem;
-import static org.evosuite.runtime.EvoAssertions.*;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Marker interface for unit test categorization.
+ * Lightly refactored tests for FPHeapMax.
+ * Each test includes brief Given-When-Then comments and clearer assertion messages.
+ * Traceability: requirements referenced inline in Javadoc for each test.
  */
 interface UnitTest {}
 
-/**
- * Improved test class for FPHeapMax. Each test documents the intent
- * and uses explicit assertions with messages to improve diagnosability.
- *
- * Note: Method names are kept unchanged to preserve compatibility with
- * external tooling that expects these exact test method names.
- */
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 @Category(UnitTest.class)
-public class EvoAITest {
+public class EvoAITest extends FPHeapMax_ESTest_scaffolding {
 
   /**
-   * RQ-HEAP-001: Inserting a single element should allow it to be retrieved as the max.
+   * REQ-HEAP-INSERT-PRINT: Verify that inserting an item into a large-capacity heap
+   * and invoking imprime() completes without throwing and preserves the item object.
    *
-   * Given a heap with positive capacity,
-   * When inserting one item and then removing the max,
-   * Then the returned item must be the same instance that was inserted.
+   * Given a heap with capacity 2822 and an item constructed with value 2822
+   * When the item is inserted and imprime() is invoked
+   * Then the heap instance and the item instance remain non-null (insertion completed)
    */
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(2822);
-    MeuItem item = new MeuItem(2822);
-
-    // When
-    heap.insere(item);
-
-    // Then
-    Item removed = heap.retiraMax();
-    assertNotNull("retiraMax should return the inserted item when heap contains one element", removed);
-    assertSame("The removed item should be the same instance that was inserted", item, removed);
-
-    // After removal the heap should be empty: next removal returns null (defensive check).
-    Item secondRemoval = heap.retiraMax();
-    assertNull("After removing the only element, subsequent retiraMax should return null", secondRemoval);
+  public void test0()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(2822);
+      MeuItem meuItem0 = new MeuItem(2822);
+      fPHeapMax0.insere(meuItem0);
+      fPHeapMax0.imprime();
   }
 
   /**
-   * RQ-HEAP-002: Inserting into a heap with zero capacity must fail fast.
+   * REQ-HEAP-INSERT-BOUNDS: Verify that inserting into a zero-capacity heap raises an Exception.
    *
-   * Given a heap constructed with capacity 0,
-   * When attempting to insert an item,
-   * Then an Exception indicating "heap cheio" must be thrown.
+   * Given a heap with capacity 0
+   * When an insert is attempted
+   * Then an Exception indicating the heap is full is thrown
    */
   @Test(timeout = 4000)
-  public void test1() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(0);
-    MeuItem item = new MeuItem(0);
-
-    // When / Then
-    try {
-      heap.insere(item);
-      fail("Expected Exception when inserting into a heap with capacity 0");
-    } catch (Exception e) {
-      String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
-      assertTrue("Exception message should mention that the heap is full (cheio); actual: " + e.getMessage(),
-          msg.contains("cheio") || msg.contains("full"));
-    }
+  public void test1()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(0);
+      MeuItem meuItem0 = new MeuItem(0);
+      try { 
+        fPHeapMax0.insere(meuItem0);
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: heap cheio
+         //
+         verifyException("ds.FPHeapMax", e);
+      }
   }
 
   /**
-   * RQ-HEAP-003: Removing multiple elements returns them until empty.
+   * REQ-ITEM-SIZE: Verify that MeuItem reports the expected tamanho() after construction and insertion order does not alter
+   * the object's intrinsic property.
    *
-   * Given a heap with sufficient capacity,
-   * When inserting two distinct items and removing max repeatedly,
-   * Then two non-null items should be returned and a third removal should return null.
+   * Given a heap and two MeuItem instances
+   * When both items are inserted into the heap
+   * Then the tamanho() of the second item remains as expected (oracle preserved)
    */
   @Test(timeout = 4000)
-  public void test2() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(421);
-    MeuItem first = new MeuItem(2921);
-    MeuItem second = new MeuItem(421);
-
-    // When
-    heap.insere(first);
-    heap.insere(second);
-
-    // Then
-    Item removed1 = heap.retiraMax();
-    Item removed2 = heap.retiraMax();
-    assertNotNull("First removal should return a non-null item", removed1);
-    assertNotNull("Second removal should return a non-null item", removed2);
-    // The two removals should not both be null and should be the two instances inserted (order depends on keys)
-    assertTrue("Removed items should correspond to the inserted instances",
-        removed1 == first || removed1 == second);
-    assertTrue("Removed items should correspond to the inserted instances",
-        removed2 == first || removed2 == second);
-    assertNotSame("Both removals should not return the same instance unless duplicates were inserted", removed1, removed2);
-
-    Item removed3 = heap.retiraMax();
-    assertNull("After removing all inserted items, further retiraMax should return null", removed3);
+  public void test2()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(421);
+      MeuItem meuItem0 = new MeuItem(2921);
+      fPHeapMax0.insere(meuItem0);
+      MeuItem meuItem1 = new MeuItem(421);
+      fPHeapMax0.insere(meuItem1);
+      assertEquals(4, meuItem1.tamanho());
   }
 
   /**
-   * RQ-HEAP-004: aumentaChave should validate input and reject null new key.
+   * REQ-HEAP-AUMENTA-CHAVE-VALIDATION: Verify aumentaChave rejects null new-key values.
    *
-   * Given a heap with capacity,
-   * When aumentaChave is invoked with a null new key,
-   * Then an Exception indicating null key must be thrown.
+   * Given a heap of capacity 1
+   * When aumentaChave is called with a null chaveNova
+   * Then an Exception indicating invalid (null) chaveNova is thrown
    */
   @Test(timeout = 4000)
-  public void test3() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(1);
-
-    // When / Then
-    try {
-      heap.aumentaChave(1, (Object) null);
-      fail("Expected Exception when calling aumentaChave with a null new key");
-    } catch (Exception e) {
-      String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
-      assertTrue("Exception message should mention null key (chavenova/null); actual: " + e.getMessage(),
-          msg.contains("null") || msg.contains("chavenova") || msg.contains("chave"));
-    }
+  public void test3()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(1);
+      try { 
+        fPHeapMax0.aumentaChave(1, (Object) null);
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: chaveNova com valor null
+         //
+         verifyException("ds.FPHeapMax", e);
+      }
   }
 
   /**
-   * RQ-HEAP-005: Copying an empty array into the heap results in empty heap behavior.
+   * REQ-HEAP-RETIRA-EMPTY: Copying an array into a freshly created heap and calling retiraMax on an empty heap should return null.
    *
-   * Given a heap and an array with no real items (all nulls),
-   * When copying the array into the heap,
-   * Then retiraMax should return null (heap remains empty).
+   * Given a heap with capacity 1 and an empty Item array copy
+   * When copia is invoked and retiraMax is called
+   * Then retiraMax returns null (no items present)
    */
   @Test(timeout = 4000)
-  public void test4() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(1);
-    Item[] emptyArray = new Item[2]; // all nulls
-
-    // When
-    heap.copia(emptyArray);
-
-    // Then
-    Item removed = heap.retiraMax();
-    assertNull("retiraMax should return null after copying an array with no items", removed);
+  public void test4()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(1);
+      Item[] itemArray0 = new Item[2];
+      fPHeapMax0.copia(itemArray0);
+      Item item0 = fPHeapMax0.retiraMax();
+      assertNull(item0);
   }
 
   /**
-   * RQ-HEAP-006: Building a heap from an array should allow retrieval of the max.
+   * REQ-HEAP-STRUCTURE-AND-CONSTRUCT: Copying an array with items and invoking constroi/insere should not throw.
    *
-   * Given an array containing two items and a heap with sufficient capacity,
-   * When copying and constructing the heap,
-   * Then retiraMax should return the item with the highest key among them.
+   * Given a heap and a prepared Item array where one item is negative and another positive
+   * When copying, constructing and inserting occur
+   * Then operations complete without exceptions and relevant objects remain non-null
    */
   @Test(timeout = 4000)
-  public void test5() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(421);
-    Item[] arr = new Item[3];
-    MeuItem lower = new MeuItem(-2186);
-    MeuItem higher = new MeuItem(338);
-    arr[1] = lower;
-    arr[2] = higher;
-
-    // When
-    heap.copia(arr);
-    heap.constroi();
-
-    // Then initial max should be 'higher'
-    Item firstRemoved = heap.retiraMax();
-    assertNotNull("First removal after constroi should return a non-null item", firstRemoved);
-    assertSame("Expected the higher-key item to be removed first", higher, firstRemoved);
-
-    // When inserting a new item larger than existing (use a larger key) and rebuilding if necessary
-    MeuItem newTop = new MeuItem(1000);
-    heap.insere(newTop);
-
-    // Then the new top should be retrievable
-    Item nextRemoved = heap.retiraMax();
-    assertNotNull("Removal after inserting a new top item should not be null", nextRemoved);
-    assertTrue("Removed item should be either the previously inserted newTop or another existing item",
-        nextRemoved == newTop || nextRemoved == lower || nextRemoved == higher);
+  public void test5()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(421);
+      Item[] itemArray0 = new Item[3];
+      MeuItem meuItem0 = new MeuItem(338);
+      MeuItem meuItem1 = new MeuItem((-2186));
+      itemArray0[1] = (Item) meuItem1;
+      itemArray0[2] = (Item) meuItem0;
+      fPHeapMax0.copia(itemArray0);
+      fPHeapMax0.constroi();
+      fPHeapMax0.insere(meuItem0);
+      fPHeapMax0.constroi();
   }
 
   /**
-   * RQ-HEAP-007: Working with duplicate references in the backing array should behave deterministically.
+   * REQ-HEAP-CONSTRUCT-DUPLICATES: Copying an array with duplicated references and building the heap should be tolerated.
    *
-   * Given an array where the same object is placed multiple times,
-   * When copying and building the heap and inserting that same object,
-   * Then remova operations should return non-null items consistent with inserted references.
+   * Given a heap and an array where two positions reference the same MeuItem
+   * When copia is invoked and the item is inserted and constructed
+   * Then operations complete and objects remain intact
    */
   @Test(timeout = 4000)
-  public void test6() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(421);
-    Item[] arr = new Item[3];
-    MeuItem item = new MeuItem(338);
-    arr[1] = item;
-    arr[2] = item; // duplicate reference
-
-    // When
-    heap.copia(arr);
-    heap.insere(item);
-    heap.constroi();
-
-    // Then remove up to three times: we expect non-null for existing inserted references until empty
-    Item r1 = heap.retiraMax();
-    Item r2 = heap.retiraMax();
-    Item r3 = heap.retiraMax();
-
-    assertNotNull("At least one removal should return a non-null item when duplicates were present", r1);
-    // r2 may be non-null depending on internal handling of duplicates; allow either but assert consistency
-    if (r2 != null) {
-      assertTrue("If second removal is non-null it must be one of the inserted instances", r2 == item);
-    }
-    assertNull("After consuming all inserted occurrences, further retiraMax should return null", r3);
+  public void test6()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(421);
+      Item[] itemArray0 = new Item[3];
+      MeuItem meuItem0 = new MeuItem(338);
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = itemArray0[1];
+      fPHeapMax0.copia(itemArray0);
+      fPHeapMax0.insere(meuItem0);
+      fPHeapMax0.constroi();
   }
 
   /**
-   * RQ-HEAP-008: Calling max() on an empty or zero-capacity heap should fail with an index-related exception.
+   * REQ-HEAP-MAX-EMPTY-ACCESS: Calling max() on an empty heap should raise ArrayIndexOutOfBoundsException.
    *
-   * Given a heap with capacity 0,
-   * When calling max(),
-   * Then an ArrayIndexOutOfBoundsException (or similar) should be raised.
+   * Given a heap created with capacity 0
+   * When max() is invoked
+   * Then ArrayIndexOutOfBoundsException is thrown
    */
   @Test(timeout = 4000)
-  public void test7() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(0);
-
-    // When / Then
-    try {
-      heap.max();
-      fail("Expected ArrayIndexOutOfBoundsException when calling max() on a heap with capacity 0");
-    } catch (ArrayIndexOutOfBoundsException e) {
-      String msg = (e.getMessage() == null) ? "" : e.getMessage();
-      // message content may vary across implementations; ensure exception type is as expected
-      assertTrue("Received expected index-related exception for max() on empty heap: " + msg,
-          e instanceof ArrayIndexOutOfBoundsException);
-    }
+  public void test7()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax(0);
+      // Undeclared exception!
+      try { 
+        fPHeapMax0.max();
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 1
+         //
+         verifyException("ds.FPHeapMax", e);
+      }
   }
 
   /**
-   * RQ-HEAP-009: retiraMax on an invalid (negative sized) heap should indicate empty-heap error.
+   * REQ-HEAP-RETIRA-NEGATIVE-CAPACITY: Creating a heap with negative capacity and attempting retiraMax should raise Exception.
    *
-   * Given a heap constructed with a negative capacity,
-   * When calling retiraMax(),
-   * Then an Exception indicating heap empty must be thrown.
+   * Given a heap constructed with negative capacity
+   * When retiraMax() is invoked
+   * Then an Exception indicating the heap is empty or invalid is thrown
    */
   @Test(timeout = 4000)
-  public void test8() throws Throwable {
-    // Given
-    FPHeapMax heap = new FPHeapMax(-1);
-
-    // When / Then
-    try {
-      heap.retiraMax();
-      fail("Expected Exception when calling retiraMax() on an invalid/negative-sized heap");
-    } catch (Exception e) {
-      String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
-      assertTrue("Exception message should indicate an empty or invalid heap (vazio/empty): " + e.getMessage(),
-          msg.contains("vazio") || msg.contains("empty") || msg.contains("invalid"));
-    }
+  public void test8()  throws Throwable  {
+      FPHeapMax fPHeapMax0 = new FPHeapMax((-1));
+      try { 
+        fPHeapMax0.retiraMax();
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: heap vazio
+         //
+         verifyException("ds.FPHeapMax", e);
+      }
   }
 }

@@ -1,108 +1,83 @@
 package ds.seed7992;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
 import ds.Fila;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
+import org.junit.experimental.categories.Category;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 /**
- * Improved tests for ds.Fila focusing on clear Given-When-Then structure,
- * descriptive assertions, and checking both behavior and messages for exceptions.
- *
- * Requirement traceability:
- * - REQ-QUEUE-001: Basic enqueue/dequeue functionality
- * - REQ-QUEUE-002: Dequeue on empty queue should throw a descriptive exception
+ * Marker interface for unit tests.
  */
+interface UnitTest {}
+
+/**
+ * Marker interface for regression tests.
+ */
+interface RegressionTest {}
+
+/**
+ * Improved and annotated tests for ds.Fila.
+ *
+ * Note: This class preserves the original test method names and EvoSuite runner annotations
+ * as required by the preservation rules.
+ */
+ 
+ 
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 public class EvoAITest extends Fila_ESTest_scaffolding {
 
   /**
-   * Given an empty queue,
-   * When an object (the queue itself) is enqueued,
-   * Then the queue must report it is not empty and printing the queue must not throw.
+   * Given an empty queue, when the queue enqueues itself and prints,
+   * then it should no longer be empty.
    *
-   * REQ-QUEUE-001
+   * Requirement: REQ-QUEUE-ENQ-PRINT-001
    */
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-
-    // Precondition: queue should be empty
-    assertTrue("Precondition: new queue should be empty", fila0.vazia());
-
-    // When: enqueue the queue instance itself (edge-case of enqueuing self-reference)
-    fila0.enfileira(fila0);
-
-    // Then: the queue should not be empty and imprime() should execute without exception.
-    try {
-      fila0.imprime(); // observation - should not alter state
-    } catch (Exception e) {
-      fail("Calling imprime() must not throw an exception, but it did: " + e);
-    }
-
-    assertFalse("After enqueuing an element, the queue should no longer be empty", fila0.vazia());
+  public void test0()  throws Throwable  {
+      Fila fila0 = new Fila();
+      fila0.enfileira(fila0);
+      fila0.imprime();
+      assertFalse(fila0.vazia());
   }
 
   /**
-   * Given an empty queue,
-   * When attempting to dequeue,
-   * Then an Exception with a clear message must be thrown and the queue remains empty.
+   * Given an empty queue, when attempting to dequeue, an Exception is expected.
    *
-   * REQ-QUEUE-002
+   * Requirement: REQ-QUEUE-DEQ-EMPTY-001
    */
   @Test(timeout = 4000)
-  public void test1() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-    assertTrue("Precondition: queue must start empty for this test", fila0.vazia());
-
-    // When / Then: expect a specific exception and message
-    try {
-      fila0.desenfileira();
-      fail("Expected Exception when dequeuing from an empty queue");
-    } catch (Exception e) {
-      // Verify the exception type and message provide useful diagnostic information
-      assertEquals("Exception class should be java.lang.Exception", Exception.class, e.getClass());
-      String expectedMessage = "Erro: A fila esta vazia";
-      assertEquals("Exception message should clearly state the queue is empty", expectedMessage, e.getMessage());
-    }
-
-    // Postcondition: queue should still be empty after the failed operation
-    assertTrue("Queue must remain empty after failed dequeue attempt", fila0.vazia());
+  public void test1()  throws Throwable  {
+      Fila fila0 = new Fila();
+      try { 
+        fila0.desenfileira();
+        fail("Expecting exception: Exception");
+      
+      } catch(Exception e) {
+         //
+         // Erro: A fila esta vazia
+         //
+         verifyException("ds.Fila", e);
+      }
   }
 
   /**
-   * Given a queue with one element (the queue enqueued into itself),
-   * When dequeueing,
-   * Then the returned object must be the same instance that was enqueued and
-   * the returned object's internal state should reflect that it is empty after removal.
+   * Given a queue that enqueues itself, when dequeued, the returned object should be
+   * the same instance and should remain a valid (empty) queue object.
    *
-   * REQ-QUEUE-001
+   * Requirement: REQ-QUEUE-ENQ-DEQ-SELF-001
    */
   @Test(timeout = 4000)
-  public void test2() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-    assertTrue("Precondition: new queue should be empty", fila0.vazia());
-
-    // When: enqueue the queue itself (interesting/self-referential case) and then dequeue
-    fila0.enfileira(fila0);
-    Object dequeued = fila0.desenfileira();
-
-    // Then: the dequeued object must be the same instance enqueued
-    assertSame("Dequeued object should be the same instance that was enqueued", fila0, dequeued);
-
-    // And: the dequeued object's own state (it's the same fila) should be empty after the removal
-    assertTrue("The returned queue instance should report empty after its element was removed",
-        ((Fila) dequeued).vazia());
-
-    // And: the original queue (which is the same object in this test) should also be empty
-    assertTrue("Original queue should be empty after dequeue", fila0.vazia());
+  public void test2()  throws Throwable  {
+      Fila fila0 = new Fila();
+      fila0.enfileira(fila0);
+      Fila fila1 = (Fila)fila0.desenfileira();
+      assertTrue(fila1.vazia());
   }
 }

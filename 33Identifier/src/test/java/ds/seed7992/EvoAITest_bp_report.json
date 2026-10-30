@@ -2,69 +2,69 @@
   "test_class_name": "EvoAITest",
   "test_methods": [
     {
-      "test_method_name": "test4",
+      "test_method_name": "test3",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs multiple 'Act' operations: it validates two different inputs (\"ZHkFQY\" and \"M\") and asserts both in the same method. This violates the single Arrange-Act-Assert / single-behavior rule.",
-          "original_code": "// When\nboolean result = identifier.validateIdentifier(s);\n\n// Then\nassertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false per baseline behavior.\", result);\nassertEquals(\"validateIdentifier should be deterministic for the same input string.\", result, identifier.validateIdentifier(s));\nassertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted per baseline).\", identifier.validateIdentifier(\"M\"));",
-          "improved_code": "@Test\npublic void validateIdentifier_ZHkFQY_returnsFalse() throws Throwable {\n    String s = \"ZHkFQY\";\n    boolean result = identifier.validateIdentifier(s);\n    assertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false.\", result);\n}\n\n@Test\npublic void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true.\", identifier.validateIdentifier(\"M\"));\n}"
+          "status": "compliant",
+          "justification": "The method performs a single Arrange (new Identifier()), a single Act (valid_s('r')), and a single Assert (assertTrue). Only one method call under test is present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method uses an 'identifier' instance but the shown class has no @Before/@BeforeEach setup in the visible snippet; there is no evident per-test initialization here. Because we must not assume external scaffolding, this indicates potential shared/implicit state and missing explicit setup.",
-          "original_code": "// When\nboolean result = identifier.validateIdentifier(s);",
-          "improved_code": "private Identifier identifier;\n\n@Before\npublic void setUp() {\n    // explicit per-test initialization to ensure independence\n    identifier = new Identifier();\n}"
+          "status": "compliant",
+          "justification": "The test uses only local variables and no shared mutable state; there is no evidence of reliance on other tests or ordered naming. No @Before/@After required for this single, self-contained test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only happy-path scenarios are present in this class (valid/invalid strings) and there is no test for an exceptional or error condition (no assertThrows/@Test(expected=...) usage). With a single test method shown, there is no evidence of explicit error-case testing.",
-          "original_code": "String s = \"ZHkFQY\";\nboolean result = identifier.validateIdentifier(s);\nassertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false per baseline behavior.\", result);",
-          "improved_code": "@Test(expected = NullPointerException.class)\npublic void validateIdentifier_null_throws() {\n    // exercise exceptional flow explicitly\n    identifier.validateIdentifier(null);\n}"
+          "justification": "Only a single happy-path assertion is present and the class contains only one test method. No tests for error or exceptional scenarios (no assertThrows/@Test(expected=...) or negative inputs) are present.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_happyAndErrorCases() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // Happy path\n    assertTrue(\"expected 'r' to be valid\", identifier0.valid_s('r'));\n    // Error/invalid case: NUL char should be invalid\n    assertFalse(\"expected NUL char to be invalid\", identifier0.valid_s('\\u0000'));\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test exercises a typical multi-character string and a single-letter string, but there are no explicit boundary value tests for empty string, very long strings, or 'just outside' valid ranges. No clear boundary inputs (empty, zero-length, max-length) are covered.",
-          "original_code": "String s = \"ZHkFQY\";\nboolean result = identifier.validateIdentifier(s);\nassertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false per baseline behavior.\", result);\nassertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted per baseline).\", identifier.validateIdentifier(\"M\"));",
-          "improved_code": "@Test\npublic void validateIdentifier_emptyString_returnsFalse() {\n    assertFalse(\"Empty string should be rejected.\", identifier.validateIdentifier(\"\"));\n}\n\n@Test\npublic void validateIdentifier_veryLongString_behavesConsistently() {\n    char[] chars = new char[1000];\n    java.util.Arrays.fill(chars, 'A');\n    String longS = new String(chars);\n    // ensure method handles long inputs deterministically\n    identifier.validateIdentifier(longS);\n}"
+          "justification": "The test exercises only a typical input ('r'). No boundary values (e.g., '\\u0000', whitespace, Character.MAX_VALUE) or edge cases are tested.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_withBoundaryValues() throws Throwable {\n    Identifier id = new Identifier();\n    // typical\n    assertTrue(\"'r' should be valid\", id.valid_s('r'));\n    // boundaries / edge cases\n    assertFalse(\"NUL should be invalid\", id.valid_s('\\u0000'));\n    assertFalse(\"space should be invalid\", id.valid_s(' '));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The class contains no helper methods or test constants within the visible snippet; values are hard-coded in the test method. There is no evidence of extracted setup or reusable helpers to remove duplication or magic values.",
-          "original_code": "String s = \"ZHkFQY\";\n// ...\nassertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted per baseline).\", identifier.validateIdentifier(\"M\"));",
-          "improved_code": "private static final String TEST_MULTI_LETTER = \"ZHkFQY\";\nprivate static final String TEST_SINGLE_LETTER = \"M\";\n\nprivate Identifier createIdentifier() {\n    return new Identifier();\n}\n\n@Test\npublic void validateIdentifier_withConstants() {\n    Identifier id = createIdentifier();\n    assertFalse(id.validateIdentifier(TEST_MULTI_LETTER));\n}"
+          "status": "compliant",
+          "justification": "The test is short (<10 lines) and self-contained; there is no duplicated setup across multiple tests to refactor. No helper methods are required for this single simple test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is short (well under 30 lines), linear, and contains no loops or complex conditionals. The flow follows Arrange-Act-Assert patterns.",
+          "justification": "The test is small (well under 20 lines) and linear, with no loops or conditionals, indicating low complexity.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test includes multiple assertions (a correctness assertion and a determinism check) and an additional sanity assertion, providing complementary checks rather than a single superficial assertion.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains only a single superficial assertion (assertTrue) and does not verify multiple properties or multiple relevant cases that would increase fault detection capability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_enhancedAssertions() throws Throwable {\n    Identifier id = new Identifier();\n    // verify multiple representative inputs to increase fault detection\n    assertTrue(\"'r' should be valid\", id.valid_s('r'));\n    assertFalse(\"digit '1' should be invalid\", id.valid_s('1'));\n    assertFalse(\"NUL should be invalid\", id.valid_s('\\u0000'));\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods in the visible snippet; tests appear active and runnable.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out test methods are present in the shown method. Test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -72,15 +72,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "non-compliant",
-          "justification": "No annotations, Javadoc, or comments link this test to any requirement ID, user story, or ticket. There is no traceability information present in the method/class snippet.",
-          "original_code": "/*\n * Improved, maintainable unit tests for the Identifier class.\n */\n@Test(timeout = 4000)\npublic void test4() throws Throwable { ... }",
-          "improved_code": "/**\n * Tests REQ-001: validateIdentifier should reject known invalid identifiers.\n * @see REQ-001\n */\n@Test(timeout = 4000)\npublic void validateIdentifier_ZHkFQY_returnsFalse() throws Throwable {\n    String s = \"ZHkFQY\";\n    assertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false.\", identifier.validateIdentifier(s));\n}"
+          "justification": "There are no annotations or Javadoc comments linking this test to a requirement ID, ticket, or user story (no @Story/@Requirement or REQ-/US- references).",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "/**\n * Tests REQ-001: Identifier character validation for lowercase letters.\n */\n@Test(timeout = 4000)\npublic void testValidS_req001_lowercaseR() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(\"REQ-001: 'r' should be valid\", identifier0.valid_s('r'));\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "No performance or security testing is expected for this unit test; there are no timing annotations or security checks. Per rules, this is typically not applicable for simple unit tests.",
+          "justification": "This is a small unit test for character validation; no performance or security test obligations are evident and no explicit performance/security tests are present. For unit tests this practice is typically not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test4' is generic and does not follow descriptive naming conventions (method_scenario_expectedResult). It does not communicate the scenario or expected outcome.",
-          "original_code": "@Test(timeout = 4000)\npublic void test4() throws Throwable {\n    // ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void validateIdentifier_ZHkFQY_returnsFalse() throws Throwable {\n    String s = \"ZHkFQY\";\n    assertFalse(\"Expected validateIdentifier(\\\"ZHkFQY\\\") to be false.\", identifier.validateIdentifier(s));\n}"
+          "justification": "The method name 'test3' is generic and does not describe scenario or expected outcome; it does not follow descriptive naming conventions like methodName_scenario_expectedResult.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testValidS_withLowercaseR_returnsTrue() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(\"'r' should be considered valid\", identifier0.valid_s('r'));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "There are no signs of heavy autogenerated scaffolding (no 'Auto-generated' comments or repetitive generated names beyond the preserved test name). Per the rules, mark as not-applicable when no clear generation artifacts are present.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The class contains explicit references to EvoSuite/EvoRunner and preserves an EvoSuite style test name (test3). These are signs of auto-generated tests and verbose generation artifacts.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "/** Clean, intention-revealing test replacing generated name */\n@Test(timeout = 4000)\npublic void valid_s_withLowercaseLetter_shouldReturnTrue() throws Throwable {\n    Identifier id = new Identifier();\n    assertTrue(\"lowercase letters should be valid\", id.valid_s('r'));\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test shows Given-When-Then style inline comments and deliberate complementary assertions (determinism sanity check), indicating a thoughtful design intent.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method lacks Given-When-Then structure or BDD-style naming in the method body; test appears to be a minimal happy-path check without evidence of prioritized scenario coverage or design intent.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testValidS_givenLowercaseLetter_whenValidated_thenReturnsTrue() throws Throwable {\n    // Given\n    Identifier identifier0 = new Identifier();\n    // When\n    boolean result = identifier0.valid_s('r');\n    // Then\n    assertTrue(\"Expected lowercase 'r' to be valid\", result);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts with a public API method (validateIdentifier) without using reflection or checking internal private state; it focuses on observable behavior.",
+          "justification": "The test calls a public API (Identifier.valid_s) and does not access private fields or use reflection. No coupling to internal implementation details is evident.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertFalse/assertEquals/assertTrue) rather than generic assertTrue, improving diagnosability.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and rely on a generic assertTrue rather than a more descriptive assertion message or multiple checks. No assertion messages are provided.",
+          "original_code": "@Test(timeout = 4000)\npublic void test3()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_s('r');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test3_withDescriptiveAssertions() throws Throwable {\n    Identifier id = new Identifier();\n    assertTrue(\"Identifier.valid_s should return true for 'r'\", id.valid_s('r'));\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Comments are minimal and use Given-When-Then to explain the test's intention; there is no commented-out code or excessive commentary.",
+          "justification": "The class contains concise Javadoc explaining intent and no commented-out code in the method. Comments are minimal and explain rationale at class level, not cluttering the test method.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test avoids randomness/time dependencies and explicitly checks determinism by calling the method twice and comparing results, indicating deterministic design.",
+          "justification": "The test uses deterministic inputs (literal char 'r'), no random values, timestamps, Thread.sleep(), or external dependencies are present in the shown code.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses local variables and makes no file, database, or static modifications in the visible snippet; there is no evidence of side-effect-causing operations without cleanup.",
+          "justification": "The test uses only local variables and does not write files, modify static state, or persist data; no cleanup is required.",
           "original_code": null,
           "improved_code": null
         },
@@ -152,14 +152,174 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), which is a meaningful categorization enabling selective execution.",
+          "justification": "The test class is annotated with @Category(UnitTest.class), providing a meaningful classification for selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
       "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "58.8%"
+      "normalized_method_compliance_score": "55.6%"
+    },
+    {
+      "test_method_name": "test0",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "The method performs a single Arrange-Act-Assert: constructs Identifier, calls valid_f once, and asserts the boolean result. Only one 'Act' operation is present.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not rely on or modify shared/static state in the method body; no numbered test ordering is present in the method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path assertion exists; there are no tests for error conditions or exceptional flows in this method or additional methods in the class (class contains only one test).",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test0_invalidInput_returnsFalse() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('\\u0000');\n    assertFalse(boolean0);\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "The test only checks a single typical value ('4') and does not exercise boundary values (e.g., '0','9', characters just outside ranges).",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test0_boundaryValues() throws Throwable {\n    Identifier id = new Identifier();\n    assertTrue(id.valid_f('0'));\n    assertTrue(id.valid_f('9'));\n    assertFalse(id.valid_f('/'));\n}"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (<10 lines) and does not duplicate setup; no helper methods are needed for this single simple test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The method is small (<20 lines), linear, with no loops or conditionals, meeting the low complexity requirement.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test contains only a single superficial assertion (assertTrue) and does not verify multiple properties of the result or the object (only one assertion present).",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test0_verifyMultipleProperties() throws Throwable {\n    Identifier id = new Identifier();\n    assertNotNull(\"Identifier should be instantiated\", id);\n    assertTrue(\"Digit '4' should be valid\", id.valid_f('4'));\n}"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations and no commented-out test methods in the visible code; tests appear active.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "No annotations, Javadoc, or comments in the method link it to a requirement or ticket ID; the test name is generic and provides no traceability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "/**\n * Tests REQ-123: valid_f accepts ASCII digit characters.\n */\n@Test(timeout = 4000)\npublic void test0() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "The test method declares a timeout (@Test(timeout = 4000)), which is an explicit performance-related assertion, satisfying the presence of a performance constraint.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test0' is generic and does not describe the scenario or expected outcome; it does not follow descriptive naming conventions.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validF_withDigit4_returnsTrue() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(identifier0.valid_f('4'));\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The test name 'test0' and the class comments referencing EvoSuite/EvoRunner indicate generated or preserved auto-generated test names/patterns, showing heavy code-generation artifacts.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validF_returnsTrueForDigit() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(identifier0.valid_f('4'));\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "The test appears minimal and written for a single happy path; there is no Given-When-Then structure in the method body and no evidence of prioritized or test-first design in the method itself.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validF_givenDigit_whenValid_thenReturnsTrue() throws Throwable {\n    // Given\n    Identifier identifier0 = new Identifier();\n    // When\n    boolean result = identifier0.valid_f('4');\n    // Then\n    assertTrue(result);\n}"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test exercises a public API (valid_f) and does not access private fields or use reflection; it verifies behavior via public methods only.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use a single generic assertTrue; specific assertion messages would make failures easier to diagnose.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('4');\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test0_assertionWithMessage() throws Throwable {\n    Identifier id = new Identifier();\n    boolean res = id.valid_f('4');\n    assertTrue(\"valid_f should return true for digit '4'\", res);\n}"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The class contains explanatory comments and no commented-out code within the test method; comments present are helpful rather than excessive.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test uses no sources of non-determinism (no Random, current time, or sleeps) and relies only on deterministic method calls; the timeout is static.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test only uses local variables and does not persist data or modify global/static state; no cleanup is necessary.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for the tests at the class level.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "57.9%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "57.9%"
     },
     {
       "test_method_name": "test5",
@@ -167,64 +327,64 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test executes multiple distinct 'Act' operations: validateIdentifier(\"M\") (happy path) and validateIdentifier(null) (error scenario). Decision rule 1: more than one distinct method-call scenario is present, so the test is not atomic.",
-          "original_code": "    // Given\n    String s = \"M\";\n\n    // When\n    boolean first = identifier.validateIdentifier(s);\n\n    // Then\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted).\", first);\n    assertEquals(\"validateIdentifier should return the same result on repeated calls with the same input.\", first, identifier.validateIdentifier(s));\n    assertFalse(\"Expected validateIdentifier(null) to be false (null input handled as invalid).\", identifier.validateIdentifier(null));",
-          "improved_code": "    @Test\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        String s = \"M\";\n        boolean first = identifier.validateIdentifier(s);\n        assertTrue(\"Expected single-letter identifier to be accepted.\", first);\n        assertEquals(\"Deterministic: repeated call should match.\", first, identifier.validateIdentifier(s));\n    }\n\n    @Test\n    public void validateIdentifier_null_returnsFalse() throws Throwable {\n        assertFalse(\"Null input should be invalid.\", identifier.validateIdentifier(null));\n    }"
+          "status": "compliant",
+          "justification": "The test contains a single 'Act' operation (identifier0.validateIdentifier(\"M\")) and one assertion; a single Arrange-Act-Assert block is present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test uses an instance field 'identifier' (not declared local) and there is no visible @Before/@BeforeEach setup in the class. Decision rule 1/2: no explicit setup is present in the shown code and the method depends on external instance state, so independence cannot be guaranteed.",
-          "original_code": "    // When\n    boolean first = identifier.validateIdentifier(s);\n\n    // Then\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted).\", first);",
-          "improved_code": "    private Identifier identifier;\n\n    @Before\n    public void setUp() {\n        identifier = new Identifier();\n    }\n\n    @Test\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        String s = \"M\";\n        assertTrue(identifier.validateIdentifier(s));\n    }"
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not rely on shared mutable state or ordered execution; no setup/teardown is required within the visible snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only one test method is present in the snippet. Although it asserts for a happy path and checks null, the class has a single test overall; decision rule 4: the class has fewer than 2 test methods covering both happy and explicit error-case tests for the same behavior, so it is marked non-compliant.",
-          "original_code": "    // Given\n    String s = \"M\";\n\n    // When\n    boolean first = identifier.validateIdentifier(s);\n\n    // Then\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted).\", first);",
-          "improved_code": "    @Test\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        String s = \"M\";\n        assertTrue(identifier.validateIdentifier(s));\n    }\n\n    @Test\n    public void validateIdentifier_invalidCharacters_returnsFalse() throws Throwable {\n        assertFalse(identifier.validateIdentifier(\"!@#\"));\n    }\n\n    @Test\n    public void validateIdentifier_null_returnsFalse() throws Throwable {\n        assertFalse(identifier.validateIdentifier(null));\n    }"
+          "justification": "Only a single happy-path assertion is present; there is no test for error conditions or exceptional flows for the method under test.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // happy path\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(\"Expected 'M' to be a valid identifier\", boolean0);\n    // error path: null input should lead to a NullPointerException (documented expectation)\n    try {\n        identifier0.validateIdentifier(null);\n        fail(\"Expected NullPointerException for null input\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test exercises a single typical value (\"M\") and null; it does not exercise other boundary cases such as empty string, zero-length, or very long identifiers. Decision rule 3: test data only contains typical and null values, so boundary coverage is insufficient.",
-          "original_code": "    // Given\n    String s = \"M\";\n\n    // When\n    boolean first = identifier.validateIdentifier(s);\n\n    // Then\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted).\", first);",
-          "improved_code": "    @Test\n    public void validateIdentifier_boundaryValues() throws Throwable {\n        // empty string\n        assertFalse(\"Empty identifier should be invalid.\", identifier.validateIdentifier(\"\"));\n        // single letter (valid)\n        assertTrue(\"Single-letter identifier should be valid.\", identifier.validateIdentifier(\"M\"));\n        // long identifier (boundary/max)\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < 1024; i++) sb.append('a');\n        assertFalse(\"Excessively long identifier should be invalid.\", identifier.validateIdentifier(sb.toString()));\n    }"
+          "justification": "The test uses a typical value (\"M\") only; there are no assertions covering empty, zero-length, overly long, or other boundary inputs.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // single uppercase (typical)\n    assertTrue(\"Single uppercase should be valid\", identifier0.validateIdentifier(\"M\"));\n    // empty string boundary\n    assertFalse(\"Empty string should be invalid\", identifier0.validateIdentifier(\"\"));\n    // overly long boundary\n    String longStr = new String(new char[1025]).replace('\\0', 'A');\n    assertFalse(\"Too long identifier should be invalid\", identifier0.validateIdentifier(longStr));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test class does not show helper methods or constants to eliminate magic values; the test embeds hard-coded strings directly. Decision rules 1 and 2: no private helpers or constants are present in the visible code, so modularity is limited.",
-          "original_code": "    // Given\n    String s = \"M\";\n\n    // When\n    boolean first = identifier.validateIdentifier(s);\n\n    // Then\n    assertTrue(\"Expected validateIdentifier(\\\"M\\\") to be true (single-letter identifier accepted).\", first);",
-          "improved_code": "    private static final String TEST_SINGLE_LETTER = \"M\";\n\n    private Identifier createIdentifier() {\n        return new Identifier();\n    }\n\n    @Test\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        Identifier id = createIdentifier();\n        assertTrue(id.validateIdentifier(TEST_SINGLE_LETTER));\n    }"
+          "status": "compliant",
+          "justification": "The test is short (<10 lines) and self-contained; there is no duplicated setup visible that would require helper extraction in this single-method example.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is short (well under 20 lines), contains no loops or complex conditionals, and follows a clear Given-When-Then linear flow. Decision rule 3 applies: short linear test, so compliant.",
+          "justification": "The method is small, linear, with no loops or complex conditionals and well under the complexity/length thresholds.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test includes multiple complementary assertions: it verifies the main property (accepts \"M\"), checks determinism (repeated call yields same result), and asserts known invalid input (null). Multiple relevant properties are asserted, satisfying the requirement for comprehensive checks.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains a single superficial assertion (assertTrue) and does not verify multiple properties or multiple related outcomes that increase fault-detection capability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // verify multiple related behaviours to increase fault detection\n    assertTrue(\"Uppercase single letter should be valid\", identifier0.validateIdentifier(\"M\"));\n    assertFalse(\"Lowercase single letter should be invalid\", identifier0.validateIdentifier(\"m\"));\n    assertFalse(\"Empty identifier should be invalid\", identifier0.validateIdentifier(\"\"));\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the visible code. The test is active and runnable, so it meets the maintenance practice.",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods within the visible snippet; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -232,15 +392,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "non-compliant",
-          "justification": "No annotations or Javadoc links to requirements, tickets, or stories are present on the method or class (aside from a descriptive class comment). Decision rule 3: absence of traceability metadata leads to non-compliance.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test5() throws Throwable {\n        // Given\n        String s = \"M\";",
-          "improved_code": "    /**\n     * Tests REQ-123: validateIdentifier accepts single-letter identifiers and is deterministic.\n     */\n    @Test(timeout = 4000)\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        String s = \"M\";\n        assertTrue(identifier.validateIdentifier(s));\n    }"
+          "justification": "No annotations, Javadoc, or comments link the test to requirement IDs, tickets, or stories; no traceability information is present for this test method.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "/**\n * Tests REQ-123: validateIdentifier should accept a single uppercase letter as valid\n */\n@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(\"REQ-123: 'M' should be valid\", identifier0.validateIdentifier(\"M\"));\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses @Test(timeout = 4000), which is an explicit timeout-based assertion present in the code. Per decision rule 2, that qualifies as an explicit performance-related annotation, so this practice is considered compliant.",
+          "status": "not-applicable",
+          "justification": "This is a unit test of a simple validation method; no performance or security non-functional tests are expected in this unit test context.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +408,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test5' is generic and does not describe the scenario or expected outcome. Decision rule 2: generic naming leads to non-compliance with descriptive naming conventions.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test5() throws Throwable {\n        // Given\n        String s = \"M\";",
-          "improved_code": "    @Test(timeout = 4000)\n    public void validateIdentifier_singleLetter_returnsTrue() throws Throwable {\n        // Given\n        String s = \"M\";\n        // When\n        boolean first = identifier.validateIdentifier(s);\n        // Then\n        assertTrue(\"Expected single-letter identifier to be accepted.\", first);\n    }"
+          "justification": "The method name 'test5' is generic and does not describe the scenario or expected result; it does not follow descriptive naming conventions.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validateIdentifier_singleUppercase_returnsTrue() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertTrue(\"Single uppercase should be valid\", identifier0.validateIdentifier(\"M\"));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "There are no clear signs of heavy code generation in the visible snippet. Although the method name resembles autogenerated naming, the class header documents that tests were rewritten; there is no auto-generated boilerplate or repetitive autogenerated names in the shown code. Following decision rule 3, mark as not-applicable.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The file contains explicit EvoSuite artifacts and preserved auto-generated name (test5); comments in the header also state EvoSuite generation was used, indicating generated/verbose test provenance.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validateIdentifier_singleUppercase_returnsTrue() throws Throwable {\n    // Given: a fresh Identifier\n    Identifier identifier0 = new Identifier();\n    // When: validating a single uppercase letter\n    boolean valid = identifier0.validateIdentifier(\"M\");\n    // Then: it should be valid\n    assertTrue(\"Single uppercase should be valid\", valid);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then inline comments and descriptive failure messages consistent with BDD/Given-When-Then design, which indicates thoughtful test design (decision rule 1).",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test shows only a basic happy-path assertion and lacks Given-When-Then comments or evidence of TDD/BDD-style design and does not cover prioritized scenarios beyond the basic case.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testValidateIdentifier_givenSingleUppercase_whenValidate_thenReturnsTrue() throws Throwable {\n    // Given\n    Identifier identifier = new Identifier();\n    // When\n    boolean result = identifier.validateIdentifier(\"M\");\n    // Then\n    assertTrue(\"Expected valid for single uppercase\", result);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts only with the public API identifier.validateIdentifier and does not use reflection or access private internals. No evidence of reliance on implementation details is present (decision rule 3).",
+          "justification": "The test exercises a public API (validateIdentifier) and does not use reflection or access private/internal state in the visible snippet.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertTrue, assertEquals, assertFalse) rather than generic assertTrue alone. Decision rule 1: messages are present, so compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and use a single generic assertTrue without context; more specific assertions and messages would improve diagnosability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test5()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test5() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"M\");\n    assertTrue(\"validateIdentifier should return true for single uppercase 'M'\", boolean0);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The code includes concise Given-When-Then inline comments and a meaningful class-level Javadoc. There is no commented-out code or excessive comments; comments explain intent rather than restating code.",
+          "justification": "The file contains concise explanatory comments at class level and no commented-out code in the method; comments are used to explain 'why' in the header rather than cluttering the method body.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +456,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use randomness, time-based calls, Thread.sleep, or external dependencies; repeated calls are explicitly checked for determinism. Decision rules 1 and 3 indicate deterministic design.",
+          "justification": "The test does not rely on Random, current time, sleeps, or external systems; it uses only local, deterministic calls.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,7 +464,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses only in-memory calls to identifier.validateIdentifier and does not create files, databases, or modify static/global state. No cleanup is required given the absence of side-effectful operations (decision rule 3).",
+          "justification": "The test uses only local variables and does not persist data, create files, or modify static/shared state in the visible snippet.",
           "original_code": null,
           "improved_code": null
         },
@@ -312,79 +472,79 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization at class level. Decision rule 1 applies: meaningful category annotation is present.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful label for categorization and selective execution.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "57.9%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "61.1%"
+      "normalized_method_compliance_score": "55.6%"
     },
     {
-      "test_method_name": "test6",
+      "test_method_name": "test4",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test executes multiple distinct verification scenarios: it asserts that a malformed identifier is invalid, re-invokes the same call for determinism, and then performs a separate sanity check for a different input (\"M\"). This constitutes multiple Arrange-Act-Assert concerns in one method. Decision: >1 distinct act/verification => non-compliant.",
-          "original_code": "    // Given\n    String s = \" tDzh*t-\";\n\n    // When\n    boolean result = identifier.validateIdentifier(s);\n\n    // Then\n    assertFalse(\"Expected validateIdentifier(\\\" tDzh*t-\\\") to be false (contains spaces/special chars).\", result);",
-          "improved_code": "    @Test(timeout = 4000)\n    public void test6() throws Throwable {\n        // Given\n        String s = \" tDzh*t-\";\n        // When\n        boolean result = identifier.validateIdentifier(s);\n        // Then\n        assertFalse(\"Expected validateIdentifier(\\\" tDzh*t-\\\") to be false.\", result);\n        // Determinism check kept as part of same behavior\n        assertEquals(\"validateIdentifier should be deterministic.\", result, identifier.validateIdentifier(s));\n    }"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Each test should focus on a single behavior with one Arrange-Act-Assert. RATIONALE: Improves root-cause identification and maintainability. EVALUATION CRITERIA: Compliant if the test contains one clear Act operation and one assertion group. DECISION RULES: The test contains a single call to identifier0.validateIdentifier(...) (one Act) and a single assertion assertFalse(...). No evidence of multiple unrelated operations. VERDICT: compliant because there is exactly one method under test and one assertion, representing one Arrange-Act-Assert block.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test uses the 'identifier' instance field without any shown @Before/@After setup in the visible code. There is no evidence of per-test initialization or teardown in the method itself, so independence is not guaranteed based on the method's contents. Decision: instance variable used without visible setup => non-compliant.",
-          "original_code": "    // When\n    boolean result = identifier.validateIdentifier(s);\n\n    // Then\n    assertFalse(\"Expected validateIdentifier(\\\" tDzh*t-\\\") to be false (contains spaces/special chars).\", result);",
-          "improved_code": "    private Identifier identifier;\n\n    @Before\n    public void setUp() {\n        // initialize a fresh Identifier for each test to avoid shared mutable state\n        identifier = new Identifier();\n    }"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests must not depend on other tests or shared mutable state. RATIONALE: Enables any-order and parallel execution. EVALUATION CRITERIA: Look for @Before/@After usage or shared mutable state. DECISION RULES: No @Before/@After annotations are present in the shown class; the test uses only local variables and does not reference static or instance variables. VERDICT: compliant because the method uses only local variables and there is no evidence of shared mutable state or ordering dependencies.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single test method exists in the provided class. The best-practice requires at least two tests per method under test (happy path and error scenario). Although the method contains both a failing input and a sanity check, the class-level requirement for separate test methods is not met. Decision: single test method only => non-compliant.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test6() throws Throwable {\n        // Given\n        String s = \" tDzh*t-\";\n\n        // When\n        boolean result = identifier.validateIdentifier(s);",
-          "improved_code": "    @Test\n    public void validateIdentifier_validSingleCharacter_returnsTrue() {\n        assertTrue(identifier.validateIdentifier(\"M\"));\n    }\n\n    @Test\n    public void validateIdentifier_invalidChars_returnsFalse() {\n        assertFalse(identifier.validateIdentifier(\" tDzh*t-\"));\n    }"
+          "justification": "PRINCIPLE: Tests should include both happy path and error scenarios. RATIONALE: Ensures robustness and correct error handling. EVALUATION CRITERIA: For each method under test there should be at least two tests: one happy-path and one error case (or explicit exception check). DECISION RULES: The class contains only one test method in the provided snippet and that method exercises one scenario (no exception/invalid/null case). There is no @Test(expected=...) nor assertThrows nor any test named indicating error/exception scenarios. VERDICT: non-compliant because there is only a single happy-path (or single expected outcome) test and no test covering error/exceptional flows.",
+          "original_code": "Identifier identifier0 = new Identifier();\nboolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void test4_nullInput_throws() {\n    Identifier id = new Identifier();\n    id.validateIdentifier(null);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test uses a malformed multi-character string and a single character 'M', but it does not explicitly test common boundaries such as empty string, zero-length, very long strings or off-by-one lengths. Decision: no explicit boundary-value inputs found => non-compliant.",
-          "original_code": "    // Given\n    String s = \" tDzh*t-\";\n    // ...\n    assertTrue(\"Sanity check: validateIdentifier(\\\"M\\\") should still be true.\", identifier.validateIdentifier(\"M\"));",
-          "improved_code": "    @Test\n    public void validateIdentifier_boundaries() {\n        // empty string\n        assertFalse(identifier.validateIdentifier(\"\"));\n        // single valid char\n        assertTrue(identifier.validateIdentifier(\"A\"));\n        // very long string (boundary/max length check)\n        String longStr = new String(new char[300]).replace('\\0', 'a');\n        assertFalse(identifier.validateIdentifier(longStr));\n    }"
+          "justification": "PRINCIPLE: Tests should check boundary inputs (empty, zero, negative, max, near-boundaries). RATIONALE: Most errors occur at input boundaries. EVALUATION CRITERIA: Look for test data that includes empty strings, zero length, -1, Integer.MAX_VALUE, very long strings, or test names indicating boundary checks. DECISION RULES: The test uses a single typical string \"ZHkFQY\" and no empty/null/short/long values or names indicating boundary tests. VERDICT: non-compliant because no boundary inputs are exercised in the method.",
+          "original_code": "Identifier identifier0 = new Identifier();\nboolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void test4_boundaryValues() {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\"\"));\n    assertFalse(id.validateIdentifier(\"A\"));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used in the visible test method; magic strings are hard-coded. The test shows repetition potential (multiple identifier.validateIdentifier calls) and lacks extracted utilities. Decision: absence of helper methods/constants => non-compliant.",
-          "original_code": "    // Given\n    String s = \" tDzh*t-\";\n\n    // When\n    boolean result = identifier.validateIdentifier(s);",
-          "improved_code": "    private static final String VALID_SINGLE = \"M\";\n\n    private void assertDeterministic(String input) {\n        boolean first = identifier.validateIdentifier(input);\n        assertEquals(\"validateIdentifier should be deterministic for same input\", first, identifier.validateIdentifier(input));\n    }\n\n    @Test\n    public void test6() {\n        assertFalse(identifier.validateIdentifier(\" tDzh*t-\"));\n        assertDeterministic(\" tDzh*t-\");\n        assertTrue(identifier.validateIdentifier(VALID_SINGLE));\n    }"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be self-contained and reuse helper methods or constants where appropriate. RATIONALE: Reduces duplication and improves maintainability. EVALUATION CRITERIA: Look for helper methods or constants; short tests that don't repeat code may be considered acceptable. DECISION RULES: No helper methods or constants are present but the test is very short (<10 lines) and does not duplicate visible code across multiple tests. VERDICT: compliant because the test is short and self-contained; there is no duplication within the snippet.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is short, linear, and has no loops or complex conditionals; cyclomatic complexity is low and the method stays focused. Decision: small and simple (<20 lines, no loops) => compliant.",
+          "justification": "PRINCIPLE: Keep tests small, focused, and low complexity. RATIONALE: Easier to reason about and less prone to bugs in test code. EVALUATION CRITERIA: Methods < 20 lines, no loops, no complex conditionals. DECISION RULES: The provided test is short (several lines), contains no loops or conditionals. VERDICT: compliant because it is small and linear in flow.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test uses multiple assertions: it asserts the expected boolean result, checks determinism by re-invoking the method, and includes a sanity check for a different input. These multiple checks increase fault-detection capability beyond a single superficial assertion. Decision: multiple meaningful assertions => compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be comprehensive and verify multiple properties when applicable. RATIONALE: Superficial assertions can let faults slip through. EVALUATION CRITERIA: Compliant if multiple properties are asserted or collections are checked for size+contents; non-compliant if only a single superficial assertion is used. DECISION RULES: The test contains only a single assertion assertFalse(boolean0) (one assertion). No multiple property checks. VERDICT: non-compliant because only one superficial assertion is present and does not comprehensively verify behavior across multiple inputs/properties.",
+          "original_code": "Identifier identifier0 = new Identifier();\nboolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void test4_multipleAssertions_checkValidAndInvalid() {\n    Identifier id = new Identifier();\n    assertFalse(\"Expected invalid identifier\", id.validateIdentifier(\"ZHkFQY\"));\n    assertTrue(\"Expected valid identifier\", id.validateIdentifier(\"valid123\"));\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore / @Disabled annotations or commented-out @Test methods are present in the provided method. The test appears active and runnable. Decision: no ignored/commented tests => compliant.",
+          "justification": "PRINCIPLE: Avoid ignored/disabled tests and commented-out test methods. RATIONALE: Ignored tests provide no value and hide issues. EVALUATION CRITERIA: Search for @Ignore/@Disabled or commented-out @Test annotations. DECISION RULES: There are no @Ignore/@Disabled annotations or commented-out tests in the provided snippet; tests are active. VERDICT: compliant because the test is active and not disabled/commented-out.",
           "original_code": null,
           "improved_code": null
         },
@@ -392,15 +552,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "non-compliant",
-          "justification": "There are no annotations or Javadoc linking this test to a requirement ID, ticket, or story. Decision: no traceability metadata present => non-compliant.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test6() throws Throwable {\n        // Given\n        String s = \" tDzh*t-\";\n        // ...\n    }",
-          "improved_code": "    /**\n     * Tests REQ-001: validateIdentifier must reject identifiers with whitespace or special chars.\n     */\n    @Test(timeout = 4000)\n    public void test6_validateIdentifier_rejectsInvalidChars_REQ_001() throws Throwable {\n        String s = \" tDzh*t-\";\n        assertFalse(identifier.validateIdentifier(s));\n    }"
+          "justification": "PRINCIPLE: Tests should be linked to requirements via annotations or comments. RATIONALE: Enables tracking requirement coverage. EVALUATION CRITERIA: Look for @Story/@Requirement or Javadoc containing REQ-, US-, JIRA- identifiers. DECISION RULES: The class-level comments do not include explicit requirement IDs and the test method has a generic name with no Javadoc or annotations referencing requirement IDs. VERDICT: non-compliant because there is no traceability information associating this test with a requirement.",
+          "original_code": "Identifier identifier0 = new Identifier();\nboolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\nassertFalse(boolean0);",
+          "improved_code": "/**\n * Tests REQ-123: validateIdentifier must return false for invalid tokens.\n */\n@Test(timeout = 4000)\npublic void test4_req123_invalidIdentifier() {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\"ZHkFQY\"));\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The test declares a timeout (@Test(timeout = 4000)), which is an explicit timing constraint. According to the decision rules, the presence of an explicit timeout marks compliance for performance-related checks in the method. Decision: explicit timeout present => compliant.",
+          "justification": "PRINCIPLE: Performance/security tests should be explicit and separate. RATIONALE: Non-functional concerns matter. EVALUATION CRITERIA: Mark as compliant if explicit performance tests (e.g., @Test(timeout=...)) or security tests are present. DECISION RULES: The test method includes @Test(timeout = 4000), which is an explicit timing constraint. VERDICT: compliant because the presence of a timeout indicates an explicit performance-related assertion for this unit test.",
           "original_code": null,
           "improved_code": null
         },
@@ -408,31 +568,31 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test6' is generic and does not describe the scenario or expected outcome. Decision: generic name => non-compliant.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test6() throws Throwable {\n        // Given\n        String s = \" tDzh*t-\";\n        // ...\n    }",
-          "improved_code": "    @Test(timeout = 4000)\n    public void validateIdentifier_withInvalidChars_returnsFalse() throws Throwable {\n        String s = \" tDzh*t-\";\n        assertFalse(\"Should reject identifiers with spaces/special chars\", identifier.validateIdentifier(s));\n    }"
+          "justification": "PRINCIPLE: Test names should be descriptive and indicate scenario and expected outcome. RATIONALE: Improves readability and self-documentation. EVALUATION CRITERIA: Check naming pattern like methodName_scenario_expectedResult or BDD style. DECISION RULES: The method name is 'test4', which is generic and does not describe scenario or expected result. VERDICT: non-compliant because the name does not communicate purpose or expected behavior.",
+          "original_code": "public void test4()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validateIdentifier_invalidToken_returnsFalse() {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\"ZHkFQY\"));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "No explicit signs of heavy code generation (no 'Auto-generated' comments or repetitive auto names aside from a single generic name). Based on visible content, determination that code-generation concerns are not applicable to this method.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests and names. RATIONALE: Generated tests can be hard to maintain and may be noisy. EVALUATION CRITERIA: Look for auto-generated comments and repetitive/sequential test names like test0, test1. DECISION RULES: The class header explicitly documents EvoSuite generation and preservation of generated names; the test method name 'test4' is consistent with generated naming. VERDICT: non-compliant because there are clear signs of auto-generated test preservation and a generic generated name.",
+          "original_code": "/**\n * Improved, more descriptive and robust tests for ds.Identifier.\n *\n * Notes:\n * - Original EvoSuite-generated test method names are preserved to satisfy oracle preservation;\n */\n@Test(timeout = 4000)\npublic void test4()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validateIdentifier_withInvalidAlphanumeric_returnsFalse() {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\"ZHkFQY\"));\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments in the method body, showing BDD/Given-When-Then structure and some design intent. Decision: explicit Given-When-Then comments => compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should reflect thoughtful design and, ideally, BDD/Given-When-Then structure. RATIONALE: Test-first design and structured tests improve coverage and clarity. EVALUATION CRITERIA: Look for Given-When-Then comments or BDD-style names or broad scenario coverage. DECISION RULES: The method lacks Given-When-Then structure and covers only a single basic scenario. The class comment mentions enhancements, but the method itself does not show evidence of BDD/Given-When-Then structure. VERDICT: non-compliant because the method is minimal and lacks explicit design markers or multiple scenario coverage.",
+          "original_code": "Identifier identifier0 = new Identifier();\nboolean boolean0 = identifier0.validateIdentifier(\"ZHkFQY\");\nassertFalse(boolean0);",
+          "improved_code": "@Test(timeout = 4000)\npublic void testValidateIdentifier_givenInvalidToken_thenReturnsFalse() {\n    // Given\n    Identifier id = new Identifier();\n    // When\n    boolean result = id.validateIdentifier(\"ZHkFQY\");\n    // Then\n    assertFalse(result);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises the public API identifier.validateIdentifier and does not use reflection or access private/internal state in the shown code. Decision: interacts via public API only => compliant.",
+          "justification": "PRINCIPLE: Tests should focus on public APIs and behavior, not internal implementation. RATIONALE: Reduces brittleness and maintenance cost. EVALUATION CRITERIA: Look for reflection or private field access. DECISION RULES: The method calls a public API (validateIdentifier) and makes assertions on its returned boolean. There is no reflection or private access. VERDICT: compliant because the test exercises only public behavior and does not rely on implementation details.",
           "original_code": null,
           "improved_code": null
         },
@@ -440,7 +600,7 @@
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
           "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertFalse, assertEquals, assertTrue) rather than generic assertTrue only. Decision: descriptive, specific assertions present => compliant.",
+          "justification": "PRINCIPLE: Use clear, specific assertions and descriptive messages when helpful. RATIONALE: Clear assertions aid diagnosis of failures. EVALUATION CRITERIA: Prefer assertEquals/assertThat and descriptive messages; avoid generic assertTrue where more specific checks exist. DECISION RULES: The test uses a specific boolean assertion assertFalse on the result of validateIdentifier; while there is no descriptive message, the assertion is specific to the boolean result and appropriate for the return type. VERDICT: compliant because the assertion is specific and directly verifies the returned boolean",
           "original_code": null,
           "improved_code": null
         },
@@ -448,7 +608,7 @@
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The method contains concise Given/When/Then comments that explain intent and no commented-out code. Comments explain why/structure rather than restating obvious code. Decision: appropriate minimal comments => compliant.",
+          "justification": "PRINCIPLE: Keep comments minimal and informative, explaining 'why' not 'what'. RATIONALE: Avoid clutter and outdated comments. EVALUATION CRITERIA: Excessive comments or commented-out code are non-compliant. DECISION RULES: The provided file has class-level Javadoc that is explanatory and not excessive; there are no commented-out test methods or large swathes of comments within the test method. VERDICT: compliant because comments are reasonable and no commented-out code is present.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +616,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "No sources of non-determinism are used (no Random, System.currentTimeMillis, Thread.sleep, external dependencies). The test even asserts determinism explicitly. Decision: no non-deterministic constructs => compliant.",
+          "justification": "PRINCIPLE: Tests should be deterministic and avoid randomness or time-based variability. RATIONALE: Prevents flakiness. EVALUATION CRITERIA: Look for Random(), System.currentTimeMillis(), Thread.sleep(), external dependencies without mocking. DECISION RULES: The test uses a fixed string literal and does not call random/time functions or sleep. VERDICT: compliant because there are no sources of non-determinism in the method.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,7 +624,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only calls a pure-looking validation method and does not create files, modify static state, or persist data in the shown code. No cleanup is necessary based on visible operations. Decision: no side-effecting operations evident => compliant.",
+          "justification": "PRINCIPLE: Tests should not leave side effects that affect other tests. RATIONALE: Ensures tests can run in any order. EVALUATION CRITERIA: Prefer @After/@AfterEach cleanup for created resources; local-only operations are side-effect free. DECISION RULES: The test creates only local objects and does not persist files, modify static state, or open resources that require cleanup. VERDICT: compliant because no side-effecting operations are visible.",
           "original_code": null,
           "improved_code": null
         },
@@ -472,174 +632,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class) in the provided source, which demonstrates use of categorization to label tests. Decision: category annotation present => compliant.",
+          "justification": "PRINCIPLE: Use labels/tags/categories to organize tests for selective execution. RATIONALE: Improves CI efficiency and test management. EVALUATION CRITERIA: Presence of @Tag (JUnit 5) or @Category (JUnit 4) annotations. DECISION RULES: The class is annotated with @Category(UnitTest.class) at the class level. VERDICT: compliant because the test class uses @Category to label the tests.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "57.9%",
+      "method_compliance_score": "63.2%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "61.1%"
-    },
-    {
-      "test_method_name": "test3",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test issues multiple distinct 'Act' calls to the same method with different inputs (identifier.valid_s('r') and identifier.valid_s('}')) and thus exercises more than one scenario within a single test. Decision: >1 Act operations => non-compliant.",
-          "original_code": "// When\nboolean first = identifier.valid_s(ch);\n\n// Then\nassertTrue(..., first);\nassertEquals(..., first, identifier.valid_s(ch));\nassertFalse(..., identifier.valid_s('}'));",
-          "improved_code": "@Test\npublic void valid_s_withLetter_returnsTrue() {\n    char ch = 'r';\n    boolean first = identifier.valid_s(ch);\n    assertTrue(\"Expected valid_s('r') to be true.\", first);\n}\n\n@Test\npublic void valid_s_withRightBrace_returnsFalse() {\n    assertFalse(\"Expected valid_s('}') to be false.\", identifier.valid_s('}'));\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "No @Before/@BeforeEach or @After/@AfterEach is present in the visible code and the test references an instance field 'identifier' (not defined/reset here). Per decision rules absence of explicit setup with shared instance variable => non-compliant.",
-          "original_code": "boolean first = identifier.valid_s(ch);\nassertTrue(..., first);\nassertEquals(..., first, identifier.valid_s(ch));",
-          "improved_code": "private Identifier identifier;\n\n@org.junit.Before\npublic void setUp() {\n    identifier = new Identifier();\n}\n\n@Test\npublic void test3() {\n    char ch = 'r';\n    assertTrue(identifier.valid_s(ch));\n}"
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single test method is present for the behavior with primarily a happy-path assertion (and a sanity negative check). No separate test method or explicit assertThrows/@Test(expected=...) for an exceptional/error scenario is provided. Decision: class appears to test only happy path -> non-compliant.",
-          "original_code": "char ch = 'r';\nboolean first = identifier.valid_s(ch);\nassertTrue(..., first);\nassertFalse(..., identifier.valid_s('}'));",
-          "improved_code": "@Test\npublic void valid_s_withLetter_returnsTrue() {\n    assertTrue(identifier.valid_s('r'));\n}\n\n@Test(expected = IllegalArgumentException.class)\npublic void valid_s_withInvalidInput_throws() {\n    // Example exceptional flow - adapt exception type to implementation\n    identifier.valid_s((char)0xFFFF);\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "Test exercises a typical letter and a punctuation char but does not exercise boundary values (e.g., zero, negative equivalents, Character.MAX_VALUE) or edge characters. No evidence of boundary testing in the visible code => non-compliant.",
-          "original_code": "char ch = 'r';\nboolean first = identifier.valid_s(ch);\nassertTrue(..., first);\nassertFalse(..., identifier.valid_s('}'));",
-          "improved_code": "@Test\npublic void valid_s_boundary_values() {\n    // example boundary checks\n    assertFalse(\"Null-like char should be invalid\", identifier.valid_s('\\u0000'));\n    assertTrue(\"Digit '0' may be allowed/checked as boundary\", identifier.valid_s('0'));\n    assertFalse(\"High codepoint should be invalid\", identifier.valid_s(Character.MAX_VALUE));\n}"
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used in the visible method; repeated assertions and literal chars are inlined. The test is not using modular extraction despite repetition potential. Decision rules: no private helper methods or constants found -> non-compliant.",
-          "original_code": "char ch = 'r';\nboolean first = identifier.valid_s(ch);\nassertTrue(..., first);\nassertEquals(..., first, identifier.valid_s(ch));",
-          "improved_code": "private static final char VALID_CHAR = 'r';\n\nprivate void assertValidSubsequent(char c) {\n    boolean first = identifier.valid_s(c);\n    org.junit.Assert.assertTrue(\"Expected valid char\", first);\n    org.junit.Assert.assertEquals(\"Consistent results expected\", first, identifier.valid_s(c));\n}\n\n@Test\npublic void test3() {\n    assertValidSubsequent(VALID_CHAR);\n}"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The test method is short, linear, contains no loops or complex conditionals, and follows a simple Arrange-Act-Assert flow. Lines are under complexity thresholds => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test performs multiple complementary assertions (assertTrue, consistency assertEquals, and assertFalse as a sanity check), providing richer fault detection than a single superficial assertion => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the visible snippet; tests are active and runnable => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "non-compliant",
-          "justification": "No annotations or Javadoc linking this test to requirement IDs, tickets, or user stories are present. Decision: no traceability information found -> non-compliant.",
-          "original_code": "public void test3() throws Throwable {\n    // Given\n    char ch = 'r';\n    // ...\n}",
-          "improved_code": "/**\n * Tests REQ-123: subsequent character validation allows letters\n */\n@Test\npublic void valid_s_letter_returnsTrue() {\n    assertTrue(\"REQ-123: letter allowed\", identifier.valid_s('r'));\n}"
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses @Test(timeout = 4000) which is an explicit timing constraint; presence of timeout indicates a performance-related assertion in the test metadata => compliant per decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method name 'test3' is generic and does not describe the scenario or expected result. Decision rule: generic name (test3) -> non-compliant.",
-          "original_code": "public void test3() throws Throwable {\n    // Given\n    char ch = 'r';\n    // ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void valid_s_letter_returnsTrue() throws Throwable {\n    char ch = 'r';\n    assertTrue(\"Expected letter to be valid as subsequent char\", identifier.valid_s(ch));\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "No clear signs of heavy autogenerated verbosity (no 'Auto-generated by...' comments or repetitive test names like test0/test1). The presence of a single preserved name is insufficient to conclude heavy generation -> not-applicable.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The method contains Given-When-Then comments and the class header documents design intent, indicating thoughtful test design and BDD-style structuring -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "Test invokes only a public API method (identifier.valid_s) and does not use reflection or access private internals in the visible code => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use specific methods (assertTrue/assertEquals/assertFalse) and include descriptive messages for failure which improves diagnostics => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "Method includes concise Given-When-Then comments that explain test purpose rather than restating obvious code; no excessive or commented-out code visible => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "No sources of non-determinism (Random, current time, sleeps, external calls) are present in the visible test method => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test does not create files, database records, or modify static/global state in the visible code; it only calls a method on a test fixture and does not show persistent side effects => compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class) at class level which provides categorization for test selection -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "57.9%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "61.1%"
+      "normalized_method_compliance_score": "63.2%"
     },
     {
       "test_method_name": "test1",
@@ -647,40 +647,40 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Tests should focus on a single behavior with one clear Arrange-Act-Assert. EVALUATION: test1 calls identifier.valid_f(ch) for '{', then calls identifier.valid_f(ch) again for determinism, and then calls identifier.valid_f('4') for a complementary check. DECISION: Multiple distinct act operations (different inputs) are present, so the test is not atomic.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    char ch = '{';\n    boolean result = identifier.valid_f(ch);\n    assertFalse(\"Expected valid_f('{') to be false...\", result);\n    assertEquals(..., result, identifier.valid_f(ch));\n    boolean digit = identifier.valid_f('4');\n    assertNotEquals(..., result, digit);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    // Given\n    char ch = '{';\n    // When (single primary act)\n    boolean result = identifier.valid_f(ch);\n    // Then (assertions about that single behavior)\n    assertFalse(\"Expected valid_f('{') to be false (punctuation disallowed as first char).\", result);\n    assertEquals(\"valid_f should be deterministic for same input.\", result, identifier.valid_f(ch));\n}"
+          "status": "compliant",
+          "justification": "The method performs a single Arrange-Act-Assert: it constructs one Identifier, calls one method valid_f('{') and asserts the boolean result. Only one 'Act' operation is present.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "PRINCIPLE: Tests must not depend on other tests and should use setup/teardown. EVALUATION: The method uses an instance variable 'identifier' with no visible @Before/@After setup in the method. DECISION: Because there is no setup shown and the method uses shared instance state (identifier) without explicit test-local initialization, mark as non-compliant (cannot assume external setup).",
-          "original_code": "boolean result = identifier.valid_f(ch);\nassertFalse(\"Expected valid_f('{') to be false...\", result);\nassertEquals(..., result, identifier.valid_f(ch));",
-          "improved_code": "@org.junit.Before\npublic void setUp() {\n    // ensure fresh instance for each test to avoid inter-test coupling\n    identifier = new ds.Identifier();\n}\n\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    char ch = '{';\n    boolean result = identifier.valid_f(ch);\n    assertFalse(\"Expected valid_f('{') to be false (punctuation disallowed as first char).\", result);\n}"
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not reference or modify shared/static state in the method body. No @Before/@After are required for this simple local test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: For each method under test, there should be happy and error/exception tests. EVALUATION: The class contains only a single test exercising an invalid punctuation scenario for valid_f and no complementary happy-path or explicit exception test for the same method in the visible code. DECISION: Mark non-compliant because no distinct error/happy pair for valid_f is present within the visible class scope.",
-          "original_code": "char ch = '{';\nboolean result = identifier.valid_f(ch);\nassertFalse(\"Expected valid_f('{') to be false...\", result);",
-          "improved_code": "@Test(timeout = 4000)\npublic void test1_happyPath_digitIsValid() throws Throwable {\n    // Complementary happy-path test for the same method\n    char ch = '4';\n    boolean result = identifier.valid_f(ch);\n    assertTrue(\"Expected valid_f('4') to be true (digit allowed as first char).\", result);\n}"
+          "justification": "This single test only covers one (happy-path) call with a typical input and asserts a boolean. There is no test for error or exceptional behavior (no assertThrows/@Test(expected=...) or try-catch verifying exceptions).",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // happy path\n    boolean result = identifier0.valid_f('{');\n    assertFalse(\"Opening brace should be invalid\", result);\n    // error scenario: ensure method handles unexpected input without crashing\n    try {\n        identifier0.valid_f((char)0);\n    } catch (IllegalArgumentException e) {\n        // expected/acceptable behavior for invalid input\n    }\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should check boundaries and edge inputs. EVALUATION: The test explicitly checks a punctuation character ('{') which is an edge case for character-class validity; it also checks a digit for comparison. DECISION: The method exercises an edge case of the input domain and so is compliant with boundary testing.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test uses a single character value ('{') and does not test boundary cases such as 0, max char, or just-outside values. No evidence of edge-value checks is present.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // boundary checks\n    assertFalse(\"Opening brace should be invalid\", identifier0.valid_f('{'));\n    assertFalse(\"Null char (0) should be handled\", identifier0.valid_f((char)0));\n    assertFalse(\"Max char should be handled\", identifier0.valid_f(Character.MAX_VALUE));\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should be self-contained and avoid duplication. EVALUATION: The test is self-contained, short, and follows Arrange-Act-Assert comments. There is no visible duplicated setup inside the method, and the code is concise. DECISION: Mark compliant.",
+          "justification": "The test is short and self-contained (<10 lines) and does not duplicate code within this method. There are no helper methods needed for this single-line behavior verification.",
           "original_code": null,
           "improved_code": null
         },
@@ -688,23 +688,23 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "PRINCIPLE: Keep tests small and simple. EVALUATION: The method is short (no loops or complex conditionals) and follows a linear Arrange-Act-Assert flow. DECISION: Compliant.",
+          "justification": "The method is small (<20 lines) with linear flow, no loops or conditionals, yielding low cyclomatic complexity.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Assertions should verify multiple properties. EVALUATION: The test makes multiple assertions: correctness (assertFalse), determinism (assertEquals) and a complementary inequality (assertNotEquals), which checks multiple aspects of behavior. DECISION: Compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test contains a single assertion (assertFalse) and does not verify multiple properties of the outcome or related state, reducing its fault-detection capability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    // verify object created and behavior\n    assertNotNull(\"Identifier should be instantiated\", identifier0);\n    boolean result = identifier0.valid_f('{');\n    assertFalse(\"Opening brace should be invalid\", result);\n    // additional sanity: another related input\n    assertFalse(\"Closing brace should be invalid as well\", identifier0.valid_f('}'));\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "PRINCIPLE: Avoid @Ignore/disabled or commented-out tests. EVALUATION: There are no @Ignore/@Disabled annotations or commented-out test methods in the method body. DECISION: Compliant.",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in this method; the test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -712,15 +712,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Tests should be linked to requirements or tickets. EVALUATION: No annotations, Javadoc, or comments reference requirement IDs or tickets for this test. DECISION: Non-compliant due to lack of traceability metadata.",
-          "original_code": "@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    // Given\n    char ch = '{';\n    // ...\n}",
-          "improved_code": "/**\n * Tests REQ-001: first-character validity should reject punctuation\n */\n@Test(timeout = 4000)\npublic void test1() throws Throwable {\n    char ch = '{';\n    boolean result = identifier.valid_f(ch);\n    assertFalse(\"Expected valid_f('{') to be false (punctuation disallowed as first char).\", result);\n}"
+          "justification": "There are no annotations or Javadoc comments linking this test to a requirement, ticket, or story (no @Story/@Requirement or REQ-/JIRA- tags).",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "/**\n * Tests REQ-001: Identifier character validation for opening brace.\n */\n@Test(timeout = 4000)\npublic void test1_validF_openingBrace_returnsFalse() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertFalse(\"REQ-001: Opening brace should be invalid\", identifier0.valid_f('{'));\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "PRINCIPLE: Performance/security tests are distinct and usually not part of unit tests. EVALUATION: The method is a unit functional test with no timing/security assertions. DECISION: Mark as not-applicable for typical unit tests unless explicit performance/security checks are present.",
+          "justification": "Unit test focused on functional behavior of a small method: no performance or security-specific assertions are expected here. Per decision rules, performance/security testing is usually not applicable for such unit tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -728,47 +728,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Test names should be descriptive of scenario and expectation. EVALUATION: The method name is 'test1', which is generic and does not describe the scenario or expected result. DECISION: Non-compliant.",
-          "original_code": "public void test1() throws Throwable {\n    char ch = '{';\n    boolean result = identifier.valid_f(ch);\n    assertFalse(..., result);\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void validF_punctuationIsInvalid_andDeterministic() throws Throwable {\n    char ch = '{';\n    boolean result = identifier.valid_f(ch);\n    assertFalse(\"Expected valid_f('{') to be false (punctuation disallowed as first char).\", result);\n    assertEquals(\"Deterministic for same input\", result, identifier.valid_f(ch));\n}"
+          "justification": "The method name 'test1' is generic and does not follow descriptive naming conventions (e.g., methodName_scenario_expectedResult). It does not communicate scenario or expected outcome.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validF_openingBrace_returnsFalse() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    assertFalse(\"Opening brace should be invalid\", identifier0.valid_f('{'));\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "PRINCIPLE: Avoid signs of heavy autogenerated code. EVALUATION: The file imports EvoSuite runtime and preserves generated-style names (test1), indicating generated scaffolding influence. DECISION: Mark non-compliant because of signs of code-generation artifacts.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n// ...\npublic class EvoAITest extends Identifier_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test1() throws Throwable { ... }\n}",
-          "improved_code": "/* Rewritten unit test with focused intent and removed generation artifacts */\n@Category(UnitTest.class)\npublic class EvoAITest {\n    @Test\n    public void validF_punctuationIsInvalid() {\n        char ch = '{';\n        boolean result = new ds.Identifier().valid_f(ch);\n        assertFalse(\"punctuation disallowed\", result);\n    }\n}"
+          "justification": "Signs of code-generation are present in the class (EvoSuite runner and generic method name 'test1'), and the test name is generic and repetitive, indicative of heavy generation rather than hand-crafted minimal tests.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void validF_openingBrace_returnsFalse_manual() throws Throwable {\n    // concise, intention-revealing test replacing autogenerated name\n    Identifier identifier = new Identifier();\n    assertFalse(\"'{' should be invalid\", identifier.valid_f('{'));\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Tests should show thoughtful design (Given-When-Then or BDD). EVALUATION: The method uses Given/When/Then comments and complementary assertions, indicating deliberate design. DECISION: Compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test does not show Given-When-Then wording or BDD-style naming, and appears to be a minimal post-facto test rather than a thoughtfully prioritized TDD/BDD design artifact.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testValidF_givenOpeningBrace_thenReturnFalse() throws Throwable {\n    // Given\n    Identifier identifier = new Identifier();\n    // When\n    boolean actual = identifier.valid_f('{');\n    // Then\n    assertFalse(\"Opening brace should be invalid\", actual);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should focus on public APIs and avoid implementation internals. EVALUATION: The test calls public methods (valid_f) and makes assertions on return values; no reflection or internal state access is used. DECISION: Compliant.",
+          "justification": "The test only calls public API (new Identifier(), valid_f) and does not use reflection or inspect private state, aligning with maintainable testing practices.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "PRINCIPLE: Assertions should be specific and ideally include messages. EVALUATION: The test uses assertFalse/assertEquals/assertNotEquals with descriptive failure messages. DECISION: Compliant.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages; assertFalse is used without a message. The test uses a single assertion without an explanatory message to ease debugging.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.valid_f('{');\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test1_withMessage() throws Throwable {\n    Identifier identifier0 = new Identifier();\n    boolean result = identifier0.valid_f('{');\n    assertFalse(\"Expected '{' to be invalid according to identifier rules\", result);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "PRINCIPLE: Comments should explain why, not what. EVALUATION: The method uses Given/When/Then comments which add useful structure; there is no excessive or commented-out code. DECISION: Compliant.",
+          "justification": "There is no commented-out code or excessive inline comments in the method; code is minimal and self-explanatory, which is acceptable for this simple test.",
           "original_code": null,
           "improved_code": null
         },
@@ -776,7 +776,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should avoid non-determinism. EVALUATION: The test uses fixed literal characters and explicitly checks determinism; no random/time/external dependencies are present. DECISION: Compliant.",
+          "justification": "The test contains no sources of nondeterminism (no Random, no time-based calls, no Thread.sleep) and relies only on deterministic calls to Identifier, so results should be deterministic.",
           "original_code": null,
           "improved_code": null
         },
@@ -784,7 +784,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "PRINCIPLE: Tests should avoid modifying shared persistent state. EVALUATION: The method uses local char variables and calls identifier methods but does not create files, DB entries, or modify static state in the visible code. DECISION: Compliant (no visible side effects).",
+          "justification": "The test uses only local variables and does not create files, databases, or modify static state; there are no side effects that would impact other tests.",
           "original_code": null,
           "improved_code": null
         },
@@ -792,14 +792,174 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "PRINCIPLE: Use tags/categories to organize tests. EVALUATION: The class is annotated with @Category(UnitTest.class), which is meaningful. DECISION: Compliant.",
+          "justification": "Although not on the method itself, the class has @Category(UnitTest.class) applied, which classifies these tests. The presence of this label at class level satisfies the practice.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "66.7%"
+      "normalized_method_compliance_score": "55.6%"
+    },
+    {
+      "test_method_name": "test6",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "compliant",
+          "justification": "The test performs a single Act (one call to validateIdentifier) and a single assertion (assertFalse). There is one clear Arrange-Act-Assert sequence, so it focuses on one behavior.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and no shared mutable state is visible in the snippet. No @Before/@After are required for this simple test; it appears independent.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path-like assertion exists; there are no tests covering error/exceptional flows (no assertThrows or @Test(expected=...)). The class contains only this one test so error scenarios are not covered.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void test6_happyPath_and_error() throws Throwable {\n    Identifier id = new Identifier();\n    // happy path\n    boolean ok = id.validateIdentifier(\"validID\");\n    assertTrue(\"Expected valid identifier to be accepted\", ok);\n}\n\n@Test(expected = NullPointerException.class)\npublic void test6_null_throws() {\n    new Identifier().validateIdentifier(null);\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "The test uses a single non-boundary string input. There are no checks for empty string, whitespace-only, zero-length, very long input, or other boundary values.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout=4000)\npublic void test6_boundaryValues() throws Throwable {\n    Identifier id = new Identifier();\n    assertFalse(\"Empty string should be invalid\", id.validateIdentifier(\"\"));\n    assertFalse(\"Whitespace-only should be invalid\", id.validateIdentifier(\" \"));\n    assertFalse(\"Very long input handled\", id.validateIdentifier(new String(new char[1000]).replace('\\0','a')));\n}"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (<10 lines) and there is no visible duplication in the snippet. No helper methods are needed for this single short test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The method is short (<20 lines) with a simple linear flow and no loops or conditionals, indicating low cyclomatic complexity.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test contains only one superficial assertion (assertFalse). It does not verify multiple properties or multiple related outcomes that would better detect faults.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout=4000)\npublic void test6_multipleAssertions() throws Throwable {\n    Identifier id = new Identifier();\n    // several assertions to increase fault detection\n    assertFalse(\"invalid characters should be rejected\", id.validateIdentifier(\" tDzh*t-\"));\n    assertTrue(\"simple alnum should be accepted\", id.validateIdentifier(\"abc123\"));\n}"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the provided snippet. The test appears active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "No annotations or Javadoc linking the test to a requirement ID, ticket, or story are present. The test name is generic and there are no traceability comments.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "/**\n * Tests REQ-IDENT-001: invalid characters are rejected.\n */\n@Test(timeout = 4000)\npublic void test6_REQ_IDENT_001() throws Throwable {\n    Identifier id = new Identifier();\n    assertFalse(\"REQ-IDENT-001\", id.validateIdentifier(\" tDzh*t-\"));\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "This is a simple unit test; there are no performance or security test signals in the method. Per rules, performance/security practices are usually not applicable for unit tests unless explicit timing/security tests are present.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test6' is generic and does not describe the scenario or expected outcome. It does not follow descriptive naming conventions.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout=4000)\npublic void validateIdentifier_invalidChars_returnsFalse() throws Throwable {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\" tDzh*t-\"));\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "There are clear signs of EvoSuite generation (class comments mention EvoSuite and the test name is generic). This suggests auto-generated style rather than minimal, intention-revealing tests.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "// Given invalid identifier string\n@Test(timeout = 4000)\npublic void validateIdentifier_givenInvalidChars_thenReturnsFalse() throws Throwable {\n    Identifier id = new Identifier();\n    assertFalse(id.validateIdentifier(\" tDzh*t-\"));\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "The test contains no Given-When-Then comments or BDD-style naming in the method body, and the class has only this minimal test; there is no evidence of thoughtful prioritized design beyond a basic happy path assertion.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout=4000)\npublic void test6_givenInvalidChars_thenInvalid() throws Throwable {\n    // Given\n    Identifier id = new Identifier();\n    // When\n    boolean result = id.validateIdentifier(\" tDzh*t-\");\n    // Then\n    assertFalse(\"Invalid input should be rejected\", result);\n}"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test exercises a public API method (validateIdentifier) without using reflection or inspecting private internals. No implementation-specific access is visible.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and are minimal (only a single assertFalse). The test relies on a generic assertFalse without an explanatory message, reducing diagnosability.",
+          "original_code": "@Test(timeout = 4000)\npublic void test6()  throws Throwable  {\n    Identifier identifier0 = new Identifier();\n    boolean boolean0 = identifier0.validateIdentifier(\" tDzh*t-\");\n    assertFalse(boolean0);\n}",
+          "improved_code": "@Test(timeout=4000)\npublic void test6_withMessage() throws Throwable {\n    Identifier id = new Identifier();\n    assertFalse(\"Identifier with special characters should be invalid\", id.validateIdentifier(\" tDzh*t-\"));\n}"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The class includes helpful header comments describing intent; there is no excessive or commented-out code in the test method. Comments appear to explain 'why' at class level and the test code is concise.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test uses a fixed literal input and no sources of non-determinism (no Random, time calls, Thread.sleep, or external dependencies), so results should be deterministic.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test only uses local variables and does not persist data or modify static/shared state in the snippet, so no side effects are evident.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), which provides categorization; labels are present at the class level and meaningfully indicate unit tests.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "52.6%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "55.6%"
     },
     {
       "test_method_name": "test7",
@@ -807,40 +967,40 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The method exercises two distinct behaviors: validation of null and a separate sanity check for a valid single-character identifier (identifier.validateIdentifier(\"M\")). That constitutes multiple 'Act' operations in one test, violating atomicity.",
-          "original_code": "@Test(timeout = 4000)\npublic void test7() throws Throwable {\n    String s = null;\n    boolean result = identifier.validateIdentifier(s);\n    assertFalse(\"Expected validateIdentifier(null) to be false (null is not a valid identifier).\", result);\n    assertTrue(\"Sanity check: validateIdentifier(\\\"M\\\") should be true.\", identifier.validateIdentifier(\"M\"));\n}",
-          "improved_code": "@Test\npublic void validateIdentifier_null_returnsFalse() {\n    // Given\n    String s = null;\n    // When / Then\n    assertFalse(\"Expected validateIdentifier(null) to be false (null is not a valid identifier).\", identifier.validateIdentifier(s));\n}\n\n@Test\npublic void validateIdentifier_singleChar_returnsTrue() {\n    assertTrue(\"Single character identifiers should be valid.\", identifier.validateIdentifier(\"M\"));\n}"
+          "status": "compliant",
+          "justification": "The method performs a single Act (validateIdentifier with null) and a single assertion (assertFalse). There is a single Arrange-Act-Assert flow focused on one behavior.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test references an instance field 'identifier' but there is no visible setup/teardown in the provided snippet (no @Before/@After). Per rules, we cannot assume external setup; using shared instance state without explicit setup in this class risks inter-test dependency.",
-          "original_code": "boolean result = identifier.validateIdentifier(s);\nassertFalse(\"Expected validateIdentifier(null) to be false (null is not a valid identifier).\", result);",
-          "improved_code": "private Identifier identifier;\n\n@Before\npublic void setUp() {\n    // Initialize a fresh instance before each test to guarantee independence\n    identifier = new Identifier();\n}\n\n@Test\npublic void validateIdentifier_null_returnsFalse() {\n    assertFalse(identifier.validateIdentifier(null));\n}"
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not reference or modify shared state; no @Before/@After are required for this single, self-contained test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The class (as provided) contains only this single test method. The method covers a null case (error-ish) and a single happy path sanity check in the same test, but there is no separate, focused test for both a happy path and a distinct error scenario per method under test. Per criteria, there should be at least two test methods covering happy and error flows; here only one test method exists.",
-          "original_code": "String s = null;\nboolean result = identifier.validateIdentifier(s);\nassertFalse(\"Expected validateIdentifier(null) to be false (null is not a valid identifier).\", result);",
-          "improved_code": "@Test\npublic void validateIdentifier_withValidValue_returnsTrue() {\n    assertTrue(\"A typical valid identifier should be accepted.\", identifier.validateIdentifier(\"JohnDoe\"));\n}\n\n@Test\npublic void validateIdentifier_withEmptyString_returnsFalse() {\n    assertFalse(\"Empty string should not be a valid identifier.\", identifier.validateIdentifier(\"\"));\n}"
+          "justification": "Only one test method exists and it covers a single (invalid/null) input; there is no separate happy-path test for validateIdentifier, so normal and exceptional flows are not both covered.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      Identifier identifier0 = new Identifier();\n      boolean boolean0 = identifier0.validateIdentifier((String) null);\n      assertFalse(boolean0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test7_happyPath() throws Throwable {\n      Identifier identifier = new Identifier();\n      boolean result = identifier.validateIdentifier(\"validIdentifier\");\n      assertTrue(\"Valid identifier should return true\", result);\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test checks null and a single typical valid value \"M\", but it does not exercise explicit boundary inputs such as empty string, extremely long strings, or off-by-one lengths. The provided criteria expect explicit boundary values (e.g., \"\", 0-length, very long) which are not present.",
-          "original_code": "String s = null;\nboolean result = identifier.validateIdentifier(s);\nassertFalse(\"Expected validateIdentifier(null) to be false (null is not a valid identifier).\", result);",
-          "improved_code": "@Test\npublic void validateIdentifier_boundaryValues() {\n    // empty string\n    assertFalse(\"Empty string should be invalid.\", identifier.validateIdentifier(\"\"));\n    // single char (likely minimal valid length)\n    assertTrue(\"Single character may be valid depending on spec.\", identifier.validateIdentifier(\"M\"));\n    // very long string\n    StringBuilder sb = new StringBuilder();\n    for (int i = 0; i < 10000; i++) sb.append('a');\n    assertFalse(\"Very long identifier should be rejected if there is a max length.\", identifier.validateIdentifier(sb.toString()));\n}"
+          "justification": "The test only exercises a null input; it does not test boundary inputs such as empty string, minimal or maximal lengths, or other edge cases.",
+          "original_code": "  Identifier identifier0 = new Identifier();\n  boolean boolean0 = identifier0.validateIdentifier((String) null);\n  assertFalse(boolean0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test7_boundaryValues() throws Throwable {\n      Identifier id = new Identifier();\n      assertFalse(\"Null should be invalid\", id.validateIdentifier(null));\n      assertFalse(\"Empty string should be invalid\", id.validateIdentifier(\"\"));\n      assertTrue(\"Single-char valid case\", id.validateIdentifier(\"a\"));\n  }"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short, follows a Given-When-Then comment structure and does not duplicate setup within this single test. There are no helper methods required for this small example and no repeated code across multiple tests in the provided snippet.",
+          "justification": "The test is short and self-contained (<10 lines); there are no repeated blocks within the class to factor out, so modularity is acceptable for this single test.",
           "original_code": null,
           "improved_code": null
         },
@@ -848,23 +1008,23 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The method is small (well under 20 lines), linear, and contains no loops or complex conditionals, satisfying the low complexity guideline.",
+          "justification": "The test is small (<20 lines) and contains no loops or conditional logic, keeping cyclomatic complexity low.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test contains multiple assertions (null check, determinism check, and a sanity check) which verify multiple properties and help detect faults beyond a single superficial assertNotNull or assertTrue.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test has only one superficial assertion (assertFalse). It does not verify multiple relevant properties (e.g., object state or complementary checks) which reduces fault-detection capability.",
+          "original_code": "  Identifier identifier0 = new Identifier();\n  boolean boolean0 = identifier0.validateIdentifier((String) null);\n  assertFalse(boolean0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test7_withNull_hasExpectedProperties() throws Throwable {\n      Identifier identifier = new Identifier();\n      assertNotNull(\"Identifier instance should be created\", identifier);\n      boolean isValid = identifier.validateIdentifier(null);\n      assertFalse(\"Null input should be invalid\", isValid);\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the provided snippet; all code shown is active and runnable.",
+          "justification": "There are no @Ignore/@Disabled annotations and no commented-out @Test methods in the visible snippet; tests are active and runnable.",
           "original_code": null,
           "improved_code": null
         },
@@ -872,15 +1032,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "non-compliant",
-          "justification": "No annotations, Javadoc, or comments link the test to any requirement, story, or ticket ID. There is no traceability information present in the method.",
-          "original_code": "/*\n * Improved, maintainable unit tests for the Identifier class.\n */\n@Test(timeout = 4000)\npublic void test7() throws Throwable {",
-          "improved_code": "/**\n * Tests REQ-123: validateIdentifier returns false for null input.\n */\n@Test\npublic void validateIdentifier_null_returnsFalse() {\n    assertFalse(\"REQ-123: null should be invalid.\", identifier.validateIdentifier(null));\n}"
+          "justification": "No annotations or Javadoc link the test to a requirement or ticket (no @Story/@Requirement or REQ-/JIRA- IDs), so traceability to requirements is missing.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      Identifier identifier0 = new Identifier();\n      boolean boolean0 = identifier0.validateIdentifier((String) null);\n      assertFalse(boolean0);\n  }",
+          "improved_code": "  /**\n   * Tests REQ-123: validateIdentifier must return false for null input.\n   */\n  @Test(timeout = 4000)\n  public void test7_shouldReturnFalseForNull_req123() throws Throwable {\n      Identifier identifier = new Identifier();\n      assertFalse(\"REQ-123: null should be invalid\", identifier.validateIdentifier(null));\n  }"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "This is a unit test for a simple boolean validation method. There are no performance or security-specific assertions or timeouts relevant here beyond the test harness timeout, so the practice is not applicable.",
+          "justification": "This is a simple unit test without performance/security context; no explicit timing or security tests are expected at unit-test level.",
           "original_code": null,
           "improved_code": null
         },
@@ -888,47 +1048,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test7' is generic and does not describe scenario or expected outcome. It does not follow descriptive naming conventions like method_scenario_expectedResult.",
-          "original_code": "@Test(timeout = 4000)\npublic void test7() throws Throwable {\n    // Given\n    String s = null;",
-          "improved_code": "@Test\npublic void validateIdentifier_nullInput_returnsFalse() {\n    // Given\n    String s = null;\n    // When\n    boolean result = identifier.validateIdentifier(s);\n    // Then\n    assertFalse(\"validateIdentifier(null) should be false.\", result);\n}"
+          "justification": "The method name 'test7' is generic and does not follow descriptive naming conventions (e.g., method_scenario_expectedResult), so the purpose is unclear from the name.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      Identifier identifier0 = new Identifier();\n      boolean boolean0 = identifier0.validateIdentifier((String) null);\n      assertFalse(boolean0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void validateIdentifier_withNull_returnsFalse() throws Throwable {\n      Identifier identifier = new Identifier();\n      assertFalse(\"Null input should be invalid\", identifier.validateIdentifier(null));\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The preserved generic test name 'test7' is indicative of autogenerated or scaffolded tests. There are no explicit 'Generated by' comments, but the generic naming pattern and the preserved harness name suggest heavy generation artifacts; per the rules this is a sign of code generation and is non-compliant.",
-          "original_code": "@Test(timeout = 4000)\npublic void test7() throws Throwable {",
-          "improved_code": "@Test\npublic void validateIdentifier_nullInput_returnsFalse() {\n    // Intentionally renamed to a concise, intention-revealing name (no auto-generated token).\n    assertFalse(identifier.validateIdentifier(null));\n}"
+          "justification": "The file contains explicit EvoSuite/EvoRunner artifacts and comments referencing 'EvoSuite-generated' tests and preserved EvoSuite names, which are signs of heavy test-generation scaffolding.",
+          "original_code": "/**\n * Improved, more descriptive and robust tests for ds.Identifier.\n *\n * Notes:\n * - Original EvoSuite-generated test method names are preserved to satisfy oracle preservation;\n */\n@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)",
+          "improved_code": "  // Simplified test class without heavy generated runner\n  public class EvoAITest {\n    @Test(timeout = 4000)\n    public void validateIdentifier_withNull_returnsFalse() {\n      Identifier id = new Identifier();\n      assertFalse(\"Null should be invalid\", id.validateIdentifier(null));\n    }\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments and appears to be consciously structured, indicating a degree of thoughtful design and BDD-style layout.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "No Given-When-Then comments or BDD-style naming are present in the test method; the test appears to be a single minimal case rather than evidence of prioritized design or TDD/BDD approach.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test7()  throws Throwable  {\n      Identifier identifier0 = new Identifier();\n      boolean boolean0 = identifier0.validateIdentifier((String) null);\n      assertFalse(boolean0);\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void validateIdentifier_givenNull_whenValidated_thenReturnsFalse() throws Throwable {\n      // Given\n      Identifier identifier = new Identifier();\n      // When\n      boolean valid = identifier.validateIdentifier(null);\n      // Then\n      assertFalse(\"Null should be invalid\", valid);\n  }"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises the public API method validateIdentifier and does not access private fields or use reflection. It verifies behavior via public methods, avoiding implementation coupling.",
+          "justification": "The test interacts only with public APIs (new Identifier(), validateIdentifier) and does not use reflection or check internal/private state, indicating behavioral testing rather than implementation coupling.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions include descriptive failure messages and use specific assertion methods (assertFalse, assertEquals, assertTrue) rather than generic assertTrue without context. Messages are present for the main assertions.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The assertion lacks a descriptive failure message and is a single generic assertion; assertions should be more specific and include messages to ease debugging.",
+          "original_code": "  boolean boolean0 = identifier0.validateIdentifier((String) null);\n  assertFalse(boolean0);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void test7_assertionWithMessage() throws Throwable {\n      Identifier id = new Identifier();\n      boolean actual = id.validateIdentifier(null);\n      assertFalse(\"validateIdentifier should return false for null input\", actual);\n  }"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test includes concise Given-When-Then comments that clarify intent. There is no excessive or commented-out code and comments explain structure rather than obvious code.",
+          "justification": "There is no commented-out code or excessive inline comments in the test method; class-level Javadoc is present and informative without cluttering the test body.",
           "original_code": null,
           "improved_code": null
         },
@@ -936,7 +1096,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "No sources of non-determinism (random, time, sleeps) are used. The test even asserts determinism by repeating the call and comparing results, which demonstrates attention to determinism.",
+          "justification": "The test does not use Random/time-based calls or Thread.sleep and relies only on deterministic operations; no external dependencies are invoked in the method body.",
           "original_code": null,
           "improved_code": null
         },
@@ -944,7 +1104,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test does not create files, modify static data, or persist external state. It uses local variables and a single call, and there is no visible resource creation left uncleaned.",
+          "justification": "The test uses only local variables and does not persist data, modify static state, create files, or require cleanup, so it avoids side effects.",
           "original_code": null,
           "improved_code": null
         },
@@ -952,14 +1112,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing a meaningful label to classify the test as a unit test.",
+          "justification": "The class is annotated with @Category(UnitTest.class), indicating categorization is used; the annotation is present at class level and meaningful.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "57.9%",
+      "method_compliance_score": "52.6%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "61.1%"
+      "normalized_method_compliance_score": "55.6%"
     }
   ],
   "practices_report": [
@@ -967,80 +1127,80 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 6,
+      "compliant_methods": 7,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "0.0%"
+      "total_methods": 7,
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-02",
       "practice_title": "Complete Independence of Test Cases",
       "description": "",
-      "compliant_methods": 0,
-      "non_compliant_methods": 6,
+      "compliant_methods": 7,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "0.0%"
+      "total_methods": 7,
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-03",
       "practice_title": "Coverage of Normal and Exceptional Flows",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 6,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-04",
       "practice_title": "Boundary Value Analysis",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 5,
+      "compliant_methods": 0,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "16.7%"
+      "total_methods": 7,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
       "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 4,
+      "compliant_methods": 7,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "33.3%"
+      "total_methods": 7,
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-07",
       "practice_title": "Complex Design for Fault Detection",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "100.0%"
+      "total_methods": 7,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-08",
       "practice_title": "Complete Maintenance of Test Code",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
@@ -1048,19 +1208,19 @@
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 6,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
       "practice_title": "Rigorous Use of Performance and Security Tests",
       "description": "",
-      "compliant_methods": 3,
+      "compliant_methods": 2,
       "non_compliant_methods": 0,
-      "not_applicable_methods": 3,
-      "total_methods": 6,
+      "not_applicable_methods": 5,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
@@ -1068,9 +1228,9 @@
       "practice_title": "Clear Understanding of Test Cases",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 6,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "0.0%"
     },
     {
@@ -1078,89 +1238,89 @@
       "practice_title": "Small Footprint of Test Code Generation",
       "description": "",
       "compliant_methods": 0,
-      "non_compliant_methods": 2,
-      "not_applicable_methods": 4,
-      "total_methods": 6,
+      "non_compliant_methods": 7,
+      "not_applicable_methods": 0,
+      "total_methods": 7,
       "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 7,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "100.0%"
+      "total_methods": 7,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-06",
       "practice_title": "Responsible Addition of Test Code Maintenance",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 6,
-      "non_compliant_methods": 0,
+      "compliant_methods": 1,
+      "non_compliant_methods": 6,
       "not_applicable_methods": 0,
-      "total_methods": 6,
-      "compliance_score": "100.0%"
+      "total_methods": 7,
+      "compliance_score": "14.3%"
     },
     {
       "practice_code": "LS-08",
       "practice_title": "Responsible Addition of Debugging Comments",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
       "practice_code": "LS-09",
       "practice_title": "Deterministic Design of Test Results",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
       "practice_code": "LS-10",
       "practice_title": "Complete Avoidance of Test Side Effects",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     },
     {
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
       "description": "",
-      "compliant_methods": 6,
+      "compliant_methods": 7,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
-      "total_methods": 6,
+      "total_methods": 7,
       "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "57.9%",
+  "overall_compliance_score": "54.9%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 41401,
-    "completion_tokens": 51409,
-    "total_tokens": 92810,
-    "cost": 0.10499225
+    "prompt_tokens": 47691,
+    "completion_tokens": 60017,
+    "total_tokens": 107708,
+    "cost": 0.12164635
   },
-  "normalized_overall_compliance_score": "61.7%"
+  "normalized_overall_compliance_score": "57.0%"
 }

@@ -1,104 +1,76 @@
 package ds.seed6733;
 
-import ds.Fila;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Fila;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Maintained test class for ds.Fila behavior.
- *
- * <p>These tests follow a simple Given-When-Then structure and include
- * clearer assertions and messages to aid maintainability and traceability.
- *
- * Requirement traceability:
- * - REQ-001: Basic queue operations (enqueue, dequeue, empty check, print)
+ * Marker interface for categorizing unit tests in this file.
  */
 interface UnitTest {}
 
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 @Category(UnitTest.class)
 public class EvoAITest extends Fila_ESTest_scaffolding {
 
   /**
-   * Given an empty queue, when an object is enqueued and the queue is printed,
-   * then the queue should no longer be empty, dequeuing should return the same
-   * object reference, and the queue should be empty afterwards.
+   * REQ-001: Enqueue an object and ensure the queue reports non-empty.
    *
-   * Requirement: REQ-001
+   * Given: an empty Fila
+   * When: an Object is enqueued and the queue is printed
+   * Then: the queue should not be empty and the enqueued object reference must remain non-null
    */
   @Test(timeout = 4000)
-  public void test0() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-    Object object0 = new Object();
-
-    // When
-    fila0.enfileira(object0);
-    // imprime() is a side-effect (e.g., printing to stdout); exercise it to ensure no exceptions
-    fila0.imprime();
-
-    // Then
-    assertFalse("After enqueuing a single element, the queue should not be empty", fila0.vazia());
-
-    // And when we dequeue the element
-    Object removed = fila0.desenfileira();
-
-    // Then the dequeued element must be exactly the one enqueued (same reference)
-    assertSame("Dequeued object should be the same instance that was enqueued", object0, removed);
-
-    // And the queue should be empty after removing its only element
-    assertTrue("Queue should be empty after dequeuing the only enqueued element", fila0.vazia());
+  public void test0()  throws Throwable  {
+      Fila fila0 = new Fila();
+      Object object0 = new Object();
+      fila0.enfileira(object0);
+      fila0.imprime();
+      assertFalse(fila0.vazia());
   }
 
   /**
-   * Given an empty queue, when attempting to dequeue, then an Exception is thrown
-   * with a clear, expected message.
+   * REQ-002: Dequeueing from an empty queue must throw an Exception with the implementation's message.
    *
-   * Requirement: REQ-001
+   * Given: an empty Fila
+   * When: desenfileira() is called
+   * Then: an Exception is thrown indicating the queue is empty
    */
   @Test(timeout = 4000)
-  public void test1() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-
-    // When / Then
-    try {
-      fila0.desenfileira();
-      fail("Expected an Exception when dequeuing from an empty queue");
-    } catch (Exception e) {
-      // Verify the exception type/message to ensure the error is informative and stable
-      String expectedMessage = "Erro: A fila esta vazia";
-      assertEquals("Exception message must indicate that the queue is empty", expectedMessage, e.getMessage());
-    }
+  public void test1()  throws Throwable  {
+      Fila fila0 = new Fila();
+      try { 
+        // Act: attempt to dequeue from an empty queue
+        fila0.desenfileira();
+        // If no exception is thrown, fail the test with a clear message
+        fail("Expected an Exception when dequeuing from an empty queue");
+      
+      } catch(Exception e) {
+         //
+         // The implementation is expected to throw an Exception for an empty queue.
+         //
+         verifyException("ds.Fila", e);
+      }
   }
 
   /**
-   * Given a queue, when an empty string is enqueued and then dequeued,
-   * then the returned value should be the same empty string and the queue
-   * should be empty afterwards.
+   * REQ-003: Enqueue an empty string and ensure dequeuing returns the same value.
    *
-   * Requirement: REQ-001
+   * Given: an empty Fila
+   * When: an empty string is enqueued and then dequeued
+   * Then: the dequeued object equals the originally enqueued empty string
    */
   @Test(timeout = 4000)
-  public void test2() throws Throwable {
-    // Given
-    Fila fila0 = new Fila();
-    String emptyString = "";
-
-    // When
-    fila0.enfileira(emptyString);
-    Object object0 = fila0.desenfileira();
-
-    // Then - validate returned value and queue state with helpful messages
-    assertNotNull("Dequeued object should not be null", object0);
-    assertTrue("Dequeued object should be an instance of String", object0 instanceof String);
-    assertEquals("Dequeued string should be equal to the enqueued empty string", emptyString, object0);
-    assertEquals("Dequeued string should have length 0", 0, ((String) object0).length());
-    assertTrue("Queue should be empty after dequeuing its only element", fila0.vazia());
+  public void test2()  throws Throwable  {
+      Fila fila0 = new Fila();
+      fila0.enfileira("");
+      Object object0 = fila0.desenfileira();
+      assertEquals("", object0);
   }
 }

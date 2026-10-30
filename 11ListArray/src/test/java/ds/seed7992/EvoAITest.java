@@ -1,137 +1,90 @@
 package ds.seed7992;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import static org.junit.Assert.*;
-import ds.Lista;
 import static org.evosuite.runtime.EvoAssertions.*;
+import ds.Lista;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Marker interface for categorizing tests that verify core Lista behavior.
+ * Marker interface for categorizing tests in this file.
  */
 interface UnitTest {}
 
-/**
- * Improved test class for ds.Lista.
- *
- * Notes:
- * - Tests use only the public API of Lista (insere, imprime, vazia).
- * - Each test includes a short description linking to a hypothetical requirement id.
- * - Given-When-Then comments are provided to clarify intent.
- */
+@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true) 
+@Category(UnitTest.class)
 public class EvoAITest extends Lista_ESTest_scaffolding {
 
-  /**
-   * REQ-001: Inserting an element should make the list non-empty and printing
-   * the list should not change its emptiness state.
-   *
-   * Given an empty Lista
-   * When an element is inserted and imprime() is called
-   * Then the list reports as not empty
-   */
   @Test(timeout = 4000)
-  @Category(UnitTest.class)
-  public void test0() throws Throwable {
-    // Given
-    Lista lista0 = new Lista();
-    assertTrue("Newly created list should be empty", lista0.vazia());
+  public void test0()  throws Throwable  {
+      // Given: a fresh Lista and an element to insert
+      Lista lista0 = new Lista();
+      Object object0 = new Object();
 
-    // When
-    Object element = new Object();
-    lista0.insere(element);
-    // Call imprime() to ensure it is safe to invoke on a non-empty list
-    lista0.imprime();
+      // When: inserting the element and requesting a print (side-effect)
+      lista0.insere(object0);
+      lista0.imprime();
 
-    // Then
-    assertFalse("List should not be empty after inserting an element", lista0.vazia());
+      // Then: internal 'ultimo' counter should reflect one inserted element
+      // Note: assertion message added for clarity; expected value preserved.
+      assertEquals("Expected 'ultimo' to be 1 after inserting a single element", 1, lista0.ultimo);
   }
 
-  /**
-   * REQ-002: A newly created Lista reports empty; after inserting an item it
-   * reports not empty. This verifies basic state transition via public API.
-   *
-   * Given a new Lista
-   * When an item is inserted
-   * Then vazia() returns false
-   */
   @Test(timeout = 4000)
-  @Category(UnitTest.class)
-  public void test1() throws Throwable {
-    // Given
-    Lista lista0 = new Lista();
-    assertTrue("Lista should be empty upon construction", lista0.vazia());
+  public void test1()  throws Throwable  {
+      // Given: a newly constructed list
+      Lista lista0 = new Lista();
 
-    // When
-    lista0.insere("first");
+      // When: we query emptiness
+      boolean boolean0 = lista0.vazia();
 
-    // Then
-    assertFalse("Lista should report not empty after insertion", lista0.vazia());
+      // Then: list should be empty, and internal indices should reflect initial state
+      assertTrue("Newly created list should report as empty", boolean0);
+      assertEquals("Default 'primeiro' index should be 0", 0, lista0.primeiro);
+      assertEquals("Default 'pos' should be -1 indicating no current position", (-1), lista0.pos);
   }
 
-  /**
-   * REQ-003: Calling imprime() on an empty list must be a no-op with respect to
-   * the empty state (it should not make the list non-empty).
-   *
-   * Given an empty Lista
-   * When imprime() is invoked
-   * Then the list remains empty
-   */
   @Test(timeout = 4000)
-  @Category(UnitTest.class)
-  public void test2() throws Throwable {
-    // Given
-    Lista lista0 = new Lista();
-    assertTrue("Lista initially should be empty", lista0.vazia());
+  public void test2()  throws Throwable  {
+      // Given: a fresh Lista (verify initial internal state)
+      Lista lista0 = new Lista();
+      assertEquals("Initial 'primeiro' should be 0 for a new list", 0, lista0.primeiro);
+      
+      // When: manipulating the internal index to simulate non-empty configuration
+      lista0.primeiro = 1585;
 
-    // When
-    lista0.imprime();
-
-    // Then
-    assertTrue("Calling imprime() on an empty list must not change its empty state", lista0.vazia());
+      // Then: vazia() should report false because 'primeiro' is no longer the default
+      boolean boolean0 = lista0.vazia();
+      assertFalse("List should not be considered empty after changing 'primeiro' to a non-default value", boolean0);
   }
 
-  /**
-   * REQ-004: Insertion behavior when approaching capacity:
-   * Attempt multiple inserts until either an insertion causes an exception
-   * (expected message to indicate a full/capacity condition) or a reasonable
-   * number of inserts have succeeded. This test tolerates either behavior but
-   * verifies that an exception, if thrown, includes a helpful message.
-   *
-   * Given a Lista
-   * When many items are inserted
-   * Then either the list accepts the items (and is not empty) or an exception
-   * is raised indicating the list is full
-   */
   @Test(timeout = 4000)
-  @Category(UnitTest.class)
-  public void test3() throws Throwable {
-    // Given
-    Lista lista0 = new Lista();
+  public void test3()  throws Throwable  {
+      // Given: a Lista with its internal storage set to a fixed-size array
+      Lista lista0 = new Lista();
+      Object[] objectArray0 = new Object[7];
+      lista0.item = objectArray0;
 
-    // When/Then
-    final int maxAttempts = 100;
-    boolean sawCapacityException = false;
-    for (int i = 0; i < maxAttempts; i++) {
-      try {
-        lista0.insere("item-" + i);
-      } catch (Exception e) {
-        sawCapacityException = true;
-        String msg = e.getMessage();
-        // Verify the exception provides a useful hint about capacity/full condition.
-        assertNotNull("Capacity exception should include a message", msg);
-        String lower = msg.toLowerCase();
-        assertTrue("Expected exception message to indicate a full list (contains 'chei' or 'full')",
-            lower.contains("chei") || lower.contains("full"));
-        break;
+      // When: fill the list to its capacity via successive inserts
+      lista0.insere(objectArray0[3]);
+      lista0.insere(objectArray0[0]);
+      lista0.insere("");
+      lista0.insere(objectArray0[2]);
+      lista0.insere(objectArray0[1]);
+      lista0.insere(objectArray0[0]);
+      lista0.insere(objectArray0[3]);
+
+      // Then: inserting beyond capacity should raise the expected exception
+      try { 
+        lista0.insere(objectArray0[1]);
+        fail("Expected Exception when inserting into a full list, but no exception was thrown.");
+      
+      } catch(Exception e) {
+         // Verify that the thrown exception originates from ds.Lista (preserves original verification)
+         verifyException("ds.Lista", e);
       }
-    }
-
-    // If no exception was observed, ensure the list is not empty as a result of inserts.
-    if (!sawCapacityException) {
-      assertFalse("After multiple successful inserts the list should not be empty", lista0.vazia());
-    }
   }
 }

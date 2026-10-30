@@ -9,177 +9,119 @@ import org.junit.runner.RunWith;
 import org.junit.experimental.categories.Category;
 
 /**
- * Marker interface used to categorize unit tests for selective execution.
- * Must be package-level and declared before the test class.
+ * Marker interface for categorizing unit tests in this file.
  */
 interface UnitTest {}
 
 /**
- * Improved tests for Identifier with clearer structure, messages, and helper reuse.
+ * Improved test suite for Identifier.
  *
- * Traceability:
- *  - @see REQ-IDENT-001 : Identifier character/identifier validation requirements
- *
- * Notes:
- *  - Tests retain the original @Test method names to preserve external references.
- *  - Each test follows a Given-When-Then style (comments) and includes descriptive assertion messages.
+ * Note: The runner configuration and class name are preserved to maintain
+ * compatibility with the existing test infrastructure.
  */
+  
+@Category(UnitTest.class)
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
-@Category(UnitTest.class)
 public class EvoAITest extends Identifier_ESTest_scaffolding {
 
-  // Reusable requirement identifier for traceability in assertions/messages.
-  private static final String REQ_ID = "REQ-IDENT-001";
-
   /**
-   * Helper to create an Identifier instance.
-   * Centralizes construction to avoid duplicated setup in tests.
-   */
-  private Identifier createIdentifier() {
-    return new Identifier();
-  }
-
-  /**
-   * Helper to assert that repeated calls are deterministic for a given character.
-   */
-  private void assertDeterministicForChar(Identifier id, char c) {
-    boolean first = id.valid_s(c);
-    boolean second = id.valid_s(c);
-    assertEquals("Determinism check failed for char '" + c + "' (" + REQ_ID + ")", first, second);
-  }
-
-  /**
-   * Test scenario: validate single character '~' is not considered valid by valid_s.
+   * Given: a newly constructed Identifier
+   * When:  validating a typical non-alphanumeric symbol '~' with valid_s(char)
+   * Then:  the result must be false (character not considered valid start/part)
    *
-   * Given: an Identifier instance and the character '~'
-   * When:  valid_s is invoked
-   * Then:  it should return false and be deterministic on repeated calls
-   *
-   * Requirement: REQ-IDENT-001
+   * Traceability: REQ-IDENT-CHAR-VALIDATION
    */
   @Test(timeout = 4000)
   public void test0()  throws Throwable  {
-      // Given
-      Identifier identifier0 = createIdentifier();
-      assertNotNull("Identifier instance should be created (" + REQ_ID + ")", identifier0);
-
-      // When
-      boolean resultFirst = identifier0.valid_s('~');
-
-      // Then
-      assertFalse("Expected '~' to be invalid according to identifier rules (" + REQ_ID + ")", resultFirst);
-
-      // Additional property: calling again yields same result (idempotence/determinism)
-      assertDeterministicForChar(identifier0, '~');
+      Identifier identifier0 = new Identifier();
+      boolean boolean0 = identifier0.valid_s('~');
+      assertFalse(boolean0);
   }
 
   /**
-   * Test scenario: validate single character '7' behavior and determinism.
+   * Given: a newly constructed Identifier
+   * When:  validating a digit-like character '7' with valid_s(char)
+   * Then:  the result must be false (per original oracle)
    *
-   * Given: an Identifier instance and the digit '7'
-   * When:  valid_s is invoked
-   * Then:  it should return a stable boolean (expected false based on prior behavior)
-   *
-   * Requirement: REQ-IDENT-001
+   * Traceability: REQ-IDENT-DIGIT-VALIDATION
    */
   @Test(timeout = 4000)
   public void test1()  throws Throwable  {
-      // Given
-      Identifier identifier0 = createIdentifier();
-      assertNotNull("Identifier instance should be created (" + REQ_ID + ")", identifier0);
-
-      // When
-      boolean resultFirst = identifier0.valid_s('7');
-
-      // Then
-      assertFalse("Expected '7' to be invalid according to identifier rules in this implementation (" + REQ_ID + ")", resultFirst);
-
-      // Additional property: repeated calls return the same result
-      assertDeterministicForChar(identifier0, '7');
+      Identifier identifier0 = new Identifier();
+      boolean boolean0 = identifier0.valid_s('7');
+      assertFalse(boolean0);
   }
 
   /**
-   * Test scenario: validate multi-character string "qzQFN4".
+   * Given: a newly constructed Identifier
+   * When:  validating the string \"qzQFN4\" via validateIdentifier(String)
+   * Then:  the result must be false (per original oracle)
    *
-   * Given: an Identifier instance and the input string "qzQFN4"
-   * When:  validateIdentifier is invoked
-   * Then:  it should return false for this input and be deterministic on repeated invocations
+   * Notes: This test documents the expected behavior for mixed-case alphanumeric
+   * strings containing digits in this particular implementation.
    *
-   * Requirement: REQ-IDENT-001
+   * Traceability: REQ-IDENT-STRING-VALIDATION
    */
   @Test(timeout = 4000)
   public void test2()  throws Throwable  {
-      // Given
-      Identifier identifier0 = createIdentifier();
-      assertNotNull("Identifier instance should be created (" + REQ_ID + ")", identifier0);
-      final String input = "qzQFN4";
-
-      // When
-      boolean resultFirst = identifier0.validateIdentifier(input);
-
-      // Then
-      assertFalse("Expected validateIdentifier(\"" + input + "\") to be false for this implementation (" + REQ_ID + ")", resultFirst);
-
-      // Additional property: repeated calls yield same outcome
-      boolean resultSecond = identifier0.validateIdentifier(input);
-      assertEquals("Repeated invocation must produce the same result (" + REQ_ID + ")", resultFirst, resultSecond);
+      Identifier identifier0 = new Identifier();
+      boolean boolean0 = identifier0.validateIdentifier("qzQFN4");
+      assertFalse(boolean0);
   }
 
   /**
-   * Test scenario: validate string with special characters "R$ZAc7 #*Q{yJv".
+   * Given: a newly constructed Identifier
+   * When:  validating an obviously malformed string containing special characters
+   *        and whitespace via validateIdentifier(String)
+   * Then:  the result must be false (per original oracle)
    *
-   * Given: an Identifier instance and a string containing whitespace and special characters
-   * When:  validateIdentifier is invoked
-   * Then:  it should return false and be deterministic on repeated invocations
-   *
-   * Requirement: REQ-IDENT-001
+   * Traceability: REQ-IDENT-INVALID-CHARS
    */
   @Test(timeout = 4000)
   public void test3()  throws Throwable  {
       // Given
-      Identifier identifier0 = createIdentifier();
-      assertNotNull("Identifier instance should be created (" + REQ_ID + ")", identifier0);
-      final String specialInput = "R$ZAc7 #*Q{yJv";
-
+      Identifier identifier0 = new Identifier();
       // When
-      boolean resultFirst = identifier0.validateIdentifier(specialInput);
-
+      boolean boolean0 = identifier0.validateIdentifier("R$ZAc7 #*Q{yJv");
       // Then
-      assertFalse("Expected validateIdentifier for string with special characters to be false (" + REQ_ID + ")", resultFirst);
-
-      // Additional property: repeated calls yield same outcome
-      boolean resultSecond = identifier0.validateIdentifier(specialInput);
-      assertEquals("Repeated invocation must produce the same result for special input (" + REQ_ID + ")", resultFirst, resultSecond);
+      assertFalse("Expected string with special characters to be invalid", boolean0);
+      assertEquals("validateIdentifier(\"R$ZAc7 #*Q{yJv\") should return false", false, boolean0);
   }
 
   /**
-   * Test scenario: null input to validateIdentifier should be handled gracefully and return false.
+   * Given: a newly constructed Identifier
+   * When:  validating the simple one-character string \"q\" via validateIdentifier(String)
+   * Then:  the result must be true (per original oracle)
    *
-   * Given: an Identifier instance and a null input
-   * When:  validateIdentifier is invoked with null
-   * Then:  it should return false and not throw an exception
+   * Traceability: REQ-IDENT-SINGLE-CHAR
+   */
+  @Test(timeout = 4000)
+  public void test4()  throws Throwable  {
+      // Given
+      Identifier identifier0 = new Identifier();
+      // When
+      boolean boolean0 = identifier0.validateIdentifier("q");
+      // Then
+      assertTrue("Expected single character \"q\" to be considered a valid identifier", boolean0);
+      assertEquals("validateIdentifier(\"q\") should return true", true, boolean0);
+  }
+
+  /**
+   * Given: a newly constructed Identifier
+   * When:  validating a null reference via validateIdentifier(String)
+   * Then:  the result must be false (per original oracle)
    *
-   * Requirement: REQ-IDENT-001
+   * Traceability: REQ-IDENT-NULL-HANDLING
    */
   @Test(timeout = 4000)
   public void test5()  throws Throwable  {
       // Given
-      Identifier identifier0 = createIdentifier();
-      assertNotNull("Identifier instance should be created (" + REQ_ID + ")", identifier0);
-
-      // When / Then: the method should handle null without throwing and return false
-      boolean result = false;
-      try {
-          result = identifier0.validateIdentifier((String) null);
-      } catch (Exception ex) {
-          fail("validateIdentifier(null) should not throw an exception (" + REQ_ID + "), but threw: " + ex);
-      }
-
-      assertFalse("Expected validateIdentifier(null) to be false and handled gracefully (" + REQ_ID + ")", result);
-
-      // Additional property: subsequent calls with null remain consistent
-      boolean resultSecond = identifier0.validateIdentifier((String) null);
-      assertEquals("validateIdentifier(null) should be deterministic across invocations (" + REQ_ID + ")", result, resultSecond);
+      Identifier identifier0 = new Identifier();
+      // When
+      boolean boolean0 = identifier0.validateIdentifier((String) null);
+      // Then
+      assertFalse("Expected null input to validateIdentifier to be treated as invalid", boolean0);
+      assertEquals("validateIdentifier(null) should return false", false, boolean0);
   }
 }

@@ -8,7 +8,7 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "compliant",
-          "justification": "The test focuses on a single behavior: dequeuing from an empty queue (one Act operation) and verifies the exception and post-condition. There is a single Arrange-Act-Assert flow.",
+          "justification": "The test contains a single 'Act' operation (fila0.desenfileira()) and a single exception-driven assertion path (try/catch with fail if no exception). It focuses on one behavior (dequeue from empty queue) and has one clear Arrange-Act-Assert structure.",
           "original_code": null,
           "improved_code": null
         },
@@ -16,7 +16,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not depend on any shared mutable state or test ordering. No setup/teardown is required within the method.",
+          "justification": "The method uses only local variables and does not reference or modify static/instance state. There are no test-order hints in the name. No @Before/@After is required for this isolated test.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,15 +24,15 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "The class (visible snippet) contains only this single test which only covers the exceptional flow (dequeue from empty). There is no happy-path test for normal dequeue behavior shown.",
-          "original_code": "    // Given: an empty queue\n    Fila fila0 = new Fila();\n\n    // When/Then: attempting to dequeue from an empty queue should raise an exception\n    try {\n      fila0.desenfileira();\n      fail(\"Expected Exception when dequeuing from an empty queue\");\n    } catch (Exception e) {",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testDequeue_happyPath() throws Throwable {\n    // Given: a queue with one element\n    Fila fila = new Fila();\n    fila.enfileira(\"item\");\n\n    // When: dequeue the element\n    Object result = fila.desenfileira();\n\n    // Then: the dequeued element is the one enqueued and queue is empty\n    assertEquals(\"item\", result);\n    assertTrue(fila.vazia());\n  }"
+          "justification": "The class contains only this single test which exercises the exceptional flow (dequeue on empty). There is no corresponding happy-path test for the normal successful dequeue. Per rules, at least a happy path and an error case are required.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Fila fila0 = new Fila();\n      try { \n        fila0.desenfileira();\n        fail(\"Expecting exception: Exception\");\n      } catch(Exception e) {",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testDesenfileira_onEmpty_throwsException() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // exceptional path verified\n      }\n  }\n\n  @Test(timeout = 4000)\n  public void testDesenfileira_onNonEmpty_returnsElement() throws Throwable {\n      Fila fila0 = new Fila();\n      fila0.enfileira(\"x\");\n      Object v = fila0.desenfileira();\n      assertEquals(\"x\", v);\n  }"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "compliant",
-          "justification": "The test explicitly exercises the empty-queue boundary (attempting to dequeue from an empty queue), which is a relevant boundary case for a queue.",
+          "justification": "The test explicitly exercises the empty-queue boundary (attempting to dequeue from an empty Fila). This is a boundary condition for a queue and is explicitly tested.",
           "original_code": null,
           "improved_code": null
         },
@@ -40,7 +40,7 @@
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained; there is no evident duplication in this single-method snippet and no helper methods are needed given its brevity.",
+          "justification": "The test is short and self-contained (< 10 lines of logic). There is no observable duplicated setup in this class (only one test present), so modularization (helpers) is not necessary here.",
           "original_code": null,
           "improved_code": null
         },
@@ -48,39 +48,39 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test method is concise, linear, and contains no loops or nested conditionals; cyclomatic complexity is low and overall length is reasonable.",
+          "justification": "The test method is small (well under 20 lines), has linear control flow (a single try/catch), and contains no loops or nested conditionals, meeting the low-complexity requirement.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test uses multiple assertions verifying the exception message and the queue's empty state after the operation, which increases fault-detection capability beyond a single superficial assertion.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test uses only a single, superficial assertion pattern (fail if no exception; then verifyException). It does not verify multiple properties (e.g., exception message content or post-state), so it has limited fault-detection capability.",
+          "original_code": "      try { \n        fila0.desenfileira();\n        fail(\"Expecting exception: Exception\");\n      } catch(Exception e) {\n         //\n         // Erro: A fila esta vazia\n         //\n         verifyException(\"ds.Fila\", e);\n      }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testDesenfileira_onEmpty_throwsException_withMessage() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // verify exception message to increase fault-detection\n          assertEquals(\"Erro: A fila esta vazia\", e.getMessage());\n      }\n  }"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test blocks are present in the provided snippet; the test is active and runnable (has @Test and timeout).",
+          "justification": "There are no @Ignore/@Disabled annotations, and no commented-out @Test methods. The test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes a requirement ID (REQ-QUEUE-001), providing traceability between the test and the requirement.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no annotations or comments linking this test to a requirement ID, user story, or ticket. No traceability information is present in the method or class-level documentation.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Fila fila0 = new Fila();",
+          "improved_code": "  /**\n   * Tests REQ-001: Dequeuing from an empty queue should throw an exception.\n   */\n  @Test(timeout = 4000)\n  public void testDesenfileira_emptyQueue_throwsREQ001() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // requirement REQ-001 verified\n      }\n  }"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test focused on functional behavior. No explicit performance/security tests are present; the presence of a timeout does not constitute a performance test per the criteria.",
+          "status": "compliant",
+          "justification": "The test method uses a timeout (@Test(timeout = 4000)) which is an explicit performance-related assertion. Per the decision rules, the presence of an explicit timeout qualifies as a performance-related specification and marks this practice as compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test1' is generic and does not describe the scenario or expected outcome. Descriptive naming (e.g., desenfileira_empty_throws) would be clearer.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test1() throws Throwable {\n    // Given: an empty queue",
-          "improved_code": "  @Test(timeout = 4000)\n  public void desenfileira_emptyQueue_throwsException() throws Throwable {\n    // Given: an empty queue\n    Fila fila0 = new Fila();\n\n    // When/Then: attempting to dequeue from an empty queue should raise an exception\n    try {\n      fila0.desenfileira();\n      fail(\"Expected Exception when dequeuing from an empty queue\");\n    } catch (Exception e) {\n      String msg = e.getMessage();\n      assertNotNull(\"Exception message should be provided\", msg);\n      assertTrue(\"Exception message should indicate the queue is empty\",\n                 msg.toLowerCase().contains(\"vazia\") || msg.toLowerCase().contains(\"empty\"));\n    }\n\n    assertTrue(\"Queue must remain empty after failed dequeue attempt\", fila0.vazia());\n  }"
+          "justification": "The test method name 'test1' is generic and does not describe the scenario or expected result. It does not follow descriptive naming conventions like method_scenario_expectedResult.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {",
+          "improved_code": "  @Test(timeout = 4000)\n  public void desenfileira_onEmpty_throwsException() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // expected\n      }\n  }"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The test uses EvoSuite runner and a generic method name 'test1', which are indicators of heavy code-generation and lack of intention-revealing names.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\n@RunWith(EvoRunner.class)\n...\n  @Test(timeout = 4000)\n  public void test1() throws Throwable {",
-          "improved_code": "  @RunWith(EvoRunner.class)\n  @Category(UnitTest.class)\n  public class EvoAITest extends Fila_ESTest_scaffolding {\n\n    @Test(timeout = 4000)\n    public void desenfileira_emptyQueue_throwsException() throws Throwable {\n      // Given: an empty queue\n      Fila fila0 = new Fila();\n      // ... rest of clearer, intention-revealing test ...\n    }\n  }"
+          "justification": "The test shows signs of being auto-generated: use of EvoRunner/EvoSuite imports and a generic method name 'test1'. These are indicators of heavy code generation and verbose/generated patterns.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n\n  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {",
+          "improved_code": "  @Test(timeout = 4000)\n  public void desenfileira_emptyQueue_throwsException_clean() throws Throwable {\n      // concise, intention-revealing test without generated noise\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // expected\n      }\n  }"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The method uses Given-When-Then comments and the class Javadoc references the requirement, indicating a design intent and prioritized scenario coverage.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears to be a single basic test covering only an error case with no Given-When-Then structure or BDD-style naming. No evidence of thoughtful test-first design or prioritized scenario coverage is present.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {\n      Fila fila0 = new Fila();\n      try { \n        fila0.desenfileira();\n        fail(\"Expecting exception: Exception\");",
+          "improved_code": "  @Test(timeout = 4000)\n  public void desenfileira_givenEmptyQueue_whenDesenfileira_thenThrows() throws Throwable {\n      // Given\n      Fila fila0 = new Fila();\n      // When\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // Then: exception observed\n      }\n  }"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises public API methods (desenfileira, vazia) and does not use reflection or inspect internal/private state, which helps keep tests maintainable and focused on behavior.",
+          "justification": "The test exercises public API (new Fila(), desenfileira()) and does not use reflection or access internals. It verifies observable behavior (exception) rather than internal state, aligning with maintainable testing principles.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions use messages and check both exception message presence/content and the queue's empty state; specific assertions with messages are present, aiding diagnostics.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive failure messages and are minimal (fail + verifyException). There are no specific assertEquals/assertThat checks with messages. Per rules, this is non-compliant.",
+          "original_code": "        fila0.desenfileira();\n        fail(\"Expecting exception: Exception\");\n      } catch(Exception e) {\n         verifyException(\"ds.Fila\", e);",
+          "improved_code": "  @Test(timeout = 4000)\n  public void desenfileira_emptyQueue_assertMessage() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expected an exception when dequeuing an empty queue\");\n      } catch (Exception e) {\n          assertEquals(\"Erro: A fila esta vazia\", e.getMessage());\n      }\n  }"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test includes concise Given-When-Then comments that explain the scenario and expected behavior; there is no commented-out code or excessive commenting.",
+          "justification": "There are minimal comments inside the catch that document the error message. There is no commented-out code or excessive comments. Comments present provide brief explanatory context.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test contains no sources of non-determinism (no Random, time-based calls, or Thread.sleep) and uses local state only, so results should be deterministic.",
+          "justification": "The test does not use randomness, current time, Thread.sleep, or external dependencies. It constructs a local Fila and exercises deterministic behavior, so results should be repeatable.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,182 +144,22 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not persist data or modify static/global state; there is no need for cleanup visible in the method.",
+          "justification": "The test only operates on a local Fila instance and does not create files, modify static state, or persist data. There is no cleanup required, so no side effects are visible.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "No categorization annotations (@Tag, @Category, @Category(UnitTest.class), etc.) are applied to the test method or class. Per decision rules, absence of any categorization annotations marks this as non-compliant.",
+          "original_code": "interface UnitTest {}\n\n@RunWith(EvoRunner.class)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n\n  @Test(timeout = 4000)\n  public void test1()  throws Throwable  {",
+          "improved_code": "  @Category(UnitTest.class)\n  @Test(timeout = 4000)\n  public void desenfileira_emptyQueue_throwsException_labeled() throws Throwable {\n      Fila fila0 = new Fila();\n      try {\n          fila0.desenfileira();\n          fail(\"Expecting exception: Exception\");\n      } catch (Exception e) {\n          // expected\n      }\n  }"
         }
       ],
-      "method_compliance_score": "78.9%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "83.3%"
-    },
-    {
-      "test_method_name": "test2",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test performs two distinct 'Act' operations: fila0.enfileira(element) and fila0.desenfileira(). Decision rule 1: >1 distinct Act operations -> non-compliant. Although these two calls represent a single scenario (enqueue-then-dequeue), the strict rule requires a single Act per test.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2() throws Throwable {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    Object dequeued = fila0.desenfileira();\n    assertSame(element, dequeued);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testEnqueue_makesQueueNonEmpty() {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    assertFalse(fila0.vazia());\n  }\n\n  @Test(timeout = 4000)\n  public void testDequeue_returnsEnqueuedAndEmpties() {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    Object dequeued = fila0.desenfileira();\n    assertSame(element, dequeued);\n    assertTrue(fila0.vazia());\n  }"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not reference or modify shared static/instance state in the shown method. No @Before/@After are required for this single, self-contained test. Decision rule 4 applies: only local variables -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only a single happy-path test is present (enqueue then dequeue). Decision rule 4: class has <2 test methods and no exception/error-case tests are present (no assertThrows or @Test(expected=...)) -> non-compliant.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2() throws Throwable {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    Object dequeued = fila0.desenfileira();\n    assertSame(element, dequeued);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testDequeueOnEmpty_throwsException() {\n    Fila fila0 = new Fila();\n    try {\n      fila0.desenfileira();\n      fail(\"Expected exception when dequeuing from empty queue\");\n    } catch (Exception e) {\n      // expected\n    }\n  }"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test only exercises a single-element scenario and does not test boundary conditions (empty queue dequeue, multiple elements, nulls). Decision rule 3: all test data uses a typical single element -> non-compliant.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2() throws Throwable {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    Object dequeued = fila0.desenfileira();\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void testDequeueFromEmpty_boundary() {\n    Fila fila0 = new Fila();\n    try {\n      fila0.desenfileira();\n      fail(\"Dequeuing empty queue should throw\");\n    } catch (Exception e) {\n      // expected boundary behaviour\n    }\n  }\n\n  @Test(timeout = 4000)\n  public void testMultipleElements_orderPreserved() {\n    Fila fila0 = new Fila();\n    Object a = \"a\";\n    Object b = \"b\";\n    fila0.enfileira(a);\n    fila0.enfileira(b);\n    assertSame(a, fila0.desenfileira());\n    assertSame(b, fila0.desenfileira());\n  }"
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "compliant",
-          "justification": "The test is short and self-contained with no duplicated logic in the visible class. Although no helper methods/constants are present, decision rule 4: short tests (<10-15 lines) that don't repeat code are considered compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "compliant",
-          "justification": "The method is short (<20 lines), linear (no loops or conditionals), and follows Arrange-Act-Assert comments. Decision rules 1-3: no long or complex constructs detected -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test performs multiple specific assertions (assertFalse, assertSame, assertTrue) verifying different properties (non-empty, identity, emptiness). Decision rule 2 satisfied: >=2 properties verified -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. The test is active and runnable. Decision rule 3: all tests active -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc references 'REQ-QUEUE-001', giving requirement traceability. Decision rule 2 satisfied -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related test construct. Decision rule 2: presence of timeout -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name 'test2' is generic and does not follow descriptive naming conventions. Decision rule 2: generic name -> non-compliant.",
-          "original_code": "  @Test(timeout = 4000)\n  public void test2() throws Throwable {\n    // Given: a queue and a single element\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n  }",
-          "improved_code": "  @Test(timeout = 4000)\n  public void enqueueSingleElement_thenDequeue_returnsSameAndBecomesEmpty() {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    assertFalse(fila0.vazia());\n    Object dequeued = fila0.desenfileira();\n    assertSame(element, dequeued);\n    assertTrue(fila0.vazia());\n  }"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "The class uses EvoSuite runner and parameters (EvoRunner, EvoRunnerParameters) and contains a generated-style name 'test2' which are indicators of auto-generated tests. Decision rule 1-2: signs of heavy generation -> non-compliant.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, ...)\npublic class EvoAITest { ... \n  @Test(timeout = 4000)\n  public void test2() { ... }\n}",
-          "improved_code": "import org.junit.runner.RunWith;\n\n@RunWith(org.junit.runners.JUnit4.class)\npublic class FilaUnitTest {\n  @Test(timeout = 4000)\n  public void enqueueSingleElement_thenDequeue_behavesFIFO() {\n    Fila fila0 = new Fila();\n    Object element = new Object();\n    fila0.enfileira(element);\n    assertSame(element, fila0.desenfileira());\n  }\n}"
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then inline comments and BDD-style structure which indicate thoughtful design intent. Decision rule 1 satisfied -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "compliant",
-          "justification": "The test exercises public API methods (enfileira/desenfileira/vazia) and does not access private fields or use reflection. Decision rule 3: calls public methods and verifies behavior -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertFalse, assertSame, assertTrue) and include descriptive failure messages for at least some assertions. Decision rule 1 and 3: specific assertions with messages -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The method uses concise Given-When-Then comments that explain intent (why), and class-level Javadoc documents requirement linkage. No commented-out code present -> compliant per decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "The test does not use Random(), current time, Thread.sleep, or external dependencies in the visible method. All state is local and deterministic -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not persist data, modify static variables, or create external resources. No cleanup needed -> compliant per decision rules.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class has @Category(UnitTest.class) annotation at class level providing test categorization. Decision rule 1 satisfied -> compliant.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "73.7%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "73.7%"
+      "normalized_method_compliance_score": "57.9%"
     },
     {
       "test_method_name": "test0",
@@ -328,15 +168,15 @@
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple distinct operations: enfileira (twice), imprime (side-effect), and desenfileira (twice). Decision rule 1: more than one distinct 'Act' operation is present (enqueue, print, dequeue), so non-compliant.",
-          "original_code": "fila0.enfileira(first);\nfila0.enfileira(second);\n// imprime is a side-effectful operation (prints contents); call to ensure no exceptions\nfila0.imprime();\nObject out1 = fila0.desenfileira();\nObject out2 = fila0.desenfileira();",
-          "improved_code": "@Test\npublic void testEnqueueDequeue_FIFO() {\n  Fila fila0 = new Fila();\n  Object first = new Object();\n  Object second = new Object();\n  fila0.enfileira(first);\n  fila0.enfileira(second);\n  Object out1 = fila0.desenfileira();\n  Object out2 = fila0.desenfileira();\n  assertSame(first, out1);\n  assertSame(second, out2);\n  assertTrue(fila0.vazia());\n}"
+          "justification": "The test performs multiple distinct 'Act' operations: fila0.enfileira(object0) and fila0.imprime(). Decision rule 1: >1 distinct act operations => non-compliant. The method does not isolate a single Arrange-Act-Assert focused on one behavior.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void enfileira_shouldMakeQueueNonEmpty() throws Throwable {\n    Fila fila = new Fila();\n    Object obj = new Object();\n    fila.enfileira(obj);\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared mutable state. There are no numbered test names or indications of order dependence. Although no @Before/@After are present, the method is self-contained and independent.",
+          "justification": "The test uses only local variables and does not reference shared static/instance state. There are no @Before/@After usages required to determine independence and no naming suggesting order dependence.",
           "original_code": null,
           "improved_code": null
         },
@@ -344,63 +184,63 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a happy-path scenario is tested (enqueue/dequeue). Decision rules: the class has a single test and there is no test for error cases or exceptions (no assertThrows/@Test(expected=...)), so non-compliant.",
-          "original_code": "fila0.enfileira(first);\nfila0.enfileira(second);\nObject out1 = fila0.desenfileira();\nObject out2 = fila0.desenfileira();",
-          "improved_code": "@Test\npublic void testDesenfileiraEmpty_throws() {\n  Fila fila = new Fila();\n  try {\n    fila.desenfileira();\n    fail(\"Expected exception when dequeuing empty queue\");\n  } catch (RuntimeException e) {\n    // expected exception - adjust type to actual implementation\n  }\n}"
+          "justification": "Only a single happy-path test exists in the class. Decision rule: class has <2 test methods and no exception tests or invalid-input tests -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void enfileira_shouldMakeQueueNonEmpty() throws Throwable {\n    Fila fila = new Fila();\n    Object obj = new Object();\n    fila.enfileira(obj);\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n}\n\n@Test(timeout = 4000)\npublic void newQueue_shouldBeEmpty() throws Throwable {\n    Fila fila = new Fila();\n    assertTrue(\"New queue should be empty\", fila.vazia());\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
           "status": "non-compliant",
-          "justification": "The test only enqueues two typical Object instances and does not exercise boundary values such as empty queue behavior (beyond depleting it), null inputs, or extreme sizes. Decision rule: only typical values present, so non-compliant.",
-          "original_code": "Object first = new Object();\nObject second = new Object();\nfila0.enfileira(first);\nfila0.enfileira(second);",
-          "improved_code": "@Test\npublic void testBoundary_emptyAndSingle() {\n  Fila fila = new Fila();\n  // empty queue\n  assertTrue(fila.vazia());\n  // single null element boundary\n  fila.enfileira(null);\n  assertFalse(fila.vazia());\n  Object out = fila.desenfileira();\n  assertNull(out);\n  assertTrue(fila.vazia());\n}"
+          "justification": "The test uses a typical value (a single Object) and does not check boundary cases such as an empty queue, zero elements, or null inputs. Decision rule 3: only typical values used -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void newQueue_shouldBeEmpty() throws Throwable {\n    Fila fila = new Fila();\n    assertTrue(\"New queue should be empty\", fila.vazia());\n}\n\n@Test(timeout = 4000)\npublic void enfileira_withNull_shouldBeHandled() throws Throwable {\n    Fila fila = new Fila();\n    // If Fila supports nulls this verifies handling; otherwise adapt to expected behavior\n    fila.enfileira(null);\n    assertFalse(\"Queue should not be empty after enqueueing null\", fila.vazia());\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are used to eliminate duplication. The test contains inline setup; rule order: no private helpers or constants found and test is not extremely short, so non-compliant.",
-          "original_code": "Fila fila0 = new Fila();\nObject first = new Object();\nObject second = new Object();\nfila0.enfileira(first);\nfila0.enfileira(second);",
-          "improved_code": "private Fila createFilaWithTwo() {\n  Fila f = new Fila();\n  f.enfileira(new Object());\n  f.enfileira(new Object());\n  return f;\n}\n\n@Test\npublic void testUsingHelper_forFIFO() {\n  Fila fila = createFilaWithTwo();\n  Object out1 = fila.desenfileira();\n  assertNotNull(out1);\n}"
+          "status": "compliant",
+          "justification": "Test is very short (<10 lines) and contains no duplicated blocks within this single-method class; no helper methods or constants are strictly required for the single short test.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is longer than the stricter thresholds (<15 or <20 lines) indicated by the rules (approx. 23 lines). There are no loops, but the length exceeds the target, so non-compliant per decision rules.",
-          "original_code": "/* method body excerpt showing length and multiple sections */\n// Given: an empty queue and two distinct elements\nFila fila0 = new Fila();\nObject first = new Object();\nObject second = new Object();\n// When: enqueue two elements and call imprime to exercise side-effect\nfila0.enfileira(first);\nfila0.enfileira(second);\nfila0.imprime();\n// Then: queue should not be empty, and elements should be dequeued in FIFO order\nassertFalse(\"After enqueuing elements, queue should not be empty\", fila0.vazia());",
-          "improved_code": "@Test\npublic void testFIFO_compact() {\n  Fila fila = new Fila();\n  Object a = new Object(), b = new Object();\n  fila.enfileira(a); fila.enfileira(b);\n  assertSame(a, fila.desenfileira());\n  assertSame(b, fila.desenfileira());\n  assertTrue(fila.vazia());\n}"
+          "status": "compliant",
+          "justification": "The method is short (under 15 lines), linear, and contains no loops or conditionals. Decision rule 3: test methods <15 lines with simple linear flow -> compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
-          "status": "compliant",
-          "justification": "The test performs multiple specific assertions checking queue emptiness and that dequeued elements are the same objects in order. Multiple properties (order and emptiness) are verified, satisfying the requirement for comprehensive assertions.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Only a single, superficial assertion is used (assertFalse on vazia()). Decision rule 1: only 1 assertion -> non-compliant; the test does not verify multiple properties of the resulting state.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void enfileira_shouldMakeQueueNonEmpty_andRemainAfterPrint() throws Throwable {\n    Fila fila = new Fila();\n    Object obj = new Object();\n    fila.enfileira(obj);\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n    fila.imprime();\n    assertFalse(\"Queue should remain non-empty after imprime\", fila.vazia());\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. Tests are active and runnable.",
+          "justification": "There are no @Ignore/@Disabled annotations or commented-out @Test methods in the snippet. The test is active and runnable.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes a requirement identifier 'REQ-QUEUE-001', providing traceability back to the requirement.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "No annotations or Javadoc link the test to a requirement, ticket, or story. Decision rule 3: absence of traceability information -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\n@Category(UnitTest.class)\n/** Tests REQ-QUEUE-001: enqueue makes queue non-empty */\npublic void enfileira_shouldMakeQueueNonEmpty() throws Throwable {\n    Fila fila = new Fila();\n    fila.enfileira(new Object());\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n}"
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "Although this is a unit test, the test method uses @Test(timeout = 4000), which is an explicit performance-related safeguard; per decision rules this counts as an explicit performance test so marked compliant.",
+          "justification": "The test uses @Test(timeout = 4000), which is an explicit performance-related assertion. Decision rule 2: presence of @Test(timeout=...) => compliant for performance consideration.",
           "original_code": null,
           "improved_code": null
         },
@@ -408,47 +248,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name 'test0' is generic and does not describe scenario or expected outcome. Decision rule: generic naming found, so non-compliant.",
-          "original_code": "public void test0() throws Throwable {\n  ...\n}",
-          "improved_code": "@Test\npublic void enqueueDequeue_givenTwoElements_dequeuesInFIFO() {\n  Fila fila = new Fila();\n  Object first = new Object();\n  Object second = new Object();\n  fila.enfileira(first);\n  fila.enfileira(second);\n  assertSame(first, fila.desenfileira());\n  assertSame(second, fila.desenfileira());\n}"
+          "justification": "The method name 'test0' is generic and does not describe the scenario or expected result. Decision rule 2: generic name -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void enfileira_withObject_queueIsNotEmpty() throws Throwable {\n    Fila fila = new Fila();\n    fila.enfileira(new Object());\n    assertFalse(\"Queue should be non-empty after enqueue\", fila.vazia());\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The class uses EvoSuite artifacts (EvoRunner, EvoRunnerParameters, generic test name 'test0', extends scaffolding), which are indicators of heavy code generation. Decision rules: auto-generated patterns detected, so non-compliant.",
-          "original_code": "import org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n@RunWith(EvoRunner.class)\n@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)\npublic class EvoAITest extends Fila_ESTest_scaffolding {",
-          "improved_code": "@RunWith(org.junit.runners.JUnit4.class)\n@Category(UnitTest.class)\npublic class FilaUnitTest {\n\n  @Test\n  public void enqueueDequeue_givenTwoObjects_returnsInFIFOOrder() {\n    Fila fila = new Fila();\n    Object a = new Object(), b = new Object();\n    fila.enfileira(a); fila.enfileira(b);\n    assertSame(a, fila.desenfileira());\n    assertSame(b, fila.desenfileira());\n  }\n}"
+          "justification": "The class contains clear signs of auto-generated tests: EvoRunner/EvoSuite imports, method named 'test0', and scaffolding extension. Decision rule 1/2: presence of generated patterns and test0 naming -> non-compliant.",
+          "original_code": "import org.evosuite.runtime.EvoRunner;\n@RunWith(EvoRunner.class)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test0()  throws Throwable  { ... }\n}",
+          "improved_code": "@RunWith(EvoRunner.class)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void enfileira_withObject_queueIsNotEmpty() throws Throwable {\n        Fila fila = new Fila();\n        fila.enfileira(new Object());\n        assertFalse(\"Queue should be non-empty after enqueue\", fila.vazia());\n    }\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "compliant",
-          "justification": "The test includes Given-When-Then comments inline and class-level Javadoc references behaviour, indicating deliberate BDD-style design intent per decision rule 1.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The test appears minimal and likely written after-the-fact: only a single happy path, no Given-When-Then comments or BDD naming. Decision rules indicate minimal tests -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "/** Given a new queue, when an object is enqueued, then the queue is not empty */\n@Test(timeout = 4000)\npublic void givenNewQueue_whenEnqueue_thenQueueIsNotEmpty() throws Throwable {\n    // Given\n    Fila fila = new Fila();\n    // When\n    fila.enfileira(new Object());\n    // Then\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test exercises the public API only (enfileira, desenfileira, vazia, imprime) with no reflection or private-field access. There are no signs of testing implementation internals.",
+          "justification": "The test uses only public methods (enfileira, imprime, vazia) and does not access private fields or use reflection. Decision rule 3: tests call public APIs and verify behavior -> compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions are specific (assertSame, assertTrue/assertFalse) and include descriptive failure messages for key checks, satisfying the preference for specific assertions and messages.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "Assertions lack descriptive messages and only a single specific assertion is used (assertFalse) rather than more descriptive or multiple checks. Decision rules: absence of messages and limited use of specific assertions -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void enfileira_shouldMakeQueueNonEmpty_withMessages() throws Throwable {\n    Fila fila = new Fila();\n    fila.enfileira(new Object());\n    assertFalse(\"Queue should not be empty after enqueue\", fila.vazia());\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "The test includes concise Given-When-Then comments and class-level Javadoc. There is no excessive or commented-out code; comments explain intent (the 'why'), so compliant.",
+          "justification": "The snippet contains no commented-out code and no excessive comments; the test is short and self-explanatory. Decision rules: no commented-out code and minimal comments -> compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -456,7 +296,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "No sources of non-determinism (no Random, System.currentTimeMillis, sleeps, or external dependencies) are used in the test method; state is local and deterministic.",
+          "justification": "No sources of non-determinism are used (no Random, time-based calls, or Thread.sleep). The test uses deterministic operations on a freshly constructed Fila instance -> compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -464,22 +304,182 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test modifies only local objects and does not alter global/static state. Although imprime() may print to stdout, the test cleans up by dequeuing elements and does not leave persistent side effects; no cleanup hooks needed.",
+          "justification": "The test operates on local variables and does not persist data or modify static/global state. Although imprime() may write to stdout, there is no persistent side effect across tests. Decision rule 3 -> compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing meaningful categorization for selective execution per the decision rules.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "No @Tag/@Category/@Category-like annotations are applied to classify the test methods. Decision rule 3: absence of categorization annotations -> non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test0()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    fila0.imprime();\n    assertFalse(fila0.vazia());\n}",
+          "improved_code": "@Test(timeout = 4000)\n@Category(UnitTest.class)\npublic void enfileira_withObject_queueIsNotEmpty() throws Throwable {\n    Fila fila = new Fila();\n    fila.enfileira(new Object());\n    assertFalse(\"Queue should be non-empty after enqueue\", fila.vazia());\n}"
         }
       ],
-      "method_compliance_score": "63.2%",
+      "method_compliance_score": "47.4%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "63.2%"
+      "normalized_method_compliance_score": "47.4%"
+    },
+    {
+      "test_method_name": "test2",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method calls both fila0.enfileira(object0) and fila0.desenfileira() and effectively tests the enqueue-dequeue pair in one test. There are two distinct 'Act' operations related to behavior under test, so the test is not atomic.",
+          "original_code": "@Test(timeout = 4000)\npublic void test2()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    Object object1 = fila0.desenfileira();\n    assertSame(object1, object0);\n}",
+          "improved_code": "@Test\npublic void desenfileira_returnsEnqueuedObject() {\n    // Given\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected); // setup\n    // When\n    Object actual = fila.desenfileira();\n    // Then\n    assertSame(\"Dequeued object must be the same instance\", expected, actual);\n}"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not rely on static or shared state or on other tests. No @Before/@After are required for this simple test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a happy-path scenario is tested (enqueue then dequeue). There is no test for exceptional or error conditions (e.g., dequeue from empty queue), and only one test method exists for the behavior.",
+          "original_code": "Fila fila0 = new Fila();\nObject object0 = new Object();\nfila0.enfileira(object0);\nObject object1 = fila0.desenfileira();\nassertSame(object1, object0);",
+          "improved_code": "@Test(expected = RuntimeException.class)\npublic void desenfileira_onEmpty_throwsException() {\n    Fila fila = new Fila();\n    // When / Then: expecting exception when dequeuing empty queue\n    fila.desenfileira();\n}"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "The test only covers a typical enqueue/dequeue with a single object and does not exercise boundary conditions such as dequeuing an empty queue or enqueuing null values.",
+          "original_code": "Fila fila0 = new Fila();\nObject object0 = new Object();\nfila0.enfileira(object0);\nObject object1 = fila0.desenfileira();",
+          "improved_code": "@Test\npublic void desenfileira_onEmpty_returnsNull() {\n    Fila fila = new Fila();\n    // Boundary: dequeue on empty queue\n    assertNull(\"Dequeuing empty queue should return null\", fila.desenfileira());\n}"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short and self-contained (<10 lines) and does not repeat code. No helper extraction is necessary for this single simple test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is small (<15 lines), linear, and contains no loops or complex conditionals, keeping cyclomatic complexity low.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test contains only a single assertion (assertSame) and does not verify multiple properties (e.g., subsequent state of the queue), reducing fault-detection capability.",
+          "original_code": "fila0.enfileira(object0);\nObject object1 = fila0.desenfileira();\nassertSame(object1, object0);",
+          "improved_code": "@Test\npublic void enqueueDequeue_comprehensiveAssertions() {\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected);\n    Object actual = fila.desenfileira();\n    assertSame(\"Dequeued must be same instance\", expected, actual);\n    assertNull(\"Queue should be empty after dequeue\", fila.desenfileira());\n}"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "There are no @Ignore/@Disabled annotations, nor commented-out tests in the provided method. The test is active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "non-compliant",
+          "justification": "There are no annotations or comments linking this test to a requirement ID, ticket, or user story (no @Story, @Requirement, or Javadoc REQ- identifiers).",
+          "original_code": "/* no requirement annotations or Javadoc present */\n@Test(timeout = 4000)\npublic void test2() throws Throwable { ... }",
+          "improved_code": "/**\n * Tests REQ-123: dequeue returns the same object that was enqueued\n */\n@Test\npublic void desenfileira_returnsEnqueuedObject_req123() {\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected);\n    assertSame(expected, fila.desenfileira());\n}"
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "not-applicable",
+          "justification": "This is a simple unit test without performance or security concerns; no explicit performance/security tests are expected in this context.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The method name 'test2' is generic and does not describe the scenario or expected outcome. Naming does not follow descriptive conventions.",
+          "original_code": "@Test(timeout = 4000)\npublic void test2()  throws Throwable  {\n    ...\n}",
+          "improved_code": "@Test\npublic void desenfileira_whenElementEnqueued_thenReturnsSameElement() {\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected);\n    assertSame(expected, fila.desenfileira());\n}"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The test class uses EvoRunner and the method name 'test2' suggests generation; signs of auto-generated code (EvoRunner usage and non-descriptive name) are present.",
+          "original_code": "@RunWith(EvoRunner.class)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n    @Test(timeout = 4000)\n    public void test2() throws Throwable { ... }\n}",
+          "improved_code": "@RunWith(EvoRunner.class)\npublic class EvoAITest extends Fila_ESTest_scaffolding {\n    @Test\n    public void desenfileira_returnsEnqueuedObject() {\n        Fila fila = new Fila();\n        Object expected = new Object();\n        fila.enfileira(expected);\n        assertSame(expected, fila.desenfileira());\n    }\n}"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "The test appears minimal and focused on a single happy path without Given-When-Then structure or evidence of TDD/BDD design or prioritized scenarios.",
+          "original_code": "public void test2()  throws Throwable  {\n    Fila fila0 = new Fila();\n    Object object0 = new Object();\n    fila0.enfileira(object0);\n    Object object1 = fila0.desenfileira();\n    assertSame(object1, object0);\n}",
+          "improved_code": "@Test\npublic void givenEnqueuedObject_whenDequeued_thenReturnsSame() {\n    // Given\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected);\n    // When\n    Object actual = fila.desenfileira();\n    // Then\n    assertSame(expected, actual);\n}"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test interacts only with public APIs (enfileira/desenfileira), does not access private fields or use reflection, and is not tightly coupled to implementation details.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "compliant",
+          "justification": "The test uses a specific assertion (assertSame) rather than a generic assertTrue. Although it lacks an assertion message, the assertion is specific and clear.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The test code is concise and contains no excessive or misleading comments; there are no commented-out code blocks in the method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test uses no sources of non-determinism (no Random, time-based calls, sleeps, or external dependencies). It uses local creation of objects ensuring determinism.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not create persistent resources or modify global/static state, so it has no observable side effects.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "non-compliant",
+          "justification": "There are no @Tag/@Category/@Category-like annotations applied to the test method or class for categorization; although Category is imported, it is not used.",
+          "original_code": "import org.junit.experimental.categories.Category;\n\n@Test(timeout = 4000)\npublic void test2() throws Throwable { ... }",
+          "improved_code": "@Category(UnitTest.class)\n@Test\npublic void desenfileira_returnsEnqueuedObject_unit() {\n    Fila fila = new Fila();\n    Object expected = new Object();\n    fila.enfileira(expected);\n    assertSame(expected, fila.desenfileira());\n}"
+        }
+      ],
+      "method_compliance_score": "47.4%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "50.0%"
     }
   ],
   "practices_report": [
@@ -527,31 +527,31 @@
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
       "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 1,
+      "compliant_methods": 3,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "66.7%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
-      "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 1,
-      "not_applicable_methods": 0,
-      "total_methods": 3,
-      "compliance_score": "66.7%"
-    },
-    {
-      "practice_code": "CS-07",
-      "practice_title": "Complex Design for Fault Detection",
       "description": "",
       "compliant_methods": 3,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 3,
       "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "CS-07",
+      "practice_title": "Complex Design for Fault Detection",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
+      "not_applicable_methods": 0,
+      "total_methods": 3,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-08",
@@ -567,11 +567,11 @@
       "practice_code": "CS-09",
       "practice_title": "Complete Traceability of Test Cases",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "CS-10",
@@ -607,11 +607,11 @@
       "practice_code": "LS-05",
       "practice_title": "Complete Prioritization of Test Case Design",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-06",
@@ -627,11 +627,11 @@
       "practice_code": "LS-07",
       "practice_title": "Adequate Use of Test Assertions",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 1,
+      "non_compliant_methods": 2,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "33.3%"
     },
     {
       "practice_code": "LS-08",
@@ -667,20 +667,20 @@
       "practice_code": "LS-11",
       "practice_title": "Suitable Utilization of Test Labels and Categories",
       "description": "",
-      "compliant_methods": 3,
-      "non_compliant_methods": 0,
+      "compliant_methods": 0,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 3,
-      "compliance_score": "100.0%"
+      "compliance_score": "0.0%"
     }
   ],
-  "overall_compliance_score": "71.9%",
+  "overall_compliance_score": "50.9%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 20725,
-    "completion_tokens": 22334,
-    "total_tokens": 43059,
-    "cost": 0.04573085
+    "prompt_tokens": 20445,
+    "completion_tokens": 24487,
+    "total_tokens": 44932,
+    "cost": 0.04976525
   },
-  "normalized_overall_compliance_score": "73.2%"
+  "normalized_overall_compliance_score": "51.8%"
 }

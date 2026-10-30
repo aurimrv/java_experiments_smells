@@ -6,126 +6,118 @@
 
 | | Score |
 | :--- | ---: |
-| **Before improvement** | 45.7% |
-| **After improvement** | 69.6% |
-| **Delta** | **+23.9%** (↑ improvement) |
+| **Before improvement** | 44.5% |
+| **After improvement** | 50.2% |
+| **Delta** | **+5.7%** (↑ improvement) |
+
+## Oracle Preservation
+
+Guards restored behavioral oracles and/or runner infrastructure after improve-mode generation drifted from the original suite.
+
+- Restored method bodies: `test00`, `test01`, `test02`, `test03`, `test04`, `test05`, `test06`, `test07`, `test08`, `test09`, `test10`, `test11`, `test12`
 
 ## Best Practices Compliance — Before vs. After
 
 | Practice | Title | Before | After | Status |
 | :--- | :--- | ---: | ---: | :--- |
-| CS-01 | Atomic Specification of Test Cases | 23.1% | 46.2% | ✅ improved |
-| CS-02 | Complete Independence of Test Cases | 100.0% | 100.0% | — unchanged |
+| CS-01 | Atomic Specification of Test Cases | 15.4% | 15.4% | — unchanged |
+| CS-02 | Complete Independence of Test Cases | 100.0% | 92.3% | ⚠️ regressed |
 | CS-03 | Coverage of Normal and Exceptional Flows | 0.0% | 0.0% | — unchanged |
-| CS-04 | Boundary Value Analysis | 15.4% | 30.8% | ✅ improved |
-| CS-05 | Complete Modularity of Test Cases | 100.0% | 84.6% | ⚠️ regressed |
+| CS-04 | Boundary Value Analysis | 23.1% | 25.0% | ✅ improved |
+| CS-05 | Complete Modularity of Test Cases | 92.3% | 69.2% | ⚠️ regressed |
 | CS-06 | Detailed Analysis of Size and Complexity | 100.0% | 100.0% | — unchanged |
-| CS-07 | Complex Design for Fault Detection | 0.0% | 92.3% | ✅ improved |
+| CS-07 | Complex Design for Fault Detection | 0.0% | 0.0% | — unchanged |
 | CS-08 | Complete Maintenance of Test Code | 100.0% | 100.0% | — unchanged |
-| CS-09 | Complete Traceability of Test Cases | 0.0% | 100.0% | ✅ improved |
+| CS-09 | Complete Traceability of Test Cases | 0.0% | 0.0% | — unchanged |
 | CS-10 | Rigorous Use of Performance and Security Tests | 100.0% | 100.0% | — unchanged |
 | CS-12 | Clear Understanding of Test Cases | 0.0% | 0.0% | — unchanged |
 | LS-04 | Small Footprint of Test Code Generation | 0.0% | 0.0% | — unchanged |
-| LS-05 | Complete Prioritization of Test Case Design | 0.0% | 100.0% | ✅ improved |
+| LS-05 | Complete Prioritization of Test Case Design | 0.0% | 0.0% | — unchanged |
 | LS-06 | Responsible Addition of Test Code Maintenance | 100.0% | 100.0% | — unchanged |
-| LS-07 | Adequate Use of Test Assertions | 7.7% | 100.0% | ✅ improved |
+| LS-07 | Adequate Use of Test Assertions | 0.0% | 30.8% | ✅ improved |
 | LS-08 | Responsible Addition of Debugging Comments | 100.0% | 100.0% | — unchanged |
 | LS-09 | Deterministic Design of Test Results | 100.0% | 100.0% | — unchanged |
 | LS-10 | Complete Avoidance of Test Side Effects | 100.0% | 100.0% | — unchanged |
-| LS-11 | Suitable Utilization of Test Labels and Categories | 0.0% | 0.0% | — unchanged |
+| LS-11 | Suitable Utilization of Test Labels and Categories | 0.0% | 100.0% | ✅ improved |
 
 ## Method-Level Details
 
-### `test00`  (before: 42.1% → after: 68.4%)
+### `test00`  (before: 36.8% → after: 47.4%)
 
-**Fixed (4):** CS-07, CS-09, LS-05, LS-07
+**Fixed (1):** CS-01
 
-**Still non-compliant (5):** CS-01, CS-03, CS-04, CS-12, LS-04
+**Still non-compliant (9):** CS-03, CS-04, CS-05, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
-### `test01`  (before: 42.1% → after: 73.7%)
+### `test01`  (before: 42.1% → after: 52.6%)
 
-**Fixed (5):** CS-01, CS-07, CS-09, LS-05, LS-07
+**Still non-compliant (9):** CS-01, CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
-**Still non-compliant (4):** CS-03, CS-04, CS-12, LS-04
+### `test02`  (before: 42.1% → after: 42.1%)
 
-**Newly non-compliant (1):** LS-11
+**Fixed (1):** LS-11
 
-### `test02`  (before: 47.4% → after: 68.4%)
-
-**Fixed (4):** CS-07, CS-09, LS-05, LS-07
-
-**Still non-compliant (4):** CS-03, CS-04, CS-12, LS-04
-
-**Newly non-compliant (2):** CS-01, LS-11
-
-### `test03`  (before: 47.4% → after: 68.4%)
-
-**Fixed (5):** CS-04, CS-07, CS-09, LS-05, LS-07
-
-**Still non-compliant (5):** CS-01, CS-03, CS-12, LS-04, LS-11
-
-### `test04`  (before: 47.4% → after: 73.7%)
-
-**Fixed (4):** CS-04, CS-07, CS-09, LS-05
-
-**Still non-compliant (4):** CS-01, CS-03, CS-12, LS-04
-
-### `test05`  (before: 47.4% → after: 73.7%)
-
-**Fixed (5):** CS-01, CS-07, CS-09, LS-05, LS-07
-
-**Still non-compliant (5):** CS-03, CS-04, CS-12, LS-04, LS-11
-
-### `test06`  (before: 52.6% → after: 63.2%)
-
-**Fixed (4):** CS-07, CS-09, LS-05, LS-07
-
-**Still non-compliant (4):** CS-03, CS-04, CS-12, LS-04
-
-**Newly non-compliant (2):** CS-05, LS-11
-
-### `test07`  (before: 42.1% → after: 68.4%)
-
-**Fixed (5):** CS-01, CS-07, CS-09, LS-05, LS-07
-
-**Still non-compliant (5):** CS-03, CS-04, CS-12, LS-04, LS-11
+**Still non-compliant (9):** CS-01, CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
 **Newly non-compliant (1):** CS-05
 
-### `test08`  (before: 42.1% → after: 73.7%)
+### `test03`  (before: 47.4% → after: 47.4%)
 
-**Fixed (6):** CS-01, CS-04, CS-07, CS-09, LS-05, LS-07
+**Still non-compliant (9):** CS-01, CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
-**Still non-compliant (3):** CS-03, CS-12, LS-04
+**Newly non-compliant (1):** CS-02
 
-### `test09`  (before: 47.4% → after: 63.2%)
+### `test04`  (before: 47.4% → after: 57.9%)
 
-**Fixed (4):** CS-07, CS-09, LS-05, LS-07
+**Fixed (2):** LS-07, LS-11
 
-**Still non-compliant (4):** CS-01, CS-03, CS-12, LS-04
+**Still non-compliant (7):** CS-01, CS-03, CS-07, CS-09, CS-12, LS-04, LS-05
+
+### `test05`  (before: 42.1% → after: 47.4%)
+
+**Still non-compliant (9):** CS-01, CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
+
+### `test06`  (before: 42.1% → after: 52.6%)
+
+**Fixed (1):** CS-04
+
+**Still non-compliant (8):** CS-01, CS-03, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
+
+### `test07`  (before: 42.1% → after: 42.1%)
+
+**Fixed (1):** LS-11
+
+**Still non-compliant (9):** CS-01, CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
+
+**Newly non-compliant (1):** CS-05
+
+### `test08`  (before: 52.6% → after: 52.6%)
+
+**Still non-compliant (8):** CS-01, CS-03, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
 **Newly non-compliant (1):** CS-04
 
-### `test10`  (before: 47.4% → after: 68.4%)
+### `test09`  (before: 47.4% → after: 52.6%)
 
-**Fixed (4):** CS-07, CS-09, LS-05, LS-07
+**Still non-compliant (8):** CS-01, CS-03, CS-07, CS-09, CS-12, LS-04, LS-05, LS-07
 
-**Still non-compliant (5):** CS-03, CS-04, CS-12, LS-04, LS-11
+### `test10`  (before: 47.4% → after: 57.9%)
+
+**Fixed (1):** LS-07
+
+**Still non-compliant (7):** CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05
+
+### `test11`  (before: 47.4% → after: 52.6%)
+
+**Fixed (1):** LS-07
+
+**Still non-compliant (7):** CS-03, CS-04, CS-07, CS-09, CS-12, LS-04, LS-05
 
 **Newly non-compliant (1):** CS-01
 
-### `test11`  (before: 42.1% → after: 73.7%)
+### `test12`  (before: 42.1% → after: 47.4%)
 
-**Fixed (5):** CS-04, CS-07, CS-09, LS-05, LS-07
+**Fixed (2):** CS-04, LS-07
 
-**Still non-compliant (4):** CS-01, CS-03, CS-12, LS-04
+**Still non-compliant (7):** CS-01, CS-03, CS-07, CS-09, CS-12, LS-04, LS-05
 
-**Newly non-compliant (1):** LS-11
-
-### `test12`  (before: 47.4% → after: 68.4%)
-
-**Fixed (4):** CS-01, CS-09, LS-05, LS-07
-
-**Still non-compliant (4):** CS-03, CS-07, CS-12, LS-04
-
-**Newly non-compliant (2):** CS-04, LS-11
+**Newly non-compliant (1):** CS-05

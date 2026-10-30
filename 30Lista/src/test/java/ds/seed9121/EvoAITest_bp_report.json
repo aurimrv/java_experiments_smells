@@ -7,16 +7,16 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The method performs a single primary 'Act' operation: invoking obterAgm once (after setup). There is one clear Arrange (create graph and add edges), one Act (invoke obterAgm), and assertions tied to that call.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "The method performs multiple distinct actions: two insereAresta calls and then obterAgm; there are multiple 'act' operations rather than a single Arrange-Act-Assert focused on one behavior.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_singleEdge_returnsAgm() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    assertNotNull(\"AGM should not be null\", result);\n}"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on any shared static or instance state or on other tests; no @Before/@After required for this single self-contained test.",
+          "justification": "Test uses only local variables and no shared mutable state or ordered naming; no @Before/@After needed for this single test.",
           "original_code": null,
           "improved_code": null
         },
@@ -24,47 +24,47 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single happy-path scenario is tested; no test or assertion checks exceptional behavior (e.g. null-initialized AgmPrim or invalid inputs) despite class Javadoc mentioning exception behavior.",
-          "original_code": "AgmPrim agmPrim0 = new AgmPrim(grafo0);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject result = null;\nresult = obterAgm.invoke(agmPrim0, 0);\nif (!obterAgm.getReturnType().equals(Void.TYPE)) {\n    assertNotNull(\"obterAgm returned a non-void result; expected non-null\", result);\n}",
-          "improved_code": "try {\n    new AgmPrim(null).obterAgm(0);\n    fail(\"Expected NullPointerException when AgmPrim is constructed with null\");\n} catch (NullPointerException expected) {\n    // expected exceptional flow verified\n}"
+          "justification": "The class contains only one test that exercises a normal flow; there is no test for error/exceptional cases or invalid inputs.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(expected = IndexOutOfBoundsException.class)\npublic void testObterAgm_invalidNode_throws() throws Throwable {\n    Grafo grafo = new Grafo(1);\n    AgmPrim agm = new AgmPrim(grafo);\n    // attempt to obtain AGM for an invalid node index should throw\n    agm.obterAgm(5);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "Test inserts typical values (2537, 586) and does not exercise boundary values (zero, negative, Integer.MAX_VALUE) or off-by-one conditions for graph indices/weights.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\ngrafo0.insereAresta(0, 586, 586);\ngrafo0.insereAresta(0, 586, 2537);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject result = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "Grafo grafo0 = new Grafo(2537);\n// boundary inserts\ngrafo0.insereAresta(0, 0, 0);\ngrafo0.insereAresta(0, Integer.MAX_VALUE, Integer.MAX_VALUE);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject result = obterAgm.invoke(agmPrim0, 0);\nassertNotNull(result);"
+          "status": "compliant",
+          "justification": "Test uses a zero node index (0) when inserting edges which is a boundary-like value; inputs include large size which exercises edge of capacity.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or shared constants are defined to encapsulate repeated setup; the test contains inline setup for creating Grafo and inserting edges rather than extracting reusable helpers.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\nassertNotNull(\"Graph instance should have been created\", grafo0);\nAgmPrim agmPrim0 = new AgmPrim(grafo0);\n// Arrange: insert edges (act)\ngrafo0.insereAresta(0, 586, 586);\ngrafo0.insereAresta(0, 586, 2537);",
-          "improved_code": "private Grafo createGraphWithEdges() {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    g.insereAresta(0, 586, 2537);\n    return g;\n}\n\n@Test(timeout = 4000)\npublic void testObterAgm() throws Exception {\n    Grafo grafo0 = createGraphWithEdges();\n    // ...rest of test\n}"
+          "status": "compliant",
+          "justification": "The test is short (<10 lines) and self-contained; no repeated code across multiple methods in this single-method suite.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is relatively long (>30 lines) and contains multiple setup steps and reflective invocation, increasing complexity beyond recommended small focused tests.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\nassertNotNull(\"Graph instance should have been created\", grafo0);\n\nAgmPrim agmPrim0 = new AgmPrim(grafo0);\nassertNotNull(\"AgmPrim instance should have been created with a valid graph\", agmPrim0);\n\n// Arrange: insert edges (act)\ngrafo0.insereAresta(0, 586, 586);\ngrafo0.insereAresta(0, 586, 2537);\n\n// Act: invoke obterAgm reflectively to avoid assuming its return type\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject result = null;\nresult = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_withEdges_returnsNonNull() throws Exception {\n    Grafo grafo0 = createGraphWithEdges();\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    Object result = agmPrim0.obterAgm(0);\n    assertNotNull(result);\n}"
+          "status": "compliant",
+          "justification": "The test method is small (few lines), linear, with no loops or conditionals, thus low complexity.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "Assertions are superficial: main checks are assertNotNull or a trivial assertTrue. The test does not verify multiple properties of the returned AGM (e.g., size, contents, structure) to increase fault detection capability.",
-          "original_code": "if (!obterAgm.getReturnType().equals(Void.TYPE)) {\n    assertNotNull(\"obterAgm returned a non-void result; expected non-null\", result);\n} else {\n    assertTrue(\"obterAgm completed without throwing for graph with edges\", true);\n}",
-          "improved_code": "if (!obterAgm.getReturnType().equals(Void.TYPE)) {\n    assertNotNull(\"obterAgm returned a non-void result; expected non-null\", result);\n    if (result instanceof java.util.Collection) {\n        assertFalse(\"Returned MST should not be empty\", ((java.util.Collection) result).isEmpty());\n    }\n}"
+          "justification": "There are no assertions in the test, so it does not verify multiple properties or provide comprehensive checks to detect faults.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_validGraph_checksResultProperties() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    assertNotNull(\"AGM must not be null\", result);\n    assertTrue(\"AGM should be a non-empty object\", result != null);\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out test methods are present. Test methods are active and runnable (@Test present).",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; tests are active.",
           "original_code": null,
           "improved_code": null
         },
@@ -72,7 +72,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "Class-level Javadoc explicitly references requirements REQ-1234 and REQ-1235, providing traceability from tests to requirements.",
+          "justification": "Class-level Javadoc includes traceability references: 'Traceability: REQ-AGM-001, REQ-GRAFO-EDGE-001'.",
           "original_code": null,
           "improved_code": null
         },
@@ -80,7 +80,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "compliant",
-          "justification": "The test includes an explicit timeout in @Test(timeout = 4000), which demonstrates an explicit performance/time constraint check; therefore a relevant non-functional assertion is present.",
+          "justification": "A timeout is present on the test (@Test(timeout = 4000)), indicating an explicit performance-related guard.",
           "original_code": null,
           "improved_code": null
         },
@@ -88,47 +88,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "Test name 'test0' is generic and does not follow descriptive naming conventions that indicate scenario and expected outcome.",
-          "original_code": "@Test(timeout = 4000)\npublic void test0() throws Exception {",
-          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_withEdges_returnsNonNullMST() throws Exception {\n    // test body\n}"
+          "justification": "Method name 'test0' is generic and does not follow descriptive naming conventions to indicate scenario and expected result.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_withSingleEdge_returnsAgm() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    assertNotNull(\"AGM should not be null\", result);\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "Signs of automatic generation are present: class name 'EvoAITest', import of org.evosuite.runtime.*, and a test method named 'test0' indicate heavy use of a test generation tool (EvoSuite), producing non-minimal, numbered tests.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n@Test(timeout = 4000)\npublic void test0() throws Exception {",
-          "improved_code": "// Rename generated test to a focused, intention-revealing name\n@Test(timeout = 4000)\npublic void obterAgm_withEdges_returnsNonNullMST() throws Exception {\n    // concise, intention-revealing test replacing generated test0\n}"
+          "justification": "The test class uses EvoSuite runner and generated-style test name 'test0', indicating heavy use of test-generation patterns rather than minimal, intention-revealing tests.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void givenGraphWithSingleEdge_whenObterAgm_thenReturnsAgm() throws Throwable {\n    // Given\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    // When\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    // Then\n    assertNotNull(\"AGM should not be null\", result);\n}"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "non-compliant",
-          "justification": "The test appears minimal and focused on a single happy path; there is no Given-When-Then structure or evidence of BDD/TDD design intent beyond the brief comments, and edge/error cases are not prioritized or designed.",
-          "original_code": "// Arrange: insert edges (act)\ngrafo0.insereAresta(0, 586, 586);\ngrafo0.insereAresta(0, 586, 2537);\n// Act: invoke obterAgm reflectively to avoid assuming its return type",
-          "improved_code": "// Given: a graph with edges\n// When: obterAgm is invoked\n// Then: returned MST is non-null and has expected properties\nGrafo grafo0 = createGraphWithEdges();\nObject result = agmPrim0.obterAgm(0);\nassertNotNull(result);"
+          "justification": "Test appears minimal and focuses only on the happy path; no Given-When-Then comments or evidence of designed coverage of edge/error scenarios.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void givenValidGraph_whenObterAgm_thenReturnsAgm() throws Throwable {\n    // Given: small graph with one edge\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    // When\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    // Then\n    assertNotNull(\"Expected AGM for valid graph\", result);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test uses reflection (Method#getMethod and Method#invoke) to call the method under test. Per the decision rules, reflection usage in tests is a signal of coupling to implementation details or brittle tests; therefore marked non-compliant.",
-          "original_code": "Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject result = null;\nresult = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "Object result = agmPrim0.obterAgm(0);\nassertNotNull(\"obterAgm returned a non-void result; expected non-null\", result);"
+          "status": "compliant",
+          "justification": "The test uses public constructors and methods only; there is no reflection or inspection of internal private state.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Several assertions include descriptive failure messages (e.g., assertNotNull with messages); specific assertion methods are used instead of only generic assertTrue, satisfying the rule that a majority of assertions have messages.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "There are no assertions (and none with descriptive failure messages); assertions should be specific and include messages to aid debugging.",
+          "original_code": "public void test0()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 586, 586);\n    grafo0.insereAresta(0, 586, 2537);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_assertionsWithMessages() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    grafo.insereAresta(0, 1, 10);\n    AgmPrim agm = new AgmPrim(grafo);\n    Object result = agm.obterAgm(0);\n    assertNotNull(\"AGM should not be null\", result);\n    assertTrue(\"AGM should be non-empty\", result != null);\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "There is useful class-level Javadoc describing requirements and a concise in-method comment explaining the reflection usage; no excessive or commented-out code is present.",
+          "justification": "Class-level Javadoc provides context and traceability; there are no excessive or commented-out code blocks in the test method.",
           "original_code": null,
           "improved_code": null
         },
@@ -136,7 +136,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use random values, current time, Thread.sleep, or external resources; it uses deterministic inputs and local in-memory objects, so test outcomes should be deterministic.",
+          "justification": "No use of Random, current time, Thread.sleep, or external dependencies is visible; test uses deterministic inputs.",
           "original_code": null,
           "improved_code": null
         },
@@ -144,7 +144,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "The test only uses local objects and does not write files, persist to databases, or modify static state; no cleanup is required for this transient in-memory test.",
+          "justification": "The test manipulates only local objects; no global/static state modification or external persistent resources are visible.",
           "original_code": null,
           "improved_code": null
         },
@@ -152,7 +152,167 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution.",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization metadata.",
+          "original_code": null,
+          "improved_code": null
+        }
+      ],
+      "method_compliance_score": "63.2%",
+      "suggested_code": "",
+      "normalized_method_compliance_score": "63.2%"
+    },
+    {
+      "test_method_name": "test2",
+      "practices_evaluation": [
+        {
+          "practice_code": "CS-01",
+          "practice_title": "Atomic Specification of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test invokes multiple distinct operations (insereAresta, obterAgm, imprime). There are multiple acting method calls rather than a single Arrange-Act-Assert focused on one behavior, so it is not atomic.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testObterAgm_singleScenario_returnsAgm() throws Throwable {\n      Grafo grafo = new Grafo(10);\n      grafo.insereAresta(0, 1, 1);\n      AgmPrim agm = new AgmPrim(grafo);\n      Object result = agm.obterAgm(0);\n      assertNotNull(\"AGM should be produced for valid graph\", result);\n  }"
+        },
+        {
+          "practice_code": "CS-02",
+          "practice_title": "Complete Independence of Test Cases",
+          "status": "compliant",
+          "justification": "The test uses only local variables and does not reference or modify shared instance/static state in the visible method. No execution-order naming or evidence of inter-test dependencies is present.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-03",
+          "practice_title": "Coverage of Normal and Exceptional Flows",
+          "status": "non-compliant",
+          "justification": "Only a single happy-path execution is present; there are no tests for error conditions or exception scenarios (no @Test(expected=...) or assertThrows usage).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testObterAgm_happyPath_returnsAgm() throws Throwable {\n      Grafo g = new Grafo(5);\n      g.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(g);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(agm);\n  }\n\n  @Test(expected = IllegalArgumentException.class)\n  public void testObterAgm_invalidVertex_throws() throws Throwable {\n      Grafo g = new Grafo(1);\n      AgmPrim ap = new AgmPrim(g);\n      ap.obterAgm(999); // expect invalid-index exception\n  }"
+        },
+        {
+          "practice_code": "CS-04",
+          "practice_title": "Boundary Value Analysis",
+          "status": "non-compliant",
+          "justification": "Test uses typical numeric values (2537, 586) and does not exercise boundary values such as 0, negative, or maximum indices; no edge-case inputs are tested.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test\n  public void testObterAgm_boundaries_zeroAndMax() throws Throwable {\n      // zero-size or minimal graph\n      Grafo g0 = new Grafo(0);\n      AgmPrim ap0 = new AgmPrim(g0);\n      Object r0 = ap0.obterAgm(0);\n      // depending on API this may be null or throw; at least exercise the boundary\n      // larger graph near typical upper bounds\n      Grafo gMax = new Grafo(2);\n      gMax.insereAresta(0,1,1);\n      AgmPrim apMax = new AgmPrim(gMax);\n      Object rMax = apMax.obterAgm(0);\n      assertNotNull(\"AGM should be produced for minimal valid graph\", rMax);\n  }"
+        },
+        {
+          "practice_code": "CS-05",
+          "practice_title": "Complete Modularity of Test Cases",
+          "status": "compliant",
+          "justification": "The test is short (<10 lines) and does not repeat code across multiple methods; there is no evidence of duplicated setup that warrants helper extraction in the single visible test.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-06",
+          "practice_title": "Detailed Analysis of Size and Complexity",
+          "status": "compliant",
+          "justification": "The test method is short (fewer than 20 lines) and contains no loops or conditionals; control flow is simple and linear.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-07",
+          "practice_title": "Complex Design for Fault Detection",
+          "status": "non-compliant",
+          "justification": "The test contains no assertions at all; it does not verify multiple properties of the result to detect subtle faults (only calls methods).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void testObterAgm_verifiesMultipleProperties() throws Throwable {\n      Grafo grafo = new Grafo(5);\n      grafo.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(grafo);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(\"AGM should not be null\", agm);\n      // Additional property checks (example placeholders) - replace with real checks\n      assertTrue(\"AGM should represent a non-empty structure\", agm != null);\n  }"
+        },
+        {
+          "practice_code": "CS-08",
+          "practice_title": "Complete Maintenance of Test Code",
+          "status": "compliant",
+          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present; the test method is active and runnable.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-09",
+          "practice_title": "Complete Traceability of Test Cases",
+          "status": "compliant",
+          "justification": "Class-level Javadoc includes explicit traceability references (REQ-AGM-001, REQ-GRAFO-EDGE-001), providing mapping between tests and requirements.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-10",
+          "practice_title": "Rigorous Use of Performance and Security Tests",
+          "status": "compliant",
+          "justification": "A timeout is declared on the test (@Test(timeout = 4000)), which is an explicit performance-related control; thus the test class includes a timing constraint.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "CS-12",
+          "practice_title": "Clear Understanding of Test Cases",
+          "status": "non-compliant",
+          "justification": "The test method is named 'test2', which is generic and does not describe the scenario or expected outcome; it fails the recommended naming conventions.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test(timeout = 4000)\n  public void obterAgm_withSingleEdge_returnsMinimumSpanningTree() throws Throwable {\n      Grafo grafo = new Grafo(10);\n      grafo.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(grafo);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(\"AGM should be returned for a graph with a single edge\", agm);\n  }"
+        },
+        {
+          "practice_code": "LS-04",
+          "practice_title": "Small Footprint of Test Code Generation",
+          "status": "non-compliant",
+          "justification": "The test uses a generic test name (test2) and the class is run with EvoRunner (indicative of generated tests). There are signs the test originated from generation and not hand-crafted minimal tests.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test\n  public void obterAgm_singleEdge_returnsAgm_concise() throws Throwable {\n      // concise, intention-revealing test without generated artifacts\n      Grafo grafo = new Grafo(3);\n      grafo.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(grafo);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(agm);\n  }"
+        },
+        {
+          "practice_code": "LS-05",
+          "practice_title": "Complete Prioritization of Test Case Design",
+          "status": "non-compliant",
+          "justification": "No Given-When-Then comments, BDD-style naming, or multiple scenario coverage are present; the test appears minimal and written after-the-fact rather than designed with priorities.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test\n  public void givenGraphWithSingleEdge_whenObterAgm_thenReturnsMst() throws Throwable {\n      // Given\n      Grafo grafo = new Grafo(3);\n      grafo.insereAresta(0,1,1);\n      // When\n      AgmPrim ap = new AgmPrim(grafo);\n      Object agm = ap.obterAgm(0);\n      // Then\n      assertNotNull(\"AGM should be produced for a valid graph\", agm);\n  }"
+        },
+        {
+          "practice_code": "LS-06",
+          "practice_title": "Responsible Addition of Test Code Maintenance",
+          "status": "compliant",
+          "justification": "The test interacts via public API calls only (constructor and public methods); there is no reflection or access to private internal state visible in the method.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-07",
+          "practice_title": "Adequate Use of Test Assertions",
+          "status": "non-compliant",
+          "justification": "There are no assertions in the test; therefore assertions are neither specific nor include descriptive messages. This prevents meaningful fault detection.",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @Test\n  public void obterAgm_assertionsWithMessages() throws Throwable {\n      Grafo g = new Grafo(3);\n      g.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(g);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(\"AGM should not be null for graph with edges\", agm);\n      assertTrue(\"AGM result should represent a non-empty structure\", agm != null);\n  }"
+        },
+        {
+          "practice_code": "LS-08",
+          "practice_title": "Responsible Addition of Debugging Comments",
+          "status": "compliant",
+          "justification": "The class contains useful class-level Javadoc describing intent, traceability, and refactoring notes; there is no excessive or commented-out code in the test method itself.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-09",
+          "practice_title": "Deterministic Design of Test Results",
+          "status": "compliant",
+          "justification": "The test does not use random values, current time calls, Thread.sleep, or external system calls in the shown method; its behavior is deterministic with given inputs.",
+          "original_code": null,
+          "improved_code": null
+        },
+        {
+          "practice_code": "LS-10",
+          "practice_title": "Complete Avoidance of Test Side Effects",
+          "status": "non-compliant",
+          "justification": "The test creates a large Grafo and inserts edges without any cleanup or @After annotated cleanup shown; this may modify shared resources or leave persistent state (no evidence of cleanup).",
+          "original_code": "  @Test(timeout = 4000)\n  public void test2()  throws Throwable  {\n      Grafo grafo0 = new Grafo(2537);\n      AgmPrim agmPrim0 = new AgmPrim(grafo0);\n      grafo0.insereAresta(0, 586, 586);\n      agmPrim0.obterAgm(0);\n      agmPrim0.imprime();\n  }",
+          "improved_code": "  @After\n  public void tearDown() {\n      // cleanup resources created by tests if applicable\n      // e.g., clear static registries or close resources used by Grafo/AgmPrim\n  }\n\n  @Test\n  public void obterAgm_withoutSideEffects() throws Throwable {\n      Grafo g = new Grafo(3);\n      g.insereAresta(0,1,1);\n      AgmPrim ap = new AgmPrim(g);\n      Object agm = ap.obterAgm(0);\n      assertNotNull(agm);\n  }"
+        },
+        {
+          "practice_code": "LS-11",
+          "practice_title": "Suitable Utilization of Test Labels and Categories",
+          "status": "compliant",
+          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization to enable selective execution.",
           "original_code": null,
           "improved_code": null
         }
@@ -162,21 +322,21 @@
       "normalized_method_compliance_score": "52.6%"
     },
     {
-      "test_method_name": "test2",
+      "test_method_name": "test1",
       "practices_evaluation": [
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
           "status": "non-compliant",
-          "justification": "The test performs multiple distinct 'Act' operations: it inserts an edge, invokes obterAgm via reflection, and then invokes imprime (with branching for void vs non-void). This constitutes multiple Arrange-Act-Assert activities in one method rather than a single focused behavior.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\nAgmPrim agmPrim0 = new AgmPrim(grafo0);\ngrafo0.insereAresta(0, 586, 586);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject agmResult = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "@Test\npublic void computeAgm_withSingleEdge_returnsNonNull() throws Exception {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    AgmPrim p = new AgmPrim(g);\n    Object agmResult = p.obterAgm(0);\n    assertNotNull(\"AGM should be computed\", agmResult);\n}"
+          "justification": "PRINCIPLE: Tests should focus on a single behavior with one Arrange-Act-Assert. RATIONALE: Single responsibility avoids masking failures. EVIDENCE: The method contains two distinct method invocations that look like separate actions: grafo0.insereAresta(...) and agmPrim0.obterAgm(...). DECISION: Rule 1 counts distinct 'Act' operations; >1 -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "private Grafo grafo;\nprivate AgmPrim agmPrim;\n\n@org.junit.Before\npublic void setUp() {\n    grafo = new Grafo(2537);\n    agmPrim = new AgmPrim(grafo);\n    grafo.insereAresta(0, 0, 0);\n}\n\n@Test(timeout = 4000)\npublic void testObterAgm_singleEdge_returnsAgm() throws Throwable {\n    Object agm = agmPrim.obterAgm(0);\n    org.junit.Assert.assertNotNull(\"AGM should be produced\", agm);\n}\n"
         },
         {
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on shared static or instance state. There are no test-order-dependent names and no visible shared mutable state across tests.",
+          "justification": "PRINCIPLE: Tests must be independent and use setup/teardown as needed. EVIDENCE: The test uses only local variables (grafo0, agmPrim0) and does not reference shared mutable state in the method body. DECISION: Rule 4 - only local variables used -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -184,47 +344,47 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a happy-path scenario is exercised. There is no test of exceptional behavior (e.g., null inputs or expected exceptions). The class-level Javadoc references a null-handling requirement, but the method does not test it.",
-          "original_code": "AgmPrim agmPrim0 = new AgmPrim(grafo0);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject agmResult = null;\nagmResult = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "@Test(expected = NullPointerException.class)\npublic void constructor_withNullGraph_throwsNullPointer() {\n    // REQ-1235 expects NullPointerException for null-initialized AgmPrim\n    new AgmPrim(null);\n}"
+          "justification": "PRINCIPLE: Provide happy path and error scenario tests. RATIONALE: Ensures robustness by testing exceptions and invalid inputs. EVIDENCE: Only one test method present (in this class snippet) and it exercises a single successful scenario. DECISION: Class has <2 test methods and no exception tests -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_happyPath() throws Throwable {\n    Grafo grafo = new Grafo(10);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 1, 1);\n    Object result = agm.obterAgm(0);\n    org.junit.Assert.assertNotNull(result);\n}\n\n@Test(expected = RuntimeException.class, timeout = 4000)\npublic void testObterAgm_invalidNode_throws() throws Throwable {\n    Grafo grafo = new Grafo(1);\n    AgmPrim agm = new AgmPrim(grafo);\n    // call with invalid node index to check exception flow\n    agm.obterAgm(-1);\n}\n"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "non-compliant",
-          "justification": "The test uses typical numeric values (2537, 586) and does not exercise boundary conditions such as negative indices, zero, or Integer.MAX_VALUE. No edge-case inputs are present.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\ngrafo0.insereAresta(0, 586, 586);\nMethod obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject agmResult = obterAgm.invoke(agmPrim0, 0);",
-          "improved_code": "@Test(expected = IndexOutOfBoundsException.class)\npublic void obterAgm_withNegativeIndex_throws() {\n    Grafo g = new Grafo(3);\n    AgmPrim p = new AgmPrim(g);\n    p.obterAgm(-1);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should include boundary values. EVIDENCE: The test constructs Grafo(2537) and uses index 0 for insereAresta and obterAgm; presence of 0 indicates a boundary-value is exercised. DECISION: Found 0 used in inputs -> compliant. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "No helper methods or constants are defined to centralize repeated setup (magic numbers like 2537 and 586 are hardcoded). The test method contains a fair amount of inline setup which could be modularized.",
-          "original_code": "Grafo grafo0 = new Grafo(2537);\nAgmPrim agmPrim0 = new AgmPrim(grafo0);\ngrafo0.insereAresta(0, 586, 586);",
-          "improved_code": "private Grafo createGraphWithSingleEdge() {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    return g;\n}\n\n@Test\npublic void computeAgm_usingHelper_returnsNonNull() {\n    Grafo g = createGraphWithSingleEdge();\n    AgmPrim p = new AgmPrim(g);\n    assertNotNull(p.obterAgm(0));\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should be modular and reuse helpers. EVIDENCE: The test is short (<10 lines) with no duplicated blocks in this snippet. DECISION: Rule 4 - short tests that don't repeat -> compliant. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is long and contains branching (if/else) and try/finally for stream redirection; it exceeds the recommended compact size and has non-linear control flow, increasing complexity.",
-          "original_code": "Method imprime = AgmPrim.class.getMethod(\"imprime\");\nif (imprime.getReturnType().equals(Void.TYPE)) {\n    PrintStream originalOut = System.out;\n    ByteArrayOutputStream baos = new ByteArrayOutputStream();\n    PrintStream ps = new PrintStream(baos);\n    try {\n        System.setOut(ps);\n        imprime.invoke(agmPrim0);\n    } finally {",
-          "improved_code": "@Test\npublic void computeAgm_simpleFlow_shortAndLinear() throws Exception {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    AgmPrim p = new AgmPrim(g);\n    Object agm = p.obterAgm(0);\n    assertNotNull(agm);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Keep tests small and simple. EVIDENCE: The method is small (~6 lines), no loops or complex conditionals. DECISION: All rules satisfied for small, linear test -> compliant. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "Assertions are superficial: many check only non-null or trivial conditions (e.g., printed.length() >= 0). The test does not verify multiple meaningful properties of the computed AGM (such as structure, size, or content).",
-          "original_code": "if (!obterAgm.getReturnType().equals(Void.TYPE)) {\n    assertNotNull(\"Expected obterAgm to return a non-null result\", agmResult);\n}\n...\nassertTrue(\"imprime should produce some textual output after obterAgm\", printed != null && printed.length() >= 0);",
-          "improved_code": "@Test\npublic void computeAgm_verifiesMultipleProperties() throws Exception {\n    Grafo g = new Grafo(5);\n    g.insereAresta(0,1,1);\n    AgmPrim p = new AgmPrim(g);\n    Object agm = p.obterAgm(0);\n    assertNotNull(agm);\n    if (agm instanceof java.util.Collection) {\n        assertTrue(((java.util.Collection) agm).size() >= 1);\n    }\n}"
+          "justification": "PRINCIPLE: Assertions should verify multiple relevant properties. EVIDENCE: The test contains no assertions at all (it only calls methods). DECISION: Rule 1 - only 0 assertions -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_returnsNonNullAndHasExpectedState() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 1, 1);\n    Object result = agm.obterAgm(0);\n    org.junit.Assert.assertNotNull(\"AGM result should not be null\", result);\n    org.junit.Assert.assertTrue(\"AGM result should be non-empty\", result != null);\n}\n"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. The test is active and runnable (has @Test and timeout).",
+          "justification": "PRINCIPLE: Avoid ignored or disabled tests. EVIDENCE: No @Ignore/@Disabled annotation and no commented-out @Test in the provided method. DECISION: No disabled/ignored tests found -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -232,7 +392,7 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "Class-level Javadoc includes explicit requirement traceability entries (REQ-1234, REQ-1235) linking tests to requirements.",
+          "justification": "PRINCIPLE: Tests should link to requirements. EVIDENCE: Class Javadoc includes 'Traceability: REQ-AGM-001, REQ-GRAFO-EDGE-001'. DECISION: Found requirement IDs in class-level Javadoc -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -240,7 +400,7 @@
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
           "status": "not-applicable",
-          "justification": "No performance or security tests are expected for this unit test. There are no timeout-based performance assertions or security checks in this method; thus the practice is not applicable.",
+          "justification": "PRINCIPLE: Performance/security tests are separate concerns. EVIDENCE: This is a unit test with no timing/security assertions. DECISION: Per rules, usually not-applicable for unit tests -> not-applicable. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -248,47 +408,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The method name 'test2' is generic and does not describe the scenario or expected outcome. It fails to follow descriptive naming conventions like methodName_scenario_expectedResult.",
-          "original_code": "@Test(timeout = 4000)\npublic void test2() throws Exception {\n    Grafo grafo0 = new Grafo(2537);",
-          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_afterInsertingEdge_returnsNonNull_and_imprimeProducesOutput() throws Exception {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    AgmPrim p = new AgmPrim(g);\n    Object agm = p.obterAgm(0);\n    assertNotNull(agm);\n}"
+          "justification": "PRINCIPLE: Test names should be descriptive. EVIDENCE: Method name is 'test1' which is generic and does not describe scenario/expected outcome. DECISION: Rule 2 - generic name -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_withSelfLoopAtNodeZero_shouldReturnAgm() throws Throwable {\n    Grafo grafo = new Grafo(2537);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 0, 0);\n    Object result = agm.obterAgm(0);\n    org.junit.Assert.assertNotNull(\"Expected AGM for node 0\", result);\n}\n"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
           "status": "non-compliant",
-          "justification": "The class includes EvoSuite-specific imports and runtime references (org.evosuite.runtime.* and EvoRunner imports) and the test name 'test2' / style indicates generated tests rather than concise, intention-revealing tests.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n...\npublic class EvoAITest {",
-          "improved_code": "import static org.junit.Assert.*;\n\n@Category(UnitTest.class)\npublic class AgmPrimUnitTest {\n    @Test\n    public void obterAgm_withEdge_returnsNonNull() {\n        Grafo g = new Grafo(10);\n        g.insereAresta(0,1,1);\n        AgmPrim p = new AgmPrim(g);\n        assertNotNull(p.obterAgm(0));\n    }\n}"
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. EVIDENCE: Presence of numeric test name 'test1' and EvoRunner usage suggests generated-origin patterns. DECISION: Rule 2 - repetitive/generated-style name present -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void obterAgm_singleSelfLoopEdge_returnsAgm_quick() throws Throwable {\n    Grafo grafo = new Grafo(2537);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 0, 0);\n    Object result = agm.obterAgm(0);\n    org.junit.Assert.assertNotNull(result);\n}\n"
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "non-compliant",
-          "justification": "The test appears to be a single post-hoc happy-path test without Given-When-Then structure, BDD-style naming, or multiple prioritized scenarios (happy path + error cases).",
-          "original_code": "/*\n * Unit tests for AgmPrim behavior and its interaction with Grafo.\n */\n@Test(timeout = 4000)\npublic void test2() throws Exception {",
-          "improved_code": "@Test\npublic void givenGraphWithSingleEdge_whenObterAgm_thenResultIsNotNull() {\n    // Given\n    Grafo g = new Grafo(5);\n    g.insereAresta(0,1,1);\n    // When\n    AgmPrim p = new AgmPrim(g);\n    Object agm = p.obterAgm(0);\n    // Then\n    assertNotNull(agm);\n}"
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then, BDD). EVIDENCE: Method lacks Given-When-Then comments or BDD naming; only a single basic scenario exists. DECISION: Rule 3 - tests are minimal/basic -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void givenGraphWithSelfLoop_whenObterAgm_thenReturnsAgm() throws Throwable {\n    // Given\n    Grafo grafo = new Grafo(2537);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 0, 0);\n    // When\n    Object result = agm.obterAgm(0);\n    // Then\n    org.junit.Assert.assertNotNull(\"AGM expected for node with self-loop\", result);\n}\n"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test uses reflection (Method, invoke, getMethod) to call methods. Reflection is present and flagged by the decision rules as a sign of testing implementation details or brittle tests.",
-          "original_code": "Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\nObject agmResult = null;\ntry {\n    agmResult = obterAgm.invoke(agmPrim0, 0);\n} catch (InvocationTargetException ite) {",
-          "improved_code": "@Test\npublic void callMethodsDirectly_toAvoidReflection() throws Exception {\n    Grafo g = new Grafo(2537);\n    g.insereAresta(0, 586, 586);\n    AgmPrim p = new AgmPrim(g);\n    Object agmResult = p.obterAgm(0);\n    assertNotNull(agmResult);\n}"
+          "status": "compliant",
+          "justification": "PRINCIPLE: Tests should verify public behavior, not internals. EVIDENCE: The test only constructs Grafo and AgmPrim and calls public methods; no reflection or access to private internals. DECISION: No reflection or internal checks found -> compliant. VERDICT: compliant.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions in the test include descriptive messages (e.g., 'Graph instance should have been created', 'imprime should produce some textual output ...'), and specific assertion types (assertNotNull, assertTrue) are used rather than only assertTrue with vague predicates.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Use clear, specific assertions with messages. EVIDENCE: There are no assertions; no messages and no specific assertEquals/assertThat usage. DECISION: Rule 1 - zero assertions and Rule 2 - no specific assertions -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "@Test(timeout = 4000)\npublic void test1()  throws Throwable  {\n    Grafo grafo0 = new Grafo(2537);\n    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    grafo0.insereAresta(0, 0, 0);\n    agmPrim0.obterAgm(0);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void testObterAgm_assertionsWithMessages() throws Throwable {\n    Grafo grafo = new Grafo(2);\n    AgmPrim agm = new AgmPrim(grafo);\n    grafo.insereAresta(0, 1, 1);\n    Object result = agm.obterAgm(0);\n    org.junit.Assert.assertNotNull(\"AGM should not be null\", result);\n    org.junit.Assert.assertTrue(\"AGM should be non-empty\", result != null);\n}\n"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "Class-level Javadoc provides useful context and requirement traceability. There is no excessive or commented-out code, and inline comments are not cluttering the test.",
+          "justification": "PRINCIPLE: Comments should add value and not clutter. EVIDENCE: Class-level Javadoc exists and there is no excessive or commented-out code within the test method. DECISION: No commented-out code and reasonable class-level doc -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -296,7 +456,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not rely on random values, current time, or Thread.sleep. Output capture is deterministic (redirecting System.out) and restored in finally. No external dependencies are accessed without mocking in the visible code.",
+          "justification": "PRINCIPLE: Tests should avoid non-deterministic sources. EVIDENCE: The method uses fixed values (2537, 0) and no Random(), time-based calls, Thread.sleep(), or external dependencies are visible. DECISION: No non-deterministic constructs found -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -304,7 +464,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "Although the test temporarily redirects System.out, it restores the original PrintStream in a finally block, preventing permanent side effects. No files, databases, or static state are modified without cleanup.",
+          "justification": "PRINCIPLE: Tests should avoid persisting global state. EVIDENCE: The test mutates local Grafo instance only and does not perform file/database operations or modify static variables. DECISION: Local modifications without external persistence -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -312,14 +472,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class) and the UnitTest marker interface is declared, enabling categorization of the test.",
+          "justification": "PRINCIPLE: Use tags/categories to organize tests. EVIDENCE: Class is annotated with @Category(UnitTest.class). DECISION: Found @Category -> compliant. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "42.1%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "44.4%"
+      "normalized_method_compliance_score": "61.1%"
     },
     {
       "test_method_name": "test3",
@@ -327,168 +487,8 @@
         {
           "practice_code": "CS-01",
           "practice_title": "Atomic Specification of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test invokes the same method multiple times in a loop with different indices, resulting in multiple Act operations in a single test method rather than one Arrange-Act-Assert per test. Decision rule 1 (multiple Act operations >1) triggers non-compliance.",
-          "original_code": "int[] indicesToTest = new int[] {0, -1, Integer.MAX_VALUE, 3327};\n\nfor (int idx : indicesToTest) {\n    boolean npeSeen = false;\n    try {\n        antecessor.invoke(agmPrim0, idx);\n    } catch (InvocationTargetException ite) { ... }\n    assertTrue(\"Expected NullPointerException ...\", npeSeen);\n}",
-          "improved_code": "@Test\npublic void testAntecessor_index0_throwsNPE() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    boolean npeSeen = false;\n    try {\n        antecessor.invoke(agmPrim0, 0);\n    } catch (InvocationTargetException ite) {\n        if (ite.getCause() instanceof NullPointerException) npeSeen = true; else throw ite;\n    }\n    assertTrue(\"Expected NullPointerException for index 0\", npeSeen);\n}"
-        },
-        {
-          "practice_code": "CS-02",
-          "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and does not rely on any static or instance state or ordering. No @Before/@After required given the local-state-only usage; decision rule 4 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-03",
-          "practice_title": "Coverage of Normal and Exceptional Flows",
-          "status": "non-compliant",
-          "justification": "Only an exceptional/error scenario (expecting NullPointerException) is tested for the method under test. There is no happy-path test in the class for antecessor; per decision rule 1 (all tests test only errors) this is non-compliant.",
-          "original_code": "AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\nMethod antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\nfor (int idx : indicesToTest) {\n    try {\n        antecessor.invoke(agmPrim0, idx);\n    } catch (InvocationTargetException ite) { ... }\n    assertTrue(\"Expected NullPointerException...\", npeSeen);\n}",
-          "improved_code": "@Test\npublic void testAntecessor_happyPath_returnsValue() throws Exception {\n    Grafo g = new Grafo();\n    AgmPrim agm = new AgmPrim(g);\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    Object result = antecessor.invoke(agm, 0);\n    assertNotNull(\"Antecessor should return non-null for valid graph and index\", result);\n}"
-        },
-        {
-          "practice_code": "CS-04",
-          "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test exercises boundary-like indices including 0, -1, Integer.MAX_VALUE and a large value (3327), which covers zero, negative, and large/edge values. Decision rule 1 detects explicit boundary values.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-05",
-          "practice_title": "Complete Modularity of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test contains repeated logic inside the loop instead of extracting helper methods or constants to remove duplication and magic values. There are no private helper methods or constants; decision rule 1/2 not met and rule 4 (very short tests) does not apply.",
-          "original_code": "for (int idx : indicesToTest) {\n    boolean npeSeen = false;\n    try {\n        antecessor.invoke(agmPrim0, idx);\n    } catch (InvocationTargetException ite) { ... }\n    assertTrue(\"Expected NullPointerException...\", npeSeen);\n}",
-          "improved_code": "private void assertAntecessorThrowsNPEFor(AgmPrim agmPrim0, int idx) throws Exception {\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    boolean npeSeen = false;\n    try { antecessor.invoke(agmPrim0, idx); } catch (InvocationTargetException ite) {\n        if (ite.getCause() instanceof NullPointerException) npeSeen = true; else throw ite;\n    }\n    assertTrue(npeSeen);\n}\n\n@Test\npublic void testAntecessor_variousIndices_throwNPE() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    assertAntecessorThrowsNPEFor(agmPrim0, 0);\n    assertAntecessorThrowsNPEFor(agmPrim0, -1);\n}"
-        },
-        {
-          "practice_code": "CS-06",
-          "practice_title": "Detailed Analysis of Size and Complexity",
-          "status": "non-compliant",
-          "justification": "The test method is long and contains a loop plus multiple catch blocks, increasing complexity. Decision rule 1 (method > 30 lines) and rule 2 (presence of loop and multiple branches) indicate non-compliance.",
-          "original_code": "int[] indicesToTest = new int[] {0, -1, Integer.MAX_VALUE, 3327};\n\nfor (int idx : indicesToTest) {\n    boolean npeSeen = false;\n    try {\n        antecessor.invoke(agmPrim0, idx);\n    } catch (InvocationTargetException ite) {\n        Throwable cause = ite.getCause();\n        if (cause instanceof NullPointerException) {\n            npeSeen = true;\n        } else { throw ite; }\n    } catch (NullPointerException npe) { npeSeen = true; } catch (IllegalArgumentException iae) { throw iae; }\n    assertTrue(\"Expected NullPointerException...\", npeSeen);\n}",
-          "improved_code": "@Test\npublic void testAntecessor_index0_throwsNPE_small() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    try {\n        antecessor.invoke(agmPrim0, 0);\n        fail(\"Expected InvocationTargetException wrapping NullPointerException\");\n    } catch (InvocationTargetException ite) {\n        assertTrue(ite.getCause() instanceof NullPointerException);\n    }\n}"
-        },
-        {
-          "practice_code": "CS-07",
-          "practice_title": "Complex Design for Fault Detection",
-          "status": "non-compliant",
-          "justification": "The test uses a single high-level assertion per iteration (assertTrue on a boolean flag) rather than verifying multiple properties of the outcome. Decision rule 1 (only 1 assertion, superficial) triggers non-compliance.",
-          "original_code": "for (int idx : indicesToTest) {\n    boolean npeSeen = false;\n    try { antecessor.invoke(agmPrim0, idx); } catch (InvocationTargetException ite) { if (ite.getCause() instanceof NullPointerException) npeSeen = true; }\n    assertTrue(\"Expected NullPointerException when calling antecessor(\" + idx + \") on AgmPrim created with null graph\", npeSeen);\n}",
-          "improved_code": "@Test\npublic void testAntecessor_index0_exceptionDetails() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    try {\n        antecessor.invoke(agmPrim0, 0);\n        fail(\"Expected InvocationTargetException\");\n    } catch (InvocationTargetException ite) {\n        Throwable cause = ite.getCause();\n        assertTrue(cause instanceof NullPointerException);\n        assertNotNull(\"Exception message should be present\", cause.getMessage());\n    }\n}"
-        },
-        {
-          "practice_code": "CS-08",
-          "practice_title": "Complete Maintenance of Test Code",
-          "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present. All test code is active and runnable; decision rule 3 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-09",
-          "practice_title": "Complete Traceability of Test Cases",
-          "status": "compliant",
-          "justification": "Class-level Javadoc includes requirement traceability (REQ-1234, REQ-1235), satisfying the requirement for linking tests to requirements per decision rule 2.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-10",
-          "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "not-applicable",
-          "justification": "This is a unit test focused on functional behavior; no explicit performance or security tests are expected. Per decision rule 1, mark as not-applicable.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "CS-12",
-          "practice_title": "Clear Understanding of Test Cases",
-          "status": "non-compliant",
-          "justification": "The test method name 'test3' is generic and does not describe the scenario or expected outcome. Decision rule 2 (generic name) triggers non-compliance.",
-          "original_code": "@Test(timeout = 4000)\npublic void test3() throws Exception {\n    ...\n}",
-          "improved_code": "@Test(timeout = 4000)\npublic void testAntecessor_onNullGraph_throwsNPEForVariousIndices() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    // test logic...\n}"
-        },
-        {
-          "practice_code": "LS-04",
-          "practice_title": "Small Footprint of Test Code Generation",
-          "status": "not-applicable",
-          "justification": "No clear auto-generated comments or repetitive autogenerated names are present in the method. Although EvoSuite imports are present, there are no signs of heavy code generation in this test method; decision rule 3 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-05",
-          "practice_title": "Complete Prioritization of Test Case Design",
-          "status": "non-compliant",
-          "justification": "No Given-When-Then comments or BDD-style naming are present and the class contains only an error-case test; decision rule 3 (minimal tests only) indicates non-compliance.",
-          "original_code": "/** Unit tests for AgmPrim behavior... */\n@Test(timeout = 4000)\npublic void test3() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    ...\n}",
-          "improved_code": "@Test\npublic void givenNullGraph_whenAntecessorInvoked_thenNullPointerThrown() throws Exception {\n    // Given\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    // When\n    Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n    // Then\n    try { antecessor.invoke(agmPrim0, 0); fail(\"expected\"); } catch (InvocationTargetException ite) { assertTrue(ite.getCause() instanceof NullPointerException); }\n}"
-        },
-        {
-          "practice_code": "LS-06",
-          "practice_title": "Responsible Addition of Test Code Maintenance",
-          "status": "non-compliant",
-          "justification": "The test uses reflection (Method.getMethod and invoke) to call the method under test. Decision rule 1 flags reflection usage as non-compliant because it increases coupling to implementation and makes maintenance harder.",
-          "original_code": "Method antecessor = AgmPrim.class.getMethod(\"antecessor\", int.class);\n...\nantecessor.invoke(agmPrim0, idx);",
-          "improved_code": "@Test\npublic void testAntecessor_directCall_maintainable() throws Exception {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    try {\n        agmPrim0.antecessor(0);\n        fail(\"Expected NullPointerException or underlying failure\");\n    } catch (NullPointerException npe) {\n        // expected for null graph\n    }\n}"
-        },
-        {
-          "practice_code": "LS-07",
-          "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Assertions in the method include descriptive messages (both assertNotNull and assertTrue include messages). Decision rule 1 (>=50% of assertions have messages) is satisfied.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-08",
-          "practice_title": "Responsible Addition of Debugging Comments",
-          "status": "compliant",
-          "justification": "The class has helpful Javadoc explaining purpose and requirement traceability. There is no excessive inline commenting or commented-out code. Decision rule 3 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-09",
-          "practice_title": "Deterministic Design of Test Results",
-          "status": "compliant",
-          "justification": "No usage of Random, System.currentTimeMillis, Thread.sleep, or external dependencies is present. The test uses fixed indices and is deterministic; decision rule 3 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-10",
-          "practice_title": "Complete Avoidance of Test Side Effects",
-          "status": "compliant",
-          "justification": "The test uses only local variables and does not persist data or modify static fields; no cleanup is required. Decision rule 3 applies.",
-          "original_code": null,
-          "improved_code": null
-        },
-        {
-          "practice_code": "LS-11",
-          "practice_title": "Suitable Utilization of Test Labels and Categories",
-          "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class), providing categorization for selective execution. Decision rule 1 applies.",
-          "original_code": null,
-          "improved_code": null
-        }
-      ],
-      "method_compliance_score": "47.4%",
-      "suggested_code": "",
-      "normalized_method_compliance_score": "52.9%"
-    },
-    {
-      "test_method_name": "test1",
-      "practices_evaluation": [
-        {
-          "practice_code": "CS-01",
-          "practice_title": "Atomic Specification of Test Cases",
-          "status": "compliant",
-          "justification": "The method performs a single Act operation (invoke of obterAgm) following a single Arrange-Act-Assert flow: create graph, create AgmPrim, insert self-loop, invoke method, assert result. No multiple unrelated operations are tested.",
+          "justification": "PRINCIPLE: A test should focus on a single behavior. RATIONALE: Single Arrange-Act-Assert aids diagnosis. EVALUATION CRITERIA: Compliant if exactly one Act and one assert group. DECISION: The method performs a single method invocation (agmPrim0.antecessor(3327)) and a single exception assertion block (try/fail/catch). No other operations are tested. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -496,7 +496,7 @@
           "practice_code": "CS-02",
           "practice_title": "Complete Independence of Test Cases",
           "status": "compliant",
-          "justification": "The test uses only local variables and no shared mutable state; no @Before/@After are required for isolation. There is no indication of inter-test dependencies.",
+          "justification": "PRINCIPLE: Tests must not depend on other tests. RATIONALE: Ensures deterministic independent execution. EVALUATION CRITERIA: Look for @Before/@After or only local variables. DECISION: The method uses only local variables and does not reference static/shared state; no ordered test name. No setup/teardown is required for this single short test. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -504,23 +504,23 @@
           "practice_code": "CS-03",
           "practice_title": "Coverage of Normal and Exceptional Flows",
           "status": "non-compliant",
-          "justification": "Only a single test method exists in the class and it exercises a single (happy/edge) scenario. There are no tests for error/exceptional flows (e.g., null AgmPrim or invalid inputs). Class has <2 test methods so there is no separate exception-case test.",
-          "original_code": "    AgmPrim agmPrim0 = new AgmPrim(grafo0);\n    Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n    Object result = null;\n    result = obterAgm.invoke(agmPrim0, 0);\n    assertNotNull(\"obterAgm should not return null even when graph contains self-loops\", result);",
-          "improved_code": "    @Test(expected = NullPointerException.class)\n    public void testObterAgm_withNullAgmPrim_throwsNPE() throws Exception {\n        AgmPrim agmPrimNull = null;\n        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        // invoking on a null instance should lead to a NullPointerException per requirement\n        obterAgm.invoke(agmPrimNull, 0);\n    }"
+          "justification": "PRINCIPLE: Tests should cover both happy and error paths. RATIONALE: Ensures robustness by validating normal and exceptional behavior. EVALUATION CRITERIA: Class should contain at least one happy-path and one error-path test for the method under test. DECISION: This class contains only this single test which exercises an exceptional path (NullPointerException) and no happy-path test is present. According to rules, mark non-compliant. VERDICT: non-compliant.",
+          "original_code": "AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\ntry {\n  agmPrim0.antecessor(3327);\n  fail(\"Expecting exception: NullPointerException\");\n} catch(NullPointerException e) {\n  verifyException(\"ds.AgmPrim\", e);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void antecessor_withNullGraph_throwsNPE() throws Throwable {\n    AgmPrim agmPrim = new AgmPrim((Grafo) null);\n    try {\n        agmPrim.antecessor(3327);\n        fail(\"Expecting NullPointerException\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}\n\n@Test(timeout = 4000)\npublic void antecessor_withValidGraph_happyPath() throws Throwable {\n    // Given\n    Grafo g = new Grafo();\n    AgmPrim agmPrim = new AgmPrim(g);\n    // When\n    int pred = agmPrim.antecessor(0);\n    // Then - basic happy-path assertion (concrete expected value depends on implementation)\n    assertNotNull(\"AgmPrim should be instantiated\", agmPrim);\n    assertTrue(\"Predecessor should be an integer (sanity)\", pred == pred);\n}"
         },
         {
           "practice_code": "CS-04",
           "practice_title": "Boundary Value Analysis",
-          "status": "compliant",
-          "justification": "The test explicitly uses index 0 and inserts a self-loop on vertex 0 which exercises an important boundary condition (vertex zero / self-loop). The presence of zero as an input is a boundary-value check.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Tests should validate min/max/near-boundary inputs. RATIONALE: Boundaries often reveal off-by-one errors. EVALUATION CRITERIA: Look for empty, zero, negative, Integer.MAX_VALUE, etc. DECISION: The test invokes antecessor(3327) only; no boundary inputs (0, -1, Integer.MAX_VALUE) are tested. Mark non-compliant. VERDICT: non-compliant.",
+          "original_code": "AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\ntry {\n  agmPrim0.antecessor(3327);\n  fail(\"Expecting exception: NullPointerException\");\n} catch(NullPointerException e) {\n  verifyException(\"ds.AgmPrim\", e);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void antecessor_boundaryValues() throws Throwable {\n    Grafo g = new Grafo();\n    AgmPrim agm = new AgmPrim(g);\n    // check boundary inputs to ensure no unexpected failures\n    agm.antecessor(0);\n    agm.antecessor(-1);\n    agm.antecessor(Integer.MAX_VALUE);\n    // If the API defines specific return values for these inputs, add assertions accordingly\n}"
         },
         {
           "practice_code": "CS-05",
           "practice_title": "Complete Modularity of Test Cases",
           "status": "compliant",
-          "justification": "The test is short and self-contained (< 15 lines) and does not repeat code; there is no visible duplication requiring helper extraction in this small class.",
+          "justification": "PRINCIPLE: Tests should be self-contained and reuse helpers for duplication. RATIONALE: Improves maintainability. EVALUATION CRITERIA: Presence of helpers or constants or if tests are short and non-duplicative. DECISION: The test is short (<10 lines) and does not duplicate code across multiple tests (only one test exists). No helper methods are necessary here. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -528,7 +528,7 @@
           "practice_code": "CS-06",
           "practice_title": "Detailed Analysis of Size and Complexity",
           "status": "compliant",
-          "justification": "The test is linear, contains no loops or nested conditionals, and is reasonably short; cyclomatic complexity is low.",
+          "justification": "PRINCIPLE: Keep tests small and simple. RATIONALE: Low complexity reduces test bugs. EVALUATION CRITERIA: Test methods <20 lines, no loops/complex conditionals. DECISION: The method is short and linear (single try/catch around a single call). No loops or complex conditionals. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -536,15 +536,15 @@
           "practice_code": "CS-07",
           "practice_title": "Complex Design for Fault Detection",
           "status": "non-compliant",
-          "justification": "Assertions are superficial: the test mainly asserts non-nullness (and earlier instance creation) and does not verify multiple properties of the returned structure to detect deeper faults.",
-          "original_code": "        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        Object result = null;\n        try {\n            result = obterAgm.invoke(agmPrim0, 0);\n        } catch (InvocationTargetException ite) {\n            throw ite;\n        }\n\n        if (!obterAgm.getReturnType().equals(Void.TYPE)) {\n            assertNotNull(\"obterAgm should not return null even when graph contains self-loops\", result);\n        } else {\n            assertTrue(\"obterAgm (void) completed successfully for graph with self-loop\", true);\n        }",
-          "improved_code": "        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        Object result = obterAgm.invoke(agmPrim0, 0);\n        // stronger assertions: result must be non-null and provide a meaningful toString()\n        assertNotNull(\"obterAgm should not return null even when graph contains self-loops\", result);\n        assertTrue(\"Returned object should have non-empty string representation\", result.toString().length() > 0);\n        assertTrue(\"Returned object should not be a Boolean true/false token\", !(result instanceof Boolean));"
+          "justification": "PRINCIPLE: Assertions should be comprehensive and verify multiple properties. RATIONALE: Superficial assertions may miss faults. EVALUATION CRITERIA: Compliant if test verifies multiple properties or collection size+content. DECISION: This test only checks that a NullPointerException is thrown (single assertion via fail/catch and verifyException) and does not verify multiple properties of any result. Per rule, single superficial assertion -> non-compliant. VERDICT: non-compliant.",
+          "original_code": "AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\ntry {\n  agmPrim0.antecessor(3327);\n  fail(\"Expecting exception: NullPointerException\");\n} catch(NullPointerException e) {\n  verifyException(\"ds.AgmPrim\", e);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void antecessor_withValidGraph_verifiesMultipleProperties() throws Throwable {\n    Grafo g = new Grafo();\n    AgmPrim agmPrim = new AgmPrim(g);\n    assertNotNull(\"AgmPrim instance should be created\", agmPrim);\n    int pred = agmPrim.antecessor(0);\n    // Verify multiple aspects: returned value sanity and object still valid\n    assertTrue(\"Predecessor should be >= -1\", pred >= -1);\n    assertNotNull(\"Grafo should remain accessible via AgmPrim (if accessor exists)\", agmPrim);\n}"
         },
         {
           "practice_code": "CS-08",
           "practice_title": "Complete Maintenance of Test Code",
           "status": "compliant",
-          "justification": "No @Ignore/@Disabled annotations or commented-out @Test methods are present in the shown test method or class. Tests are active and runnable.",
+          "justification": "PRINCIPLE: Avoid ignored or commented-out tests. RATIONALE: Ignored tests hide problems. EVALUATION CRITERIA: Search for @Ignore/@Disabled or commented @Test. DECISION: No @Ignore/@Disabled or commented-out tests are present in the shown class/method. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -552,15 +552,15 @@
           "practice_code": "CS-09",
           "practice_title": "Complete Traceability of Test Cases",
           "status": "compliant",
-          "justification": "The class-level Javadoc includes explicit requirement traceability entries (REQ-1234, REQ-1235), linking tests to requirements.",
+          "justification": "PRINCIPLE: Tests should link to requirements. RATIONALE: Facilitates impact analysis. EVALUATION CRITERIA: Look for @Story/@Requirement or Javadoc with IDs. DECISION: Class-level Javadoc includes 'Traceability: REQ-AGM-001, REQ-GRAFO-EDGE-001', which provides requirement linkage. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "CS-10",
           "practice_title": "Rigorous Use of Performance and Security Tests",
-          "status": "compliant",
-          "justification": "The test uses an explicit timeout (@Test(timeout = 4000)), which is an explicit performance-related constraint in the unit test, satisfying the practice for presence of timing-based checks.",
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Performance/security tests are separate concerns. RATIONALE: Unit tests typically don't cover non-functional tests. EVALUATION CRITERIA: Mark not-applicable for ordinary unit tests unless explicit timing/security tests exist. DECISION: No timing annotations or security tests present; practice is not applicable to this unit test. VERDICT: not-applicable.",
           "original_code": null,
           "improved_code": null
         },
@@ -568,47 +568,47 @@
           "practice_code": "CS-12",
           "practice_title": "Clear Understanding of Test Cases",
           "status": "non-compliant",
-          "justification": "The test method name is generic ('test1') and does not follow a descriptive naming convention that communicates scenario and expected result.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test1() throws Exception {\n        Grafo grafo0 = new Grafo(2537);",
-          "improved_code": "    @Test(timeout = 4000)\n    public void obterAgm_withSelfLoop_returnsNonNull() throws Exception {\n        Grafo grafo0 = new Grafo(2537);\n        AgmPrim agmPrim0 = new AgmPrim(grafo0);\n        grafo0.insereAresta(0, 0, 0);\n        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        Object result = obterAgm.invoke(agmPrim0, 0);\n        assertNotNull(\"obterAgm should not return null even when graph contains self-loops\", result);\n    }"
+          "justification": "PRINCIPLE: Test names should be descriptive. RATIONALE: Good names document intent. EVALUATION CRITERIA: Names should follow method_condition_expected pattern. DECISION: The method name is 'test3', which is generic and does not describe scenario or expected result. Mark non-compliant. VERDICT: non-compliant.",
+          "original_code": "public void test3()  throws Throwable  {\n    AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\n    // Undeclared exception!\n    try {\n      agmPrim0.antecessor(3327);\n      fail(\"Expecting exception: NullPointerException\");\n    } catch(NullPointerException e) {\n      verifyException(\"ds.AgmPrim\", e);\n    }\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void antecessor_withNullGraph_throwsNullPointerException() throws Throwable {\n    AgmPrim agmPrim = new AgmPrim((Grafo) null);\n    try {\n        agmPrim.antecessor(3327);\n        fail(\"Expecting NullPointerException\");\n    } catch (NullPointerException e) {\n        // expected\n    }\n}"
         },
         {
           "practice_code": "LS-04",
           "practice_title": "Small Footprint of Test Code Generation",
-          "status": "non-compliant",
-          "justification": "There are clear signs of generated test code: imports from org.evosuite.runtime.*, usage of EvoAssertions, and a generic test name 'test1' consistent with heavy code-generation patterns.",
-          "original_code": "import static org.evosuite.runtime.EvoAssertions.*;\nimport org.evosuite.runtime.EvoRunner;\nimport org.evosuite.runtime.EvoRunnerParameters;\n\n    @Test(timeout = 4000)\n    public void test1() throws Exception {",
-          "improved_code": "    @Test(timeout = 4000)\n    public void obterAgm_withSelfLoop_returnsNonNull() throws Exception {\n        // Minimal, intention-revealing test without EvoSuite runtime usage\n        Grafo grafo0 = new Grafo(2537);\n        AgmPrim agmPrim0 = new AgmPrim(grafo0);\n        grafo0.insereAresta(0, 0, 0);\n        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        Object result = obterAgm.invoke(agmPrim0, 0);\n        assertNotNull(result);\n    }"
+          "status": "not-applicable",
+          "justification": "PRINCIPLE: Avoid verbose auto-generated tests. RATIONALE: Generated tests can be noisy. EVALUATION CRITERIA: Look for 'Auto-generated by' comments or patterns like test0/test1. DECISION: Although the class doc mentions refactoring from generated tests, there are no explicit auto-generated comments or repetitive auto names beyond 'test3'. Insufficient evidence of heavy generation; mark not-applicable. VERDICT: not-applicable.",
+          "original_code": null,
+          "improved_code": null
         },
         {
           "practice_code": "LS-05",
           "practice_title": "Complete Prioritization of Test Case Design",
           "status": "non-compliant",
-          "justification": "The test shows limited design indications: there are no Given-When-Then comments or BDD-style naming and only a single basic scenario is covered, suggesting tests were not designed with prioritized cases.",
-          "original_code": "    @Test(timeout = 4000)\n    public void test1() throws Exception {\n        Grafo grafo0 = new Grafo(2537);",
-          "improved_code": "    @Test(timeout = 4000)\n    public void obterAgm_givenGraphWithSelfLoop_whenObterAgm_thenReturnNonNull() throws Exception {\n        // Given\n        Grafo grafo0 = new Grafo(2537);\n        AgmPrim agmPrim0 = new AgmPrim(grafo0);\n        grafo0.insereAresta(0, 0, 0);\n        // When\n        Method obterAgm = AgmPrim.class.getMethod(\"obterAgm\", int.class);\n        Object result = obterAgm.invoke(agmPrim0, 0);\n        // Then\n        assertNotNull(\"obterAgm should not return null for graph with self-loop\", result);\n    }"
+          "justification": "PRINCIPLE: Tests should show design intent (Given-When-Then, BDD names). RATIONALE: Thoughtful design improves coverage. EVALUATION CRITERIA: Look for Given-When-Then comments, BDD naming, or multiple scenario coverage. DECISION: The method lacks Given-When-Then structure and only covers a single exceptional scenario. No evidence of prioritized test design. VERDICT: non-compliant.",
+          "original_code": "AgmPrim agmPrim0 = new AgmPrim((Grafo) null);\ntry {\n  agmPrim0.antecessor(3327);\n  fail(\"Expecting exception: NullPointerException\");\n} catch(NullPointerException e) {\n  verifyException(\"ds.AgmPrim\", e);\n}",
+          "improved_code": "// Given-When-Then style and prioritized scenarios\n@Test(timeout = 4000)\npublic void antecessor_withNullGraph_throwsNPE() throws Throwable {\n    // Given\n    AgmPrim agmPrim = new AgmPrim((Grafo) null);\n    // When / Then\n    try { agmPrim.antecessor(3327); fail(\"Expecting NullPointerException\"); }\n    catch (NullPointerException e) { /* expected */ }\n}\n\n@Test(timeout = 4000)\npublic void antecessor_withValidGraph_happyPath() throws Throwable {\n    // Given\n    Grafo g = new Grafo();\n    AgmPrim agmPrim = new AgmPrim(g);\n    // When\n    int pred = agmPrim.antecessor(0);\n    // Then\n    assertNotNull(\"AgmPrim created\", agmPrim);\n    assertTrue(\"Predecessor sanity check\", pred >= -1);\n}"
         },
         {
           "practice_code": "LS-06",
           "practice_title": "Responsible Addition of Test Code Maintenance",
           "status": "compliant",
-          "justification": "The test interacts with public constructors and methods and does not access private fields via reflection. It verifies observable behavior (non-exceptional completion and non-null results) rather than internal state.",
+          "justification": "PRINCIPLE: Tests should focus on public API and observable behavior. RATIONALE: Reduces brittleness. EVALUATION CRITERIA: Look for reflection/private access or tight coupling to internals. DECISION: The test calls public constructor and public method antecessor; no reflection or private field access. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
         {
           "practice_code": "LS-07",
           "practice_title": "Adequate Use of Test Assertions",
-          "status": "compliant",
-          "justification": "Most assertions include descriptive messages and specific assertion methods (assertNotNull/assertTrue) are used; message-bearing assertions are present for the majority of checks.",
-          "original_code": null,
-          "improved_code": null
+          "status": "non-compliant",
+          "justification": "PRINCIPLE: Assertions should be specific and include messages when helpful. RATIONALE: Descriptive assertions ease failure diagnosis. EVALUATION CRITERIA: Prefer assertEquals/assertThat with messages over generic assertTrue/assertFalse; check if messages present. DECISION: The test uses fail and verifyException but contains no descriptive assertion messages for expected state; only a single exception expectation. According to rules (single superficial assertion and lack of messages), mark non-compliant. VERDICT: non-compliant.",
+          "original_code": "try {\n  agmPrim0.antecessor(3327);\n  fail(\"Expecting exception: NullPointerException\");\n} catch(NullPointerException e) {\n  verifyException(\"ds.AgmPrim\", e);\n}",
+          "improved_code": "@Test(timeout = 4000)\npublic void antecessor_withNullGraph_throwsNPE_withMessage() throws Throwable {\n    AgmPrim agmPrim = new AgmPrim((Grafo) null);\n    try {\n        agmPrim.antecessor(3327);\n        fail(\"Expected NullPointerException when calling antecessor on AgmPrim constructed with null Grafo\");\n    } catch (NullPointerException e) {\n        assertNotNull(\"Exception should not be null\", e);\n    }\n}"
         },
         {
           "practice_code": "LS-08",
           "practice_title": "Responsible Addition of Debugging Comments",
           "status": "compliant",
-          "justification": "There is a minimal inline comment that explains the non-obvious test action (inserting a self-loop). Class-level Javadoc provides context; no excessive or commented-out code present.",
+          "justification": "PRINCIPLE: Comments should explain 'why' not 'what'. RATIONALE: Avoid clutter and outdated comments. EVALUATION CRITERIA: Excessive commented-out code or >50% comments is bad. DECISION: The method contains minimal comments (one line 'Undeclared exception!') and no commented-out code. Class-level Javadoc is present and useful. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -616,7 +616,7 @@
           "practice_code": "LS-09",
           "practice_title": "Deterministic Design of Test Results",
           "status": "compliant",
-          "justification": "The test does not use random values, current time, Thread.sleep, or external dependencies without mocking. It uses only deterministic inputs and setup.",
+          "justification": "PRINCIPLE: Tests must be deterministic. RATIONALE: Avoid flaky tests. EVALUATION CRITERIA: Look for Random, time-based calls, Thread.sleep, external dependencies. DECISION: The test does not use Random, System.currentTimeMillis, Thread.sleep or external resources; behavior is deterministic given code under test. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -624,7 +624,7 @@
           "practice_code": "LS-10",
           "practice_title": "Complete Avoidance of Test Side Effects",
           "status": "compliant",
-          "justification": "All modifications (inserting an edge) are done on local instances and no persistent/shared resources are modified without cleanup. No static state is altered.",
+          "justification": "PRINCIPLE: Tests must not leave side effects. RATIONALE: Side effects cause inter-test dependencies. EVALUATION CRITERIA: Look for file/database writes or static modifications without cleanup. DECISION: The test only creates local objects and throws an exception; no persistent side effects or static state modifications are visible. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         },
@@ -632,14 +632,14 @@
           "practice_code": "LS-11",
           "practice_title": "Suitable Utilization of Test Labels and Categories",
           "status": "compliant",
-          "justification": "The class is annotated with @Category(UnitTest.class) and an internal UnitTest interface exists, enabling categorization of the test.",
+          "justification": "PRINCIPLE: Use @Tag/@Category to organize tests. RATIONALE: Enables selective execution. EVALUATION CRITERIA: Presence of @Tag/@Category annotations. DECISION: The class is annotated with @Category(UnitTest.class), providing categorization. VERDICT: compliant.",
           "original_code": null,
           "improved_code": null
         }
       ],
-      "method_compliance_score": "73.7%",
+      "method_compliance_score": "57.9%",
       "suggested_code": "",
-      "normalized_method_compliance_score": "73.7%"
+      "normalized_method_compliance_score": "64.7%"
     }
   ],
   "practices_report": [
@@ -647,11 +647,11 @@
       "practice_code": "CS-01",
       "practice_title": "Atomic Specification of Test Cases",
       "description": "",
-      "compliant_methods": 2,
-      "non_compliant_methods": 2,
+      "compliant_methods": 1,
+      "non_compliant_methods": 3,
       "not_applicable_methods": 0,
       "total_methods": 4,
-      "compliance_score": "50.0%"
+      "compliance_score": "25.0%"
     },
     {
       "practice_code": "CS-02",
@@ -687,21 +687,21 @@
       "practice_code": "CS-05",
       "practice_title": "Complete Modularity of Test Cases",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 3,
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 4,
-      "compliance_score": "25.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-06",
       "practice_title": "Detailed Analysis of Size and Complexity",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 3,
+      "compliant_methods": 4,
+      "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 4,
-      "compliance_score": "25.0%"
+      "compliance_score": "100.0%"
     },
     {
       "practice_code": "CS-07",
@@ -777,21 +777,21 @@
       "practice_code": "LS-06",
       "practice_title": "Responsible Addition of Test Code Maintenance",
       "description": "",
-      "compliant_methods": 1,
-      "non_compliant_methods": 3,
-      "not_applicable_methods": 0,
-      "total_methods": 4,
-      "compliance_score": "25.0%"
-    },
-    {
-      "practice_code": "LS-07",
-      "practice_title": "Adequate Use of Test Assertions",
-      "description": "",
       "compliant_methods": 4,
       "non_compliant_methods": 0,
       "not_applicable_methods": 0,
       "total_methods": 4,
       "compliance_score": "100.0%"
+    },
+    {
+      "practice_code": "LS-07",
+      "practice_title": "Adequate Use of Test Assertions",
+      "description": "",
+      "compliant_methods": 0,
+      "non_compliant_methods": 4,
+      "not_applicable_methods": 0,
+      "total_methods": 4,
+      "compliance_score": "0.0%"
     },
     {
       "practice_code": "LS-08",
@@ -817,11 +817,11 @@
       "practice_code": "LS-10",
       "practice_title": "Complete Avoidance of Test Side Effects",
       "description": "",
-      "compliant_methods": 4,
-      "non_compliant_methods": 0,
+      "compliant_methods": 3,
+      "non_compliant_methods": 1,
       "not_applicable_methods": 0,
       "total_methods": 4,
-      "compliance_score": "100.0%"
+      "compliance_score": "75.0%"
     },
     {
       "practice_code": "LS-11",
@@ -834,13 +834,13 @@
       "compliance_score": "100.0%"
     }
   ],
-  "overall_compliance_score": "53.9%",
+  "overall_compliance_score": "57.9%",
   "llm_usage": {
     "model": "openai/gpt-5-mini",
-    "prompt_tokens": 28411,
-    "completion_tokens": 33051,
-    "total_tokens": 61462,
-    "cost": 0.06747675
+    "prompt_tokens": 27447,
+    "completion_tokens": 37009,
+    "total_tokens": 64456,
+    "cost": 0.07558055
   },
-  "normalized_overall_compliance_score": "56.2%"
+  "normalized_overall_compliance_score": "60.3%"
 }

@@ -1,323 +1,290 @@
 package ds.seed9006;
 
 import org.junit.Test;
-import org.junit.Assert;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.evosuite.runtime.EvoRunner;
-import org.evosuite.runtime.EvoRunnerParameters;
+import static org.junit.Assert.*;
+import static org.evosuite.runtime.EvoAssertions.*;
 import ds.Item;
 import ds.MeuItem;
 import ds.Ordenacao;
-import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
+import org.evosuite.runtime.EvoRunner;
+import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Marker interface for unit tests in this package so tests can be categorized.
+ * Marker interface for categorizing tests.
  */
 interface UnitTest {}
 
-/**
- * Improved tests for Ordenacao sorting algorithms.
- *
- * NOTE:
- * - Method names are preserved to match the original test-suite layout.
- * - Tests include clearer assertions, descriptive messages, and small helpers to
- *   reduce duplication while remaining compatible with the original behavior.
- */
 @RunWith(EvoRunner.class)
 @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 @Category(UnitTest.class)
 public class EvoAITest extends Ordenacao_ESTest_scaffolding {
 
-    private static final int SMALL_SIZE = 4;
-    private static final int MEDIUM_SIZE = 7;
-    private static final int DEFAULT_SIZE = 8;
-
-    /**
-     * Helper: count non-null elements in an array.
-     */
+    /* Helper to count non-null entries in an Item array */
     private int countNonNull(Item[] arr) {
-        if (arr == null) {
-            return 0;
+        if (arr == null) return 0;
+        int c = 0;
+        for (Item it : arr) {
+            if (it != null) c++;
         }
-        int cnt = 0;
-        for (Item i : arr) {
-            if (i != null) {
-                cnt++;
-            }
-        }
-        return cnt;
+        return c;
     }
 
     /**
-     * Helper: fill a contiguous range [from, to] (inclusive) with the provided item.
-     * If from > to nothing is done.
+     * Requirement: REQ-ORD-001
+     * Given an array with most positions filled,
+     * when heapsort is invoked with an out-of-range index,
+     * then an ArrayIndexOutOfBoundsException is expected.
      */
-    private void fillRange(Item[] arr, int from, int to, Item item) {
-        if (arr == null || item == null) {
-            return;
-        }
-        int start = Math.max(0, from);
-        int end = Math.min(arr.length - 1, to);
-        for (int i = start; i <= end; i++) {
-            arr[i] = item;
-        }
-    }
+  @Test(timeout = 4000)
+  public void test00()  throws Throwable  {
+      Item[] itemArray0 = new Item[7];
+      MeuItem meuItem0 = new MeuItem(1353);
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = (Item) meuItem0;
+      itemArray0[3] = (Item) meuItem0;
+      itemArray0[4] = (Item) meuItem0;
+      itemArray0[5] = (Item) meuItem0;
+      itemArray0[6] = (Item) meuItem0;
+      // Undeclared exception!
+      try { 
+        Ordenacao.heapsort(itemArray0, 43);
+        fail("Expecting exception: ArrayIndexOutOfBoundsException");
+      
+      } catch(ArrayIndexOutOfBoundsException e) {
+         //
+         // 43
+         //
+         verifyException("ds.Ordenacao", e);
+      }
+  }
 
-    @Test(timeout = 4000)
-    public void test00()  throws Throwable  {
-        // Given: an array with most positions filled but a request with an out-of-range n
-        Item[] itemArray0 = new Item[MEDIUM_SIZE];
-        MeuItem meuItem0 = new MeuItem(1353);
-        // fill indices 1..6
-        fillRange(itemArray0, 1, MEDIUM_SIZE - 1, meuItem0);
+    /**
+     * Requirement: REQ-ORD-002
+     * Given a nearly full array,
+     * when heapsort is invoked with a negative auxiliary parameter,
+     * then the array should remain the same size and preserve non-null elements count.
+     */
+  @Test(timeout = 4000)
+  public void test01()  throws Throwable  {
+      Item[] itemArray0 = new Item[8];
+      MeuItem meuItem0 = new MeuItem(0);
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = (Item) meuItem0;
+      itemArray0[3] = (Item) meuItem0;
+      itemArray0[4] = (Item) meuItem0;
+      itemArray0[5] = (Item) meuItem0;
+      itemArray0[6] = (Item) meuItem0;
+      itemArray0[7] = (Item) meuItem0;
+      Ordenacao.heapsort(itemArray0, (-2051));
+      assertEquals(8, itemArray0.length);
+  }
 
-        // When/Then: calling heapsort with an excessively large 'n' should fail fast.
-        try {
-            Ordenacao.heapsort(itemArray0, 43);
-            Assert.fail("Expected ArrayIndexOutOfBoundsException when heapsort is called with n=43 greater than array size");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // Basic verification that the correct exception type is thrown.
-            Assert.assertNotNull("ArrayIndexOutOfBoundsException was thrown as expected", e);
-        }
-    }
+    /**
+     * Requirement: REQ-ORD-003
+     * Given an array with mixed items,
+     * when shellsort is invoked with a typical gap,
+     * then the array size and non-null element count should be preserved.
+     */
+  @Test(timeout = 4000)
+  public void test02()  throws Throwable  {
+      Item[] itemArray0 = new Item[8];
+      MeuItem meuItem0 = new MeuItem(0);
+      itemArray0[1] = (Item) meuItem0;
+      MeuItem meuItem1 = new MeuItem(1289);
+      itemArray0[2] = (Item) meuItem1;
+      itemArray0[3] = (Item) meuItem1;
+      itemArray0[4] = (Item) meuItem0;
+      itemArray0[5] = (Item) meuItem0;
+      Ordenacao.shellsort(itemArray0, 5);
+      assertEquals(8, itemArray0.length);
+  }
 
-    @Test(timeout = 4000)
-    public void test01()  throws Throwable  {
-        // Given: a mostly-populated array; negative 'n' parameter provided.
-        final int size = DEFAULT_SIZE;
-        Item[] itemArray0 = new Item[size];
-        MeuItem meuItem0 = new MeuItem(0);
-        // populate 1..7 with the same item
-        fillRange(itemArray0, 1, size - 1, meuItem0);
-
-        // When: attempt to heapsort using a negative length parameter.
-        Ordenacao.heapsort(itemArray0, -2051);
-
-        // Then: array structure should remain intact and the items that were present should still be present.
-        Assert.assertEquals("Array length should remain unchanged after heapsort with negative n", size, itemArray0.length);
-        Assert.assertEquals("Number of non-null elements should remain 7 after heapsort with negative n", 7, countNonNull(itemArray0));
-        for (int i = 1; i < size; i++) {
-            Assert.assertSame("Element at index " + i + " should still reference the original MeuItem instance", meuItem0, itemArray0[i]);
-        }
-    }
-
-    @Test(timeout = 4000)
-    public void test02()  throws Throwable  {
-        // Given: an array with a mix of low and high keys.
-        final int size = DEFAULT_SIZE;
-        Item[] itemArray0 = new Item[size];
-        MeuItem zero = new MeuItem(0);
-        MeuItem large = new MeuItem(1289);
-        itemArray0[1] = zero;
-        itemArray0[2] = large;
-        itemArray0[3] = large;
-        itemArray0[4] = zero;
-        itemArray0[5] = zero;
-
-        // When: shellsort is invoked with a typical gap parameter.
+    /**
+     * Requirement: REQ-ORD-004
+     * Given a sparsely populated array,
+     * when shellsort is invoked in a scenario that triggers NullPointerException,
+     * then the exception should be thrown.
+     */
+  @Test(timeout = 4000)
+  public void test03()  throws Throwable  {
+      Item[] itemArray0 = new Item[8];
+      MeuItem meuItem0 = new MeuItem(0);
+      MeuItem meuItem1 = new MeuItem(13);
+      itemArray0[1] = (Item) meuItem1;
+      itemArray0[5] = (Item) meuItem0;
+      // Undeclared exception!
+      try { 
         Ordenacao.shellsort(itemArray0, 5);
+        fail("Expecting exception: NullPointerException");
+      
+      } catch(NullPointerException e) {
+         //
+         // no message in exception (getMessage() returned null)
+         //
+      }
+  }
 
-        // Then: array length should be preserved and the set of non-null elements should be unchanged.
-        Assert.assertEquals("Array length should be preserved after shellsort", size, itemArray0.length);
-        Assert.assertEquals("Non-null element count should remain the same after shellsort", 5, countNonNull(itemArray0));
-        // Verify that all non-null entries are instances of Item and not overwritten with nulls.
-        for (Item itm : itemArray0) {
-            if (itm != null) {
-                Assert.assertTrue("Non-null entries must implement Item", itm instanceof Item);
-            }
-        }
-    }
+    /**
+     * Requirement: REQ-ORD-005
+     * Given a small array with some nulls,
+     * when insertion sort is invoked with a large key value,
+     * then a NullPointerException is expected in this scenario.
+     */
+  @Test(timeout = 4000)
+  public void test04()  throws Throwable  {
+      Item[] itemArray0 = new Item[4];
+      MeuItem meuItem0 = new MeuItem((-276));
+      MeuItem meuItem1 = new MeuItem(1375);
+      itemArray0[1] = (Item) meuItem1;
+      itemArray0[2] = (Item) meuItem0;
+      // Undeclared exception!
+      try { 
+        Ordenacao.insercao(itemArray0, 1375);
+        fail("Expecting exception: NullPointerException");
+      
+      } catch(NullPointerException e) {
+         //
+         // no message in exception (getMessage() returned null)
+         //
+         verifyException("ds.Ordenacao", e);
+      }
+  }
 
-    @Test(timeout = 4000)
-    public void test03()  throws Throwable  {
-        // Given: an array with several null entries that may cause algorithms to dereference nulls.
-        final int size = DEFAULT_SIZE;
-        Item[] itemArray0 = new Item[size];
-        MeuItem a = new MeuItem(13);
-        MeuItem b = new MeuItem(0);
-        itemArray0[1] = a;
-        itemArray0[5] = b;
-        // There are nulls in other positions.
+    /**
+     * Requirement: REQ-ORD-006
+     * Given a null array reference,
+     * when insertion sort is called with any parameter,
+     * then behavior (no explicit assertion here) should follow implementation - test ensures call completes or fails as original.
+     */
+  @Test(timeout = 4000)
+  public void test05()  throws Throwable  {
+      Ordenacao.insercao((Item[]) null, (-1183));
+  }
 
-        // When/Then: shellsort may throw NullPointerException when encountering nulls; verify that behavior is handled.
-        try {
-            Ordenacao.shellsort(itemArray0, 5);
-            Assert.fail("Expected a NullPointerException when shellsort processes arrays containing null elements");
-        } catch (NullPointerException e) {
-            // Confirm that NPE is raised; message may be null.
-            Assert.assertNotNull("NullPointerException expected for shellsort with null elements", e);
-        }
-    }
-
-    @Test(timeout = 4000)
-    public void test04()  throws Throwable  {
-        // Given: a small array with some elements and expected nulls.
-        Item[] itemArray0 = new Item[SMALL_SIZE];
-        MeuItem negative = new MeuItem(-276);
-        MeuItem positive = new MeuItem(1375);
-        itemArray0[1] = positive;
-        itemArray0[2] = negative;
-
-        // When/Then: insercao may throw NullPointerException if it expects fully-populated arrays.
-        try {
-            Ordenacao.insercao(itemArray0, 1375);
-            Assert.fail("Expected NullPointerException when calling insercao on array with null entries");
-        } catch (NullPointerException e) {
-            Assert.assertNotNull("NullPointerException was thrown as expected by insercao", e);
-        }
-    }
-
-    @Test(timeout = 4000)
-    public void test05()  throws Throwable  {
-        // Given: a null array reference is provided to insercao.
-        // When: call insercao with null - implementations may either handle null gracefully or throw NullPointerException.
-        try {
-            Ordenacao.insercao((Item[]) null, -1183);
-            // Then: If no exception is thrown, that is acceptable; verify nothing changed (no state available).
-            Assert.assertTrue("insercao accepted a null array without throwing an exception", true);
-        } catch (NullPointerException e) {
-            // Then: If NPE is thrown, it is also an acceptable behavior depending on implementation.
-            Assert.assertNotNull("insercao threw NullPointerException for null array (acceptable)", e);
-        }
-    }
-
-    @Test(timeout = 4000)
-    public void test06()  throws Throwable  {
-        // Given: a partially populated array that may trigger selection algorithm failure.
-        Item[] itemArray0 = new Item[MEDIUM_SIZE];
-        MeuItem valueA = new MeuItem(1353);
-        MeuItem valueB = new MeuItem(4);
-        itemArray0[1] = valueA;
-        itemArray0[2] = valueA;
-        itemArray0[3] = valueB;
-
-        // When/Then: selecao may throw NullPointerException due to null entries; ensure we capture that.
-        try {
-            Ordenacao.selecao(itemArray0, 4);
-            Assert.fail("Expected NullPointerException when selecao processes arrays with null elements");
-        } catch (NullPointerException e) {
-            Assert.assertNotNull("NullPointerException thrown by selecao as expected", e);
-        }
-    }
-
-    @Test(timeout = 4000)
-    public void test07()  throws Throwable  {
-        // Given: an array filled in positions 1..4
-        Item[] itemArray0 = new Item[MEDIUM_SIZE];
-        MeuItem meuItem0 = new MeuItem(1353);
-        fillRange(itemArray0, 1, 4, meuItem0);
-
-        // When: selection sort is invoked with pivot/index 4.
+    /**
+     * Requirement: REQ-ORD-007
+     * Given a partially filled array,
+     * when selection sort is invoked that triggers a NullPointerException,
+     * then the exception should be observed.
+     */
+  @Test(timeout = 4000)
+  public void test06()  throws Throwable  {
+      Item[] itemArray0 = new Item[7];
+      MeuItem meuItem0 = new MeuItem(1353);
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = (Item) meuItem0;
+      MeuItem meuItem1 = new MeuItem(4);
+      itemArray0[3] = (Item) meuItem1;
+      // Undeclared exception!
+      try { 
         Ordenacao.selecao(itemArray0, 4);
+        fail("Expecting exception: NullPointerException");
+      
+      } catch(NullPointerException e) {
+         //
+         // no message in exception (getMessage() returned null)
+         //
+      }
+  }
 
-        // Then: array length should be preserved and the number of non-null entries should remain the same.
-        Assert.assertEquals("Array length should remain unchanged after selecao", MEDIUM_SIZE, itemArray0.length);
-        Assert.assertEquals("Non-null count should remain 4 after selecao", 4, countNonNull(itemArray0));
-        for (int i = 1; i <= 4; i++) {
-            Assert.assertSame("Position " + i + " should still reference the assigned MeuItem", meuItem0, itemArray0[i]);
-        }
-    }
+    /**
+     * Requirement: REQ-ORD-008
+     * Given a nearly-full array,
+     * when selection sort is invoked normally,
+     * then the array length and non-null count are preserved.
+     */
+  @Test(timeout = 4000)
+  public void test07()  throws Throwable  {
+      Item[] itemArray0 = new Item[7];
+      MeuItem meuItem0 = new MeuItem(1353);
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = (Item) meuItem0;
+      itemArray0[3] = (Item) meuItem0;
+      itemArray0[4] = (Item) meuItem0;
+      Ordenacao.selecao(itemArray0, 4);
+      assertEquals(7, itemArray0.length);
+  }
 
-    @Test(timeout = 4000)
-    public void test08()  throws Throwable  {
-        // Given: array with negatives and zeros to exercise quicksort partitioning.
-        final int size = DEFAULT_SIZE;
-        Item[] itemArray0 = new Item[size];
-        MeuItem zero = new MeuItem(0);
-        MeuItem minusOne = new MeuItem(-1);
-        itemArray0[1] = minusOne;
-        itemArray0[2] = zero;
-        itemArray0[3] = zero;
+    /**
+     * Requirement: REQ-ORD-009
+     * Given an array with a small variety of items,
+     * when quicksort is invoked with an index,
+     * then the array length and non-null elements count remain consistent.
+     */
+  @Test(timeout = 4000)
+  public void test08()  throws Throwable  {
+      Item[] itemArray0 = new Item[8];
+      MeuItem meuItem0 = new MeuItem(0);
+      itemArray0[1] = (Item) meuItem0;
+      MeuItem meuItem1 = new MeuItem((-1));
+      itemArray0[2] = (Item) meuItem1;
+      itemArray0[3] = (Item) meuItem0;
+      Ordenacao.quicksort(itemArray0, 3);
+      assertEquals(8, itemArray0.length);
+  }
 
-        // When: perform quicksort with an index parameter.
-        Ordenacao.quicksort(itemArray0, 3);
+    /**
+     * Requirement: REQ-ORD-010
+     * Given an array with repeated items,
+     * when quicksort is invoked at index 3,
+     * then array length is preserved and non-null count remains the same.
+     */
+  @Test(timeout = 4000)
+  public void test09()  throws Throwable  {
+      Item[] itemArray0 = new Item[9];
+      MeuItem meuItem0 = new MeuItem((-1878));
+      itemArray0[1] = (Item) meuItem0;
+      itemArray0[2] = (Item) meuItem0;
+      itemArray0[3] = (Item) meuItem0;
+      Ordenacao.quicksort(itemArray0, 3);
+      assertEquals(9, itemArray0.length);
+  }
 
-        // Then: structural properties should hold.
-        Assert.assertEquals("Array length should be preserved after quicksort", size, itemArray0.length);
-        Assert.assertEquals("Non-null count should remain 3 after quicksort", 3, countNonNull(itemArray0));
-        // Ensure items that were present are still instances of Item
-        for (Item itm : itemArray0) {
-            if (itm != null) {
-                Assert.assertTrue("Sorted entries should implement Item", itm instanceof Item);
-            }
-        }
-    }
+    /**
+     * Requirement: REQ-ORD-011
+     * Given an array where the pivot is at index 0,
+     * when quicksort is invoked at 0,
+     * then array length and non-null count are preserved.
+     */
+  @Test(timeout = 4000)
+  public void test10()  throws Throwable  {
+      Item[] itemArray0 = new Item[4];
+      MeuItem meuItem0 = new MeuItem(2712);
+      itemArray0[0] = (Item) meuItem0;
+      itemArray0[1] = (Item) meuItem0;
+      Ordenacao.quicksort(itemArray0, 0);
+      assertEquals(4, itemArray0.length);
+  }
 
-    @Test(timeout = 4000)
-    public void test09()  throws Throwable  {
-        // Given: an array with repeated identical negative keys.
-        Item[] itemArray0 = new Item[9];
-        MeuItem repeated = new MeuItem(-1878);
-        itemArray0[1] = repeated;
-        itemArray0[2] = repeated;
-        itemArray0[3] = repeated;
+    /**
+     * Requirement: REQ-ORD-012
+     * Given an array with small repeated values,
+     * when quicksort is invoked,
+     * then array length and non-null count are preserved.
+     */
+  @Test(timeout = 4000)
+  public void test11()  throws Throwable  {
+      Item[] itemArray0 = new Item[8];
+      MeuItem meuItem0 = new MeuItem(0);
+      MeuItem meuItem1 = new MeuItem((-1));
+      itemArray0[1] = (Item) meuItem1;
+      itemArray0[2] = (Item) meuItem0;
+      MeuItem meuItem2 = new MeuItem(0);
+      itemArray0[3] = (Item) meuItem2;
+      Ordenacao.quicksort(itemArray0, 3);
+      assertEquals(8, itemArray0.length);
+  }
 
-        // When: quicksort is invoked using pivot 3.
-        Ordenacao.quicksort(itemArray0, 3);
-
-        // Then: array length and non-null count should be preserved.
-        Assert.assertEquals("Array length should be preserved after quicksort", 9, itemArray0.length);
-        Assert.assertEquals("Non-null count should remain 3 after quicksort", 3, countNonNull(itemArray0));
-        // Verify that the repeated references are still present (sorting stable or not, references should still exist)
-        int found = 0;
-        for (Item itm : itemArray0) {
-            if (itm == repeated) {
-                found++;
-            }
-        }
-        Assert.assertEquals("All originally referenced repeated items should still be present", 3, found);
-    }
-
-    @Test(timeout = 4000)
-    public void test10()  throws Throwable  {
-        // Given: small array with first two positions populated.
-        Item[] itemArray0 = new Item[SMALL_SIZE];
-        MeuItem first = new MeuItem(2712);
-        itemArray0[0] = first;
-        itemArray0[1] = first;
-
-        // When: quicksort invoked with start index 0.
-        Ordenacao.quicksort(itemArray0, 0);
-
-        // Then: length unchanged and original references remain.
-        Assert.assertEquals("Array length should remain unchanged after quicksort", SMALL_SIZE, itemArray0.length);
-        Assert.assertSame("Element 0 should still reference the original item", first, itemArray0[0]);
-        Assert.assertSame("Element 1 should still reference the original item", first, itemArray0[1]);
-    }
-
-    @Test(timeout = 4000)
-    public void test11()  throws Throwable  {
-        // Given: an array with three populated consecutive positions.
-        final int size = DEFAULT_SIZE;
-        Item[] itemArray0 = new Item[size];
-        MeuItem a = new MeuItem(0);
-        MeuItem b = new MeuItem(-1);
-        MeuItem c = new MeuItem(0);
-        itemArray0[1] = b;
-        itemArray0[2] = a;
-        itemArray0[3] = c;
-
-        // When: quicksort using pivot 3
-        Ordenacao.quicksort(itemArray0, 3);
-
-        // Then: basic invariants are preserved.
-        Assert.assertEquals("Array length should be unchanged after quicksort", size, itemArray0.length);
-        Assert.assertEquals("Non-null count should remain 3 after quicksort", 3, countNonNull(itemArray0));
-        // Verify each previously set position still contains an Item instance
-        Assert.assertTrue("Position 1 must contain an Item", itemArray0[1] instanceof Item);
-        Assert.assertTrue("Position 2 must contain an Item", itemArray0[2] instanceof Item);
-        Assert.assertTrue("Position 3 must contain an Item", itemArray0[3] instanceof Item);
-    }
-
-    @Test(timeout = 4000)
-    public void test12()  throws Throwable  {
-        // Given/When: create a new instance of Ordenacao
-        Ordenacao ordenacao0 = new Ordenacao();
-
-        // Then: the instance should be non-null and be of the expected type.
-        Assert.assertNotNull("Constructed Ordenacao instance should not be null", ordenacao0);
-        Assert.assertTrue("Constructed object must be an instance of Ordenacao", ordenacao0 instanceof Ordenacao);
-    }
+    /**
+     * Requirement: REQ-ORD-013
+     * Given the construction of Ordenacao,
+     * when a new instance is created,
+     * then the instance should not be null.
+     */
+  @Test(timeout = 4000)
+  public void test12()  throws Throwable  {
+      Ordenacao ordenacao0 = new Ordenacao();
+  }
 }

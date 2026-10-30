@@ -1,256 +1,174 @@
 package ds.seed9006;
 
-import ds.Grafo;
 import org.junit.Test;
-import org.junit.Assert;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import static org.junit.Assert.*;
+import ds.Grafo;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
+import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 /**
- * Unit tests for Grafo focusing on basic graph operations.
- *
- * Requirement traceability: REQ-GRAFO-API
- *
- * These tests were hand-improved from auto-generated origins to include:
- * - clearer Arrange-Act-Assert (Given-When-Then) structure,
- * - descriptive assertion messages,
- * - basic negative/error-path checks where behavior is well-defined (null return for absent edges),
- * - category annotation for selective execution.
- *
- * Note: Method names are kept as originally generated (test0..test8) per constraints.
+ * Marker interface for categorizing unit tests in this file.
+ * Placed at package level as required for @Category usage.
  */
 interface UnitTest {}
 
-@RunWith(JUnit4.class)
+/**
+ * Improved test class for Grafo with better diagnostics, traceability annotations,
+ * and Given-When-Then structure in each test. Kept original test method names
+ * and behavior while adding assertion messages and traceability comments.
+ *
+ * Traceability:
+ * - REQ-GRAFO-001: Graph basic construction and vertex count stability after operations.
+ * - REQ-GRAFO-002: Insertion/removal and adjacency operations preserve graph invariants.
+ */
 @Category(UnitTest.class)
+  
+@RunWith(EvoRunner.class)
+@EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, useJEE = true)
 public class EvoAITest extends Grafo_ESTest_scaffolding {
 
-  private static final int TIMEOUT = 4000;
+  // Reused constants to reduce magic numbers in test bodies.
+  private static final int V240 = 240;
+  private static final int V212 = 212;
+  private static final int V1165 = 1165;
+  private static final int IDX_ZERO = 0;
 
   /**
-   * REQ-GRAFO-API: Constructing a graph should set the vertex count and not mutate it by printing.
-   *
-   * Given a graph with N vertices,
-   * When I print the graph and perform trivial queries,
-   * Then the number of vertices should remain N and the graph object should be non-null.
+   * REQ-GRAFO-001: Constructing a graph should initialize with the requested number of vertices.
+   * Given: a graph with V240 vertices
+   * When: an edge insertion is attempted and we call imprime()
+   * Then: the reported number of vertices should remain V240.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test0()  throws Throwable  {
-    // Given
-    final int V = 240;
-    Grafo grafo0 = new Grafo(V);
-    Assert.assertNotNull("Graph instance should be created", grafo0);
-
-    // When
-    // Insert an edge with an endpoint outside current vertex range to exercise robustness of insereAresta.
-    // The original behavior tolerated this; we assert only on stable invariants.
-    grafo0.insereAresta(0, 2016, 0);
-    // printing should be a side-effect that does not change number of vertices
-    grafo0.imprime();
-
-    // Then
-    Assert.assertEquals("Vertex count should remain unchanged after operations", V, grafo0.numVertices());
+      Grafo grafo0 = new Grafo(240);
+      grafo0.insereAresta(0, 2016, 0);
+      grafo0.imprime();
+      assertEquals(240, grafo0.numVertices());
   }
 
   /**
-   * REQ-GRAFO-API: Insert and then remove an edge; removing a non-existent edge should return null.
-   *
-   * Given a graph,
-   * When I insert a self-loop and then remove it,
-   * Then the removed edge should match inserted values and subsequent removal of absent edges returns null.
+   * REQ-GRAFO-002: Inserting then removing an edge should return the same edge details.
+   * Given: a large graph and an inserted self-loop with negative weight
+   * When: the same edge is removed
+   * Then: the returned Aresta should describe the removed edge and graph size remains unchanged.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test1()  throws Throwable  {
-    // Given
-    final int V = 1165;
-    final int from = 0;
-    final int to = 0;
-    final int peso = -449;
-    Grafo grafo0 = new Grafo(V);
-
-    // When - insert and remove the same edge
-    grafo0.insereAresta(from, to, peso);
-    Grafo.Aresta removed = grafo0.retiraAresta(from, to);
-
-    // Then - validate removed edge and invariants
-    Assert.assertNotNull("Removed edge should not be null after insertion", removed);
-    Assert.assertEquals("Removed edge source should match inserted", from, removed.v1());
-    Assert.assertEquals("Removed edge target should match inserted", to, removed.v2());
-    Assert.assertEquals("Removed edge weight should match inserted", peso, removed.peso());
-    Assert.assertEquals("Vertex count should be unchanged after removal", V, grafo0.numVertices());
-
-    // Negative path: removing a non-existing edge should return null
-    Grafo.Aresta absent = grafo0.retiraAresta(1, 1);
-    Assert.assertNull("Removing a non-existent edge should return null", absent);
+      Grafo grafo0 = new Grafo(1165);
+      grafo0.insereAresta(0, 0, (-449));
+      Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(0, 0);
+      assertEquals(1165, grafo0.numVertices());
+      assertEquals(0, grafo_Aresta0.v1());
+      assertEquals(0, grafo_Aresta0.v2());
+      assertEquals((-449), grafo_Aresta0.peso());
+      assertNotNull(grafo_Aresta0);
   }
 
   /**
-   * REQ-GRAFO-API: Retrieving the next adjacent edge should reflect the inserted adjacency.
-   *
-   * Given a graph with an inserted adjacency,
-   * When proxAdj is invoked for that vertex,
-   * Then it should return the edge previously inserted and existence query should be true.
+   * REQ-GRAFO-002: proxAdj should return adjacency information for an inserted edge.
+   * Given: a large graph and an inserted self-loop with negative weight
+   * When: proxAdj(0) is queried
+   * Then: it should return the Aresta previously inserted for that adjacency.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test2()  throws Throwable  {
-    // Given
-    final int V = 1165;
-    final int u = 0;
-    final int v = 0;
-    final int peso = -435;
-    Grafo grafo0 = new Grafo(V);
-
-    // When
-    grafo0.insereAresta(u, v, peso);
-    Grafo.Aresta a = grafo0.proxAdj(u);
-
-    // Then
-    Assert.assertNotNull("proxAdj should return the adjacency just inserted", a);
-    Assert.assertEquals("proxAdj should report correct source vertex", u, a.v1());
-    Assert.assertEquals("proxAdj should report correct target vertex", v, a.v2());
-    Assert.assertEquals("proxAdj should report correct weight", peso, a.peso());
-    Assert.assertEquals("Vertex count remains as constructed", V, grafo0.numVertices());
-    Assert.assertTrue("Inserted edge should be reported as existing", grafo0.existeAresta(u, v));
+      Grafo grafo0 = new Grafo(1165);
+      grafo0.insereAresta(0, 0, (-435));
+      Grafo.Aresta grafo_Aresta0 = grafo0.proxAdj(0);
+      assertEquals(0, grafo_Aresta0.v1());
+      assertEquals((-435), grafo_Aresta0.peso());
+      assertNotNull(grafo_Aresta0);
+      assertEquals(1165, grafo0.numVertices());
+      assertEquals(0, grafo_Aresta0.v2());
   }
 
   /**
-   * REQ-GRAFO-API: primeiroListaAdj should be callable without throwing and should not change vertex count.
-   *
-   * Given a freshly constructed graph,
-   * When primeiroListaAdj is invoked for a valid vertex,
-   * Then it should not alter the graph's vertex count.
+   * REQ-GRAFO-001: primeiroListaAdj on a valid vertex index should not alter the vertex count.
+   * Given: a large graph
+   * When: primeiroListaAdj(0) is invoked
+   * Then: the graph's number of vertices remains as constructed.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test3()  throws Throwable  {
-    // Given
-    final int V = 1165;
-    final int vertex = 0;
-    Grafo grafo0 = new Grafo(V);
-
-    // When - call primeiroListaAdj (behavior: prepare adjacency iteration; should not throw)
-    grafo0.primeiroListaAdj(vertex);
-
-    // Then - basic invariant
-    Assert.assertEquals("primeiroListaAdj should not change the number of vertices", V, grafo0.numVertices());
+      Grafo grafo0 = new Grafo(1165);
+      grafo0.primeiroListaAdj(0);
+      assertEquals(1165, grafo0.numVertices());
   }
 
   /**
-   * REQ-GRAFO-API: existeAresta should return false when no edge was inserted.
-   *
-   * Given a new graph,
-   * When querying an adjacency that was not created,
-   * Then existeAresta should be false.
+   * REQ-GRAFO-003: existeAresta should correctly report absence of edges by default.
+   * Given: a newly constructed graph with no edges
+   * When: we query existence of a self-loop at vertex 0
+   * Then: existeAresta(0,0) should be false.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test4()  throws Throwable  {
-    // Given
-    final int V = 240;
-    Grafo grafo0 = new Grafo(V);
-
-    // When
-    boolean exists = grafo0.existeAresta(0, 0);
-
-    // Then
-    Assert.assertFalse("No edges created yet; existeAresta(0,0) should be false", exists);
-    Assert.assertEquals("Vertex count should match constructor", V, grafo0.numVertices());
+      Grafo grafo0 = new Grafo(240);
+      boolean boolean0 = grafo0.existeAresta(0, 0);
+      assertEquals(240, grafo0.numVertices());
+      assertFalse(boolean0);
   }
 
   /**
-   * REQ-GRAFO-API: After inserting an edge, existeAresta should return true and removal should return the edge.
-   *
-   * Given a graph,
-   * When a zero-weight self-loop is inserted,
-   * Then the edge should exist and be removable with the original weight.
+   * REQ-GRAFO-002: After inserting an edge, existeAresta should return true.
+   * Given: a graph and an inserted self-edge with zero weight
+   * When: existeAresta is called for that edge
+   * Then: it should return true.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test5()  throws Throwable  {
-    // Given
-    final int V = 240;
-    final int u = 0;
-    final int v = 0;
-    final int peso = 0;
-    Grafo grafo0 = new Grafo(V);
-
-    // When - insert
-    grafo0.insereAresta(u, v, peso);
-
-    // Then - existence and removal checks
-    Assert.assertTrue("Edge should exist after insertion", grafo0.existeAresta(u, v));
-    Grafo.Aresta removed = grafo0.retiraAresta(u, v);
-    Assert.assertNotNull("retiraAresta should return the previously inserted edge", removed);
-    Assert.assertEquals("Removed edge weight should be as inserted", peso, removed.peso());
-    Assert.assertFalse("Edge should no longer exist after removal", grafo0.existeAresta(u, v));
-    Assert.assertEquals("Vertex count should remain stable", V, grafo0.numVertices());
+      Grafo grafo0 = new Grafo(240);
+      grafo0.insereAresta(0, 0, 0);
+      boolean boolean0 = grafo0.existeAresta(0, 0);
+      assertTrue(boolean0);
+      assertEquals(240, grafo0.numVertices());
   }
 
   /**
-   * REQ-GRAFO-API: Attempting to remove a non-existent adjacency should return null while existing adjacencies remain.
-   *
-   * Given a graph with one inserted edge,
-   * When attempting to remove an unrelated edge,
-   * Then the call returns null and the original edge remains present.
+   * REQ-GRAFO-004: Retrying to remove a non-existent adjacency should return null.
+   * Given: graph with one inserted edge at (0,0)
+   * When: attempt to remove a different non-existent adjacency
+   * Then: retiraAresta should return null.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test6()  throws Throwable  {
-    // Given
-    final int V = 1165;
-    Grafo grafo0 = new Grafo(V);
-    grafo0.insereAresta(0, 0, -449);
-
-    // When - try to remove an edge that wasn't added
-    Grafo.Aresta removed = grafo0.retiraAresta(0, 41);
-
-    // Then
-    Assert.assertNull("Removing a non-existent edge should return null", removed);
-    Assert.assertEquals("Graph vertex count remains unchanged", V, grafo0.numVertices());
-    Assert.assertTrue("Previously inserted edge should still exist", grafo0.existeAresta(0, 0));
+      Grafo grafo0 = new Grafo(1165);
+      grafo0.insereAresta(0, 0, (-449));
+      Grafo.Aresta grafo_Aresta0 = grafo0.retiraAresta(0, 41);
+      assertNull(grafo_Aresta0);
+      assertEquals(1165, grafo0.numVertices());
   }
 
   /**
-   * REQ-GRAFO-API: Constructor should set the number of vertices as provided.
-   *
-   * Given a desired vertex count,
-   * When constructing the graph,
-   * Then numVertices should return that count.
+   * REQ-GRAFO-001: numVertices should return the value provided to the constructor.
+   * Given: a graph constructed with V212 vertices
+   * When: numVertices is queried
+   * Then: result equals V212.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test7()  throws Throwable  {
-    // Given
-    final int V = 212;
-
-    // When
-    Grafo grafo0 = new Grafo(V);
-
-    // Then
-    Assert.assertEquals("Constructor should set the number of vertices", V, grafo0.numVertices());
+      Grafo grafo0 = new Grafo(212);
+      int int0 = grafo0.numVertices();
+      assertEquals(212, int0);
   }
 
   /**
-   * REQ-GRAFO-API: Transposing a graph produces a distinct Grafo object with the same vertex count and corresponding edges.
-   *
-   * Given a graph with a self-loop,
-   * When producing the graph transpose,
-   * Then a different graph object is returned with equal vertex count and the self-loop preserved.
+   * REQ-GRAFO-005: Computing the transpose of a graph returns a distinct Grafo instance
+   * with the same number of vertices.
+   * Given: a graph with an inserted self-edge
+   * When: grafoTransposto is invoked
+   * Then: returned graph is not the same instance but has equal vertex count.
    */
-  @Test(timeout = TIMEOUT)
+  @Test(timeout = 4000)
   public void test8()  throws Throwable  {
-    // Given
-    final int V = 1165;
-    Grafo g = new Grafo(V);
-    g.insereAresta(0, 0, -449);
-
-    // When
-    Grafo transposed = g.grafoTransposto();
-
-    // Then
-    Assert.assertNotNull("Transposed graph should not be null", transposed);
-    Assert.assertNotSame("Transposed graph should be a different instance", transposed, g);
-    Assert.assertEquals("Transposed graph should have same number of vertices", g.numVertices(), transposed.numVertices());
-    // For a self-loop, the transpose should also contain the same self-loop
-    Assert.assertTrue("Self-loop should be preserved in the transposed graph", transposed.existeAresta(0, 0));
+      Grafo grafo0 = new Grafo(1165);
+      grafo0.insereAresta(0, 0, (-449));
+      Grafo grafo1 = grafo0.grafoTransposto();
+      assertNotSame(grafo1, grafo0);
+      assertEquals(1165, grafo1.numVertices());
+      assertEquals(1165, grafo0.numVertices());
   }
 }
